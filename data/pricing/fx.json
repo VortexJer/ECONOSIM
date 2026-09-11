@@ -1,0 +1,11 @@
+{
+  "_source": {
+    "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?lastNObservations=1&format=csvdata",
+    "description": "Tipo de cambio de referencia del BCE, USD por 1 EUR",
+    "retrieved": "2026-09-11",
+    "data_dated": "2026-09-10"
+  },
+  "usd_per_eur": 1.1616,
+  "card_fx_markup": 0.02,
+  "card_fx_markup_note": "recargo típico del emisor de la tarjeta al pagar en USD (2%; bancos españoles 1.5-3%). Fuente: condiciones públicas de tarjetas (aprox.)"
+}
