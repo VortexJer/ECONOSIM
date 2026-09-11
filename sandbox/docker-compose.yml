@@ -1,0 +1,72 @@
+# ECONOSIM sandbox.
+#   world : el simulador. Pie en dos redes: econet (hacia la IA) y outside (hacia el host/panel).
+#   agent : el VPS de la IA. Solo econet, que es `internal` (sin salida a ningún sitio).
+# La IA solo puede hablar con 10.66.0.2 (DNS 53, HTTP 80, TLS 443). Nada más existe.
+
+networks:
+  econet:
+    internal: true
+    ipam:
+      config:
+        - subnet: 10.66.0.0/24
+  outside: {}
+
+volumes:
+  ca: {}
+  shared: {}
+  worlddata: {}
+  agenthome: {}
+
+services:
+  world:
+    build:
+      context: ..
+      dockerfile: sandbox/world.Dockerfile
+    container_name: econosim-world
+    environment:
+      ECONOSIM_REAL_START: ${ECONOSIM_REAL_START:-1998-10-14T09:30}
+      ECONOSIM_INITIAL_EUR: ${ECONOSIM_INITIAL_EUR:-50}
+      ECONOSIM_SPEED: ${ECONOSIM_SPEED:-1}
+      ECONOSIM_HANG: ${ECONOSIM_HANG:-300}
+      ECONOSIM_DEBUG: ${ECONOSIM_DEBUG:-0}
+      ECONOSIM_CONTROL_TOKEN: ${ECONOSIM_CONTROL_TOKEN:-}
+    volumes:
+      - ca:/ca
+      - shared:/shared
+      - worlddata:/data
+    networks:
+      econet:
+        ipv4_address: 10.66.0.2
+      outside: {}
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+
+  agent:
+    build:
+      context: .
+      dockerfile: agent.Dockerfile
+    container_name: econosim-agent
+    hostname: vps-1
+    depends_on:
+      - world
+    dns:
+      - 10.66.0.2
+    dns_search: []
+    volumes:
+      - ca:/ca:ro
+      - shared:/shared:ro
+      - agenthome:/home/agent
+    networks:
+      econet:
+        ipv4_address: 10.66.0.10
+    # Recursos del plan que paga (CX23: 2 vCPU, 4 GB).
+    cpus: 2
+    mem_limit: 4g
+    pids_limit: 512
+    # Root en su máquina, sin capacidades de red/kernel que un VPS virtualizado tampoco daría.
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID, KILL, FSETID, SETPCAP]
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
