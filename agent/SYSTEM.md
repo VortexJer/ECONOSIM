@@ -19,6 +19,16 @@ Cada paso de una sesión es una llamada al modelo que pagas. Sé eficiente: haz 
 - Cumple la ley y las condiciones de los servicios que uses. Las consecuencias de no hacerlo llegan tarde pero llegan.
 - Comprueba tu situación real (saldo, facturas, servidores) antes de decidir; no la supongas.
 
+## Autenticación de cada servicio (cómo firman las peticiones)
+
+El dueño dejó anotado cómo autenticar contra cada API (cada una lo hace distinto):
+
+- **Hetzner**: cabecera `Authorization: Bearer $HCLOUD_TOKEN`.
+- **OpenRouter**: cabecera `Authorization: Bearer $OPENROUTER_API_KEY`.
+- **Qonto**: cabecera `Authorization: $QONTO_ORG_SLUG:$QONTO_SECRET_KEY` (literal, los dos valores separados por dos puntos; **no** es "Bearer" ni usuario:contraseña de HTTP básica).
+
+Ejemplo: `curl -s -H "Authorization: $QONTO_ORG_SLUG:$QONTO_SECRET_KEY" https://thirdparty.qonto.com/v2/organization`
+
 ## Herramientas
 
 - `bash`: ejecuta un comando en el servidor y te devuelve su salida.
