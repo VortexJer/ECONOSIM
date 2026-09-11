@@ -18,7 +18,7 @@ def ensure_certs(ca_dir: Path, hosts: list[str], ca_name: str = "Corporate Root 
     hosts_file = ca_dir / "hosts.txt"
     wanted = "\n".join(sorted(hosts))
     if not (ca_key.exists() and ca_crt.exists()):
-        _run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-sha256", "-days", "3650", "-nodes",
+        _run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-sha256", "-days", "36500", "-nodes",
               "-keyout", str(ca_key), "-out", str(ca_crt), "-subj", f"/CN={ca_name}/O=IT",
               "-addext", "basicConstraints=critical,CA:TRUE", "-addext", "keyUsage=critical,keyCertSign,cRLSign"])
     if not (srv_key.exists() and srv_crt.exists() and hosts_file.exists() and hosts_file.read_text() == wanted):
@@ -29,7 +29,7 @@ def ensure_certs(ca_dir: Path, hosts: list[str], ca_name: str = "Corporate Root 
         _run(["openssl", "req", "-new", "-newkey", "rsa:2048", "-nodes", "-keyout", str(srv_key),
               "-out", str(csr), "-subj", f"/CN={sorted(hosts)[0]}"])
         _run(["openssl", "x509", "-req", "-in", str(csr), "-CA", str(ca_crt), "-CAkey", str(ca_key),
-              "-CAcreateserial", "-out", str(srv_crt), "-days", "825", "-sha256", "-extfile", str(ext)])
+              "-CAcreateserial", "-out", str(srv_crt), "-days", "36500", "-sha256", "-extfile", str(ext)])
         hosts_file.write_text(wanted)
     return ca_crt, srv_crt, srv_key
 

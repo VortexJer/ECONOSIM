@@ -23,12 +23,20 @@ services:
       context: ..
       dockerfile: sandbox/world.Dockerfile
     container_name: econosim-world
+    env_file:
+      - ../.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       ECONOSIM_REAL_START: ${ECONOSIM_REAL_START:-1998-10-14T09:30}
       ECONOSIM_INITIAL_EUR: ${ECONOSIM_INITIAL_EUR:-50}
       ECONOSIM_SPEED: ${ECONOSIM_SPEED:-1}
       ECONOSIM_HANG: ${ECONOSIM_HANG:-300}
       ECONOSIM_DEBUG: ${ECONOSIM_DEBUG:-0}
+      ECONOSIM_FAKE_UPSTREAM: ${ECONOSIM_FAKE_UPSTREAM:-0}
+      ECONOSIM_MARKET: ${ECONOSIM_MARKET:-1}
+      ECONOSIM_EPISODE_SEED: ${ECONOSIM_EPISODE_SEED:-ep-0}
+      ECONOSIM_YEARS: ${ECONOSIM_YEARS:-5}
       ECONOSIM_CONTROL_TOKEN: ${ECONOSIM_CONTROL_TOKEN:-}
     volumes:
       - ca:/ca
@@ -44,8 +52,8 @@ services:
 
   agent:
     build:
-      context: .
-      dockerfile: agent.Dockerfile
+      context: ..
+      dockerfile: sandbox/agent.Dockerfile
     container_name: econosim-agent
     hostname: vps-1
     depends_on:
@@ -54,7 +62,6 @@ services:
       - 10.66.0.2
     dns_search: []
     volumes:
-      - ca:/ca:ro
       - shared:/shared:ro
       - agenthome:/home/agent
     networks:

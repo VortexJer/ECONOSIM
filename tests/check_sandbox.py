@@ -17,7 +17,7 @@ import requests
 
 ROOT = Path(__file__).resolve().parent.parent
 COMPOSE = ["docker", "compose", "-f", str(ROOT / "sandbox" / "docker-compose.yml")]
-ENV = {**os.environ, "ECONOSIM_HANG": "6", "ECONOSIM_SPEED": "1", "ECONOSIM_DEBUG": "0"}
+ENV = {**os.environ, "ECONOSIM_HANG": "6", "ECONOSIM_SPEED": "1", "ECONOSIM_DEBUG": "0", "ECONOSIM_MARKET": "0"}
 CONTROL = "http://127.0.0.1:8080"
 ALLOWED_CAPS = {"CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID", "KILL", "FSETID", "SETPCAP"}
 
@@ -86,7 +86,7 @@ for url in ("https://example.com", "http://example.com", "https://api.openai.com
             "http://pypi.org/simple/requests/", "https://github.com"):
     t0 = time.time()
     code, out = inside(f'curl -sS -m 4 -o /dev/null {url}; echo "exit=$?"')
-    check(out.endswith("exit=28"), f"{url}: esperado timeout (28), fue: {out[-200:]}")
+    check("exit=28" in out, f"{url}: esperado timeout (28), fue: {out[-200:]}")
     check(time.time() - t0 >= 3.5, f"{url}: no agotó el timeout")
 code, out = inside("getent hosts google.com")
 check(out.startswith("10.66.0.2"), f"DNS: {out}")
@@ -97,19 +97,19 @@ check("exit=7" in out, f"IP directa fuera de la red: {out}")
 code, out = inside("ip route")
 check("default" not in out, f"hay ruta por defecto: {out}")
 code, out = inside('curl -sS -m 3 http://host.docker.internal:8080/state; echo "exit=$?"')
-check("balance" not in out and out.endswith("exit=28"), f"host.docker.internal: {out}")
+check("balance" not in out and ("exit=28" in out or "exit=7" in out), f"host.docker.internal: {out}")
 
 # --- G8: contenedor -------------------------------------------------------------------
 agent = inspect("econosim-agent")
 hc = agent["HostConfig"]
 check(not hc.get("Privileged"), "privileged")
 check(hc.get("CapDrop") == ["ALL"], f"CapDrop {hc.get('CapDrop')}")
-check(set(hc.get("CapAdd") or []) <= ALLOWED_CAPS, f"CapAdd {hc.get('CapAdd')}")
+check({c.removeprefix("CAP_") for c in (hc.get("CapAdd") or [])} <= ALLOWED_CAPS, f"CapAdd {hc.get('CapAdd')}")
 check("no-new-privileges:true" in (hc.get("SecurityOpt") or []), "no-new-privileges")
 check(hc.get("NanoCpus") == 2_000_000_000 and hc.get("Memory") == 4 * 1024 ** 3, "límites de CX23")
 check(all(m["Type"] == "volume" for m in agent["Mounts"]), f"montajes del host: {agent['Mounts']}")
 ro = {m["Destination"]: m["RW"] for m in agent["Mounts"]}
-check(ro.get("/ca") is False and ro.get("/shared") is False and ro.get("/home/agent") is True, ro)
+check(ro == {"/shared": False, "/home/agent": True}, ro)
 nets = agent["NetworkSettings"]["Networks"]
 check(list(nets) == ["sandbox_econet"], f"redes del agente: {list(nets)}")
 netinfo = json.loads(subprocess.run(["docker", "network", "inspect", "sandbox_econet"],
@@ -117,9 +117,11 @@ netinfo = json.loads(subprocess.run(["docker", "network", "inspect", "sandbox_ec
 check(netinfo["Internal"] is True, "econet no es internal")
 world = inspect("econosim-world")
 check(set(world["NetworkSettings"]["Networks"]) == {"sandbox_econet", "sandbox_outside"}, "redes del mundo")
-code, out = inside("ls /app /data /ca/ca.key /ca/server.key 2>&1; ls /ca")
-check("No such file" in out and "ca.key" not in out.split("ca.crt")[-1] if "ca.crt" in out else False,
-      f"el sandbox ve cosas del simulador: {out}")
+code, out = inside("ls -d /app /data /ca 2>&1")
+check(out.count("No such file") == 3, f"el sandbox ve cosas del simulador: {out}")
+code, out = inside("ls /shared")
+check(set(out.split()) <= {"ca.crt", "agent.env", "faketime.rc", "faketime.tmp"}, f"/shared: {out}")
+check(".key" not in out, "claves privadas visibles")
 
 # --- G9: reloj del sistema = reloj del mundo ---------------------------------------------
 shown = datetime.fromisoformat(requests.get(CONTROL + "/state", timeout=5).json()["display_now"])

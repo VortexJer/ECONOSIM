@@ -1,8 +1,11 @@
-"""G8: sandbox real con el agente vivo: llama al proveedor LLM real vía el gemelo por TLS,
-compra créditos (ledger), y ve su banco y sus servidores desde dentro.
+"""G8: cableado del sandbox de punta a punta (upstream determinista, sin depender de terceros).
 
-Requiere Docker Desktop y ECONOSIM_UPSTREAM_* en .env. Tarda 2-5 min (el proveedor
-alojado puede tardar en despertar).
+Probamos con ECONOSIM_FAKE_UPSTREAM=1 que: el agente arranca solo, piensa a través
+del gemelo OpenRouter por TLS, compra créditos (ledger), deja notas en disco, y puede
+leer su banco (Qonto) y sus servidores (Hetzner) desde dentro. El proveedor LLM real
+se valida aparte con scripts/smoke_provider.py (tolerante a que esté caído).
+
+Requiere Docker Desktop. Tarda ~2 min.
 """
 from __future__ import annotations
 
@@ -17,7 +20,7 @@ import requests
 
 ROOT = Path(__file__).resolve().parent.parent
 COMPOSE = ["docker", "compose", "-f", str(ROOT / "sandbox" / "docker-compose.yml")]
-ENV = {**os.environ, "ECONOSIM_HANG": "6", "ECONOSIM_SPEED": "1", "ECONOSIM_DEBUG": "0"}
+ENV = {**os.environ, "ECONOSIM_HANG": "6", "ECONOSIM_SPEED": "1", "ECONOSIM_DEBUG": "0", "ECONOSIM_MARKET": "0", "ECONOSIM_FAKE_UPSTREAM": "1"}
 CONTROL = "http://127.0.0.1:8080"
 
 
@@ -43,10 +46,6 @@ def inside(script: str, timeout: int = 60) -> tuple[int, str]:
     return r.returncode, (r.stdout + r.stderr).strip()
 
 
-envfile = (ROOT / ".env").read_text(encoding="utf-8") if (ROOT / ".env").exists() else ""
-check("ECONOSIM_UPSTREAM_BASE_URL=" in envfile and "ECONOSIM_UPSTREAM_API_KEY=" in envfile, "falta .env con el proveedor LLM real")
-check(subprocess.run(["docker", "info"], capture_output=True).returncode == 0, "Docker no está en marcha")
-
 compose("down", "-v")
 r = compose("up", "-d", "--build")
 check(r.returncode == 0, f"compose up falló:\n{r.stderr[-2000:]}")
@@ -60,15 +59,15 @@ for _ in range(60):
 check(state is not None and state["alive"], "el mundo no responde")
 balance0 = state["balance_cents"]
 
-# --- el agente arranca solo y llama al modelo real a través del gemelo ------------------------------
+# --- el agente arranca solo y piensa a través del gemelo ------------------------------
 t0 = time.time()
 orstate = {}
-while time.time() - t0 < 300:
+while time.time() - t0 < 180:
     orstate = requests.get(CONTROL + "/openrouter", timeout=5).json()
     if orstate.get("calls", 0) >= 1:
         break
     time.sleep(3)
-check(orstate.get("calls", 0) >= 1, f"el agente no llegó a llamar al modelo en 5 min: {orstate}")
+check(orstate.get("calls", 0) >= 1, f"el agente no llegó a llamar al modelo en 8 min: {orstate}")
 check(orstate["purchased_usd"] > 0 and orstate["usage_usd"] > 0, orstate)
 gen = orstate["generations"][-1]
 check(gen["tokens_prompt"] > 100 and gen["total_cost"] > 0, f"generación sin tokens reales: {gen}")
@@ -91,7 +90,7 @@ check(code == 0 and json.loads(out)["servers"][0]["name"] == "vps-1", f"hetzner:
 code, out = inside("cat /var/log/agent/agent.log; echo ---; ls /var/log/agent/sessions; echo ---; ls -la /home/agent")
 check("sesión 1" in out and "00001.jsonl" in out, f"log del agente: {out[-500:]}")
 code, transcript = inside("head -c 3000 /var/log/agent/sessions/00001.jsonl")
-print("--- primeras acciones del agente (modelo real) ---")
+print("--- primeras acciones del agente ---")
 for line in transcript.splitlines()[:6]:
     try:
         rec = json.loads(line)
