@@ -38,10 +38,10 @@ def parse_sni(data: bytes) -> Optional[str]:
                 if hs[q] != 0:
                     return None
                 nlen = struct.unpack("!H", hs[q + 1:q + 3])[0]
-                return hs[q + 3:q + 3 + nlen].decode("idna", "replace").lower()
+                return hs[q + 3:q + 3 + nlen].decode("ascii", "replace").lower()
             p += elen
         return None
-    except (IndexError, struct.error):
+    except (IndexError, struct.error, UnicodeError):
         return None
 
 
