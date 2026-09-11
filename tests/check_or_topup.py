@@ -45,18 +45,24 @@ with LiveApp(o.app()) as net:
         requests.post(U("/api/v1/chat/completions"), headers=H, json=MSG)
     check(len(o.purchases) == 1, f"recargas de más: {len(o.purchases)}")
 
-# --- B: gastar hasta bajar del umbral → segunda recarga ------------------------------------------
+# --- B: una llamada carísima deja el saldo negativo: 402 con recarga en cada intento hasta volver a positivo
 w, h = make_world(initial_eur=50)
+BIG = "anthropic/claude-sonnet-4.5"
 o = OpenRouterTwin(w, FakeUpstream(["ok"], 1_000_000, 1_000_000), api_key="k")   # 1M+1M tokens por llamada
-per_call = o.cost_of(o.models[MODEL], 1_000_000, 1_000_000)
-check(per_call > cfg["auto_topup"]["threshold_usd"], "el test necesita llamadas caras")
+per_call = o.cost_of(o.models[BIG], 1_000_000, 1_000_000)
+check(per_call > 3 * amount, f"el test necesita una llamada que cueste más de 3 recargas (${per_call})")
 with LiveApp(o.app()) as net:
     U = net.url
-    requests.post(U("/api/v1/chat/completions"), headers=H, json=MSG)       # compra 1 y consume
-    check(len(o.purchases) == 1 and o.credits_usd < cfg["auto_topup"]["threshold_usd"], "tras la primera llamada cara")
-    requests.post(U("/api/v1/chat/completions"), headers=H, json=MSG)       # saldo bajo el umbral → compra 2
-    check(len(o.purchases) == 2, f"no recargó al bajar del umbral: {len(o.purchases)}")
-    check(len([e for e in w.ledger.entries() if e.amount_cents < 0]) == 2, "cargos en banco")
+    r = requests.post(U("/api/v1/chat/completions"), headers=H, json={**MSG, "model": BIG})
+    check(r.status_code == 200 and len(o.purchases) == 1 and o.credits_usd < 0, "la llamada cara debía pasar y dejar deuda")
+    statuses, purchases = [], []
+    while o.credits_usd <= 0:
+        statuses.append(requests.post(U("/api/v1/chat/completions"), headers=H, json=MSG).status_code)
+        purchases.append(len(o.purchases))
+        check(len(statuses) < 20, "no sale de la deuda")
+    check(all(s == 402 for s in statuses[:-1]) and statuses[-1] == 200, statuses)
+    check(purchases == list(range(2, 2 + len(purchases))), f"una recarga por intento: {purchases}")
+    check(len([e for e in w.ledger.entries() if e.amount_cents < 0]) == len(o.purchases), "cargos en banco")
 
 # --- C: banco sin saldo → 402, sin cargo, y se recupera al recibir dinero ------------------------------
 w, h = make_world(initial_eur=1)      # 1 EUR: no cubre la recarga mínima
