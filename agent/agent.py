@@ -67,16 +67,31 @@ def load_config() -> dict:
 
 
 def run_bash(command: str, timeout_s: int = 120) -> str:
+    # No usamos subprocess(timeout=...): su espera interna llama a time.sleep con
+    # intervalos que libfaketime corrompe (OSError 22). El timeout lo aplica un
+    # hilo watchdog que mata el proceso; communicate() espera sin polling de reloj.
     timeout_s = max(1, min(int(timeout_s or 120), 600))
+    proc = subprocess.Popen(SHELL + [command], cwd=str(HOME), stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, text=True, errors="replace")
+    timer = threading.Timer(timeout_s, _kill_tree, args=(proc,))
+    timer.start()
     try:
-        r = subprocess.run(SHELL + [command], cwd=str(HOME), capture_output=True, text=True,
-                           timeout=timeout_s, errors="replace")
-        out = (r.stdout + r.stderr).strip()
-        if len(out) > 8000:
-            out = out[:4000] + "\n...[salida recortada]...\n" + out[-3500:]
-        return f"{out}\n[exit={r.returncode}]"
-    except subprocess.TimeoutExpired:
-        return f"[timeout tras {timeout_s}s]"
+        out, _ = proc.communicate()
+    finally:
+        timer.cancel()
+    out = (out or "").strip()
+    if len(out) > 8000:
+        out = out[:4000] + "\n...[salida recortada]...\n" + out[-3500:]
+    note = f"\n[timeout tras {timeout_s}s]" if getattr(proc, "_timed_out", False) else ""
+    return f"{out}\n[exit={proc.returncode}]{note}"
+
+
+def _kill_tree(proc: subprocess.Popen) -> None:
+    proc._timed_out = True  # type: ignore[attr-defined]
+    try:
+        proc.kill()
+    except OSError:
+        pass
 
 
 def chat(cfg: dict, messages: list) -> requests.Response:
