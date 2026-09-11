@@ -1,0 +1,45 @@
+{
+  "_source": {
+    "provider": "Hetzner Cloud",
+    "url": "https://costgoat.com/pricing/hetzner",
+    "secondary": "https://www.hetzner.com/cloud/",
+    "retrieved": "2026-09-11",
+    "data_dated": "2026-09-05",
+    "currency": "EUR",
+    "vat": "prices exclude VAT (net)",
+    "billing": "hourly usage capped at the monthly price; invoiced monthly; primary IPv4 billed per server per month",
+    "location_basis": "Falkenstein/Nuremberg/Helsinki (EU baseline)"
+  },
+  "primary_ipv4_monthly": 0.50,
+  "extra_traffic_per_tb": 1.00,
+  "server_types": [
+    {"id": 1,  "name": "cx23",  "cpu_type": "shared",    "architecture": "x86", "cores": 2,  "memory": 4,   "disk": 40,  "traffic_tb": 20, "monthly": 5.49,   "hourly": 0.0088},
+    {"id": 2,  "name": "cx33",  "cpu_type": "shared",    "architecture": "x86", "cores": 4,  "memory": 8,   "disk": 80,  "traffic_tb": 20, "monthly": 8.49,   "hourly": 0.0136},
+    {"id": 3,  "name": "cx43",  "cpu_type": "shared",    "architecture": "x86", "cores": 8,  "memory": 16,  "disk": 160, "traffic_tb": 20, "monthly": 15.99,  "hourly": 0.0256},
+    {"id": 4,  "name": "cx53",  "cpu_type": "shared",    "architecture": "x86", "cores": 16, "memory": 32,  "disk": 320, "traffic_tb": 20, "monthly": 29.49,  "hourly": 0.0473},
+    {"id": 5,  "name": "cax11", "cpu_type": "shared",    "architecture": "arm", "cores": 2,  "memory": 4,   "disk": 40,  "traffic_tb": 20, "monthly": 5.99,   "hourly": 0.0096},
+    {"id": 6,  "name": "cax21", "cpu_type": "shared",    "architecture": "arm", "cores": 4,  "memory": 8,   "disk": 80,  "traffic_tb": 20, "monthly": 10.49,  "hourly": 0.0168},
+    {"id": 7,  "name": "cax31", "cpu_type": "shared",    "architecture": "arm", "cores": 8,  "memory": 16,  "disk": 160, "traffic_tb": 20, "monthly": 20.99,  "hourly": 0.0336},
+    {"id": 8,  "name": "cax41", "cpu_type": "shared",    "architecture": "arm", "cores": 16, "memory": 32,  "disk": 320, "traffic_tb": 20, "monthly": 40.99,  "hourly": 0.0657},
+    {"id": 9,  "name": "cpx22", "cpu_type": "shared",    "architecture": "x86", "cores": 2,  "memory": 4,   "disk": 80,  "traffic_tb": 20, "monthly": 19.49,  "hourly": 0.0312},
+    {"id": 10, "name": "cpx32", "cpu_type": "shared",    "architecture": "x86", "cores": 4,  "memory": 8,   "disk": 160, "traffic_tb": 20, "monthly": 35.49,  "hourly": 0.0569},
+    {"id": 11, "name": "cpx42", "cpu_type": "shared",    "architecture": "x86", "cores": 8,  "memory": 16,  "disk": 320, "traffic_tb": 20, "monthly": 69.49,  "hourly": 0.1114},
+    {"id": 12, "name": "cpx52", "cpu_type": "shared",    "architecture": "x86", "cores": 12, "memory": 24,  "disk": 480, "traffic_tb": 20, "monthly": 100.49, "hourly": 0.1610},
+    {"id": 13, "name": "cpx62", "cpu_type": "shared",    "architecture": "x86", "cores": 16, "memory": 32,  "disk": 640, "traffic_tb": 20, "monthly": 129.99, "hourly": 0.2083},
+    {"id": 14, "name": "ccx13", "cpu_type": "dedicated", "architecture": "x86", "cores": 2,  "memory": 8,   "disk": 80,  "traffic_tb": 20, "monthly": 42.99,  "hourly": 0.0689},
+    {"id": 15, "name": "ccx23", "cpu_type": "dedicated", "architecture": "x86", "cores": 4,  "memory": 16,  "disk": 160, "traffic_tb": 20, "monthly": 85.99,  "hourly": 0.1378},
+    {"id": 16, "name": "ccx33", "cpu_type": "dedicated", "architecture": "x86", "cores": 8,  "memory": 32,  "disk": 240, "traffic_tb": 30, "monthly": 138.49, "hourly": 0.2219},
+    {"id": 17, "name": "ccx43", "cpu_type": "dedicated", "architecture": "x86", "cores": 16, "memory": 64,  "disk": 360, "traffic_tb": 40, "monthly": 275.99, "hourly": 0.4423},
+    {"id": 18, "name": "ccx53", "cpu_type": "dedicated", "architecture": "x86", "cores": 32, "memory": 128, "disk": 600, "traffic_tb": 50, "monthly": 533.49, "hourly": 0.8550},
+    {"id": 19, "name": "ccx63", "cpu_type": "dedicated", "architecture": "x86", "cores": 48, "memory": 192, "disk": 960, "traffic_tb": 60, "monthly": 853.49, "hourly": 1.3678}
+  ],
+  "locations": [
+    {"id": 1, "name": "fsn1", "description": "Falkenstein DC Park 1", "country": "DE", "city": "Falkenstein", "latitude": 50.47612, "longitude": 12.370071, "network_zone": "eu-central"},
+    {"id": 2, "name": "nbg1", "description": "Nuremberg DC Park 1", "country": "DE", "city": "Nuremberg", "latitude": 49.452102, "longitude": 11.076665, "network_zone": "eu-central"},
+    {"id": 3, "name": "hel1", "description": "Helsinki DC Park 1", "country": "FI", "city": "Helsinki", "latitude": 60.169855, "longitude": 24.938379, "network_zone": "eu-central"}
+  ],
+  "images": [
+    {"id": 114690387, "name": "ubuntu-24.04", "description": "Ubuntu 24.04", "os_flavor": "ubuntu", "os_version": "24.04", "disk_size": 5},
+    {"id": 103908070, "name": "debian-12", "description": "Debian 12", "os_flavor": "debian", "os_version": "12", "disk_size": 5}
+  ]
+}
