@@ -1,0 +1,38 @@
+{
+  "_source": {
+    "fees": "Stripe standard: 2,9% + $0,30 por transacción con tarjeta online (US)",
+    "fees_url": "https://stripe.com/pricing",
+    "payout": "payout rolling a 2 días hábiles (T+2); cuentas nuevas con retención inicial de ~7 días",
+    "payout_url": "https://docs.stripe.com/payouts",
+    "dispute": "comisión de disputa/chargeback $15 (no reembolsable); +$15 de contrafee si se pelea (reembolsable si se gana)",
+    "dispute_url": "https://www.chargeflow.io/blog/stripe-dispute-fees-2025",
+    "rates_note": "tasas de reembolso/disputa por categoría: valores de mercado (Stripe Radar / benchmarks de la industria: chargeback típico ~0,6%)",
+    "retrieved": "2026-09-11",
+    "currency": "USD"
+  },
+  "fee_percent": 0.029,
+  "fee_fixed_usd": 0.30,
+  "payout": {
+    "rolling_days": 2,
+    "new_account_hold_days": 7,
+    "new_account_charges_threshold": 10
+  },
+  "dispute_fee_usd": 15.0,
+  "refund_rate": {
+    "digital_product": 0.05,
+    "freelance_service": 0.03,
+    "ecommerce_physical": 0.12,
+    "saas_micro": 0.06,
+    "content_affiliate": 0.02,
+    "default": 0.06
+  },
+  "dispute_rate": {
+    "_about": "fracción de transacciones que acaban en disputa (chargeback); ~0,6% típico, más en físico",
+    "digital_product": 0.006,
+    "freelance_service": 0.004,
+    "ecommerce_physical": 0.012,
+    "saas_micro": 0.008,
+    "content_affiliate": 0.003,
+    "default": 0.006
+  }
+}
