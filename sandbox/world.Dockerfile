@@ -12,5 +12,5 @@ CMD python -m econosim.run \
     --initial-eur "${ECONOSIM_INITIAL_EUR:-50}" \
     --http 80 --https 443 --dns 53 --answer-ip 10.66.0.2 --ca-dir /ca \
     --control 8080 --control-bind auto --econet 10.66.0.0/24 \
-    --agent-env /shared/agent.env --ledger /data/ledger.sqlite \
+    --agent-env /shared/agent.env --faketime-file /shared/faketime.rc --ledger /data/episodes \
     --speed "${ECONOSIM_SPEED:-1}" --hang "${ECONOSIM_HANG:-300}"

@@ -41,11 +41,10 @@ c.cancel(ev)
 
 ran = c.advance(timedelta(seconds=max(times) + 1))
 check(ran == 502, f"eventos ejecutados {ran}")
-expected = [f"e{i}" for i in sorted(range(500), key=lambda i: (times[i], i))]
-got = [x for x in log if x.startswith("e")]
-check(got == expected, "eventos fuera de orden")
-check("nested" in log and "cancelled" not in log, "anidado/cancelado")
-check(log.index("nested") == log.index("e0") if times[0] > 6 else True, "el anidado corre en su instante")
+items = [(times[i], i, f"e{i}") for i in range(500)] + [(6, 10**6, "nested")]   # nested: t=6, programado el último
+expected = [name for _, _, name in sorted(items)]
+check(log == expected, "eventos fuera de orden (o el anidado no corrió en su instante)")
+check("cancelled" not in log, "el evento cancelado corrió")
 
 # cada callback ve la hora exacta de su evento
 c = VirtualClock(REAL_START)

@@ -13,7 +13,7 @@ from econosim.fakenet.dns import FakeDNS, FakeDNSProtocol
 from econosim.fakenet.server import FakeNet
 
 w, h = make_world()
-fn = FakeNet(hang_seconds=3)
+fn = FakeNet(hang_seconds=3, display_now=lambda: w.clock.display_now)
 fn.mount(h.host, h.app())
 AUTH = {"Authorization": "Bearer test-token"}
 
@@ -73,11 +73,12 @@ async def dns_live() -> None:
     d = FakeDNS("10.66.0.2", "127.0.0.1", 0)
     await d.start()
     port = d.bound_port()
+    loop = asyncio.get_running_loop()
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(2)
     for name in ("google.com", "api.hetzner.cloud", "nonexistent.invalid", "x" * 60 + ".com"):
         s.sendto(query(name), ("127.0.0.1", port))
-        data, _ = s.recvfrom(512)
+        data, _ = await loop.run_in_executor(None, s.recvfrom, 512)   # sin bloquear el loop del servidor
         check(data.endswith(socket.inet_aton("10.66.0.2")), f"{name} no resolvió al proxy")
     check(d.protocol.queries == 4, "contador de consultas")
     s.close()

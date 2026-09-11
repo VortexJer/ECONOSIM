@@ -11,7 +11,7 @@ from econosim.fakenet.server import FakeNet
 
 pricing = json.loads((ROOT / "data" / "pricing" / "hetzner.json").read_text(encoding="utf-8"))
 w, h = make_world()
-fn = FakeNet(hang_seconds=2)
+fn = FakeNet(hang_seconds=2, display_now=lambda: w.clock.display_now)
 fn.mount(h.host, h.app())
 H = {"Host": "api.hetzner.cloud", "Authorization": "Bearer test-token"}
 
