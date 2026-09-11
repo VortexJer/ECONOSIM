@@ -66,11 +66,14 @@ check(all(e.kind != "recurring_cost" and e.kind != "initial_cost" for e in o2.ev
 w3 = World(REAL_START, initial_eur=1000.0)
 r3 = ActionResolver(w3, br)
 pnls = []
-for i in range(300):
+for i in range(6000):     # alta varianza: hacen falta muchas para que aflore el EV negativo
     _, o = r3.submit("apuesto 10$ al partido", f"bet-{i}", price=10.0)
     check(len(o.events) == 1 and o.events[0].kind == "bet", "la apuesta debe tener un solo evento")
     pnls.append(o.revenue_usd)
 avg = sum(pnls) / len(pnls)
-check(avg < 0, f"la apuesta debería tener EV negativo, media {avg:.2f}")
+margin = br["sports_betting"]["house_margin"]
+check(avg < 0, f"la apuesta debería tener EV negativo, media {avg:.3f}")
+# la media empírica ≈ -margin*stake (=-0.55) dentro del ruido
+check(abs(avg - (-margin * 10)) < 0.4, f"EV empírico {avg:.3f} lejos del teórico {-margin*10:.2f}")
 
 print("RESOLVE OK")

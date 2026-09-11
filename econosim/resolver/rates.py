@@ -29,6 +29,9 @@ class Category:
     def get(self, k: str, default=None):
         return self.raw.get(k, default)
 
+    def __getitem__(self, k: str):
+        return self.raw[k]
+
 
 class BaseRates:
     def __init__(self, path: Path = DEFAULT_PATH):

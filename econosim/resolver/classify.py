@@ -26,7 +26,7 @@ _KEYWORDS = {
                   "plataforma", "webapp"],
     "content_affiliate": ["blog", "afiliación", "afiliado", "newsletter", "canal", "youtube", "adsense",
                          "contenido", "seo"],
-    "sports_betting": ["apuesta", "apostar", "bet", "casa de apuestas", "cuota", "parley", "combinada"],
+    "sports_betting": ["apuest", "apost", "bet", "casa de apuestas", "cuota", "parley", "combinada"],
     "retail_trading": ["trading", "bolsa", "acciones", "invertir en", "day trading", "cartera", "broker"],
 }
 

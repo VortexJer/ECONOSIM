@@ -25,14 +25,18 @@ check(0.35 < zeros < 0.55, f"fracción de ceros {zeros:.2f} lejos del p_zero de 
 med = statistics.median(us)
 mean = statistics.mean(us)
 check(mean > med, f"la media {mean:.1f} debería superar a la mediana {med} (cola a la derecha)")
-# la mayoría rinde poco: el percentil 80 es modesto frente al máximo
+table_median = br["digital_product"]["units_lognormal"]["median"]   # 28
+# la mayoría rinde poco: > mitad de las realizaciones quedan por debajo de la mediana de la tabla
+below = sum(1 for u in us if u < table_median) / N
+check(below > 0.5, f"la mayoría debería quedar bajo la mediana de la tabla; solo {below:.2f}")
+# unos pocos lo petan: la cola por encima de 5× la mediana de la tabla es rara pero existe
+petan = sum(1 for u in us if u > 5 * table_median) / N
+check(0.002 < petan < 0.12, f"cola de éxitos rara pero presente: {petan:.3f}")
+# concentración (winner-take-most): el 10% superior acapara la mayor parte de las ventas
 us_sorted = sorted(us)
-p80 = us_sorted[int(0.8 * N)]
-top = us_sorted[-1]
-check(top > 5 * max(1, p80), f"sin cola: máx {top} no supera 5× el p80 {p80}")
-# unos pocos lo petan: existe una cola larga por encima de 5× la mediana
-petan = sum(1 for u in us if u > 5 * max(1, med)) / N
-check(0.001 < petan < 0.15, f"cola de éxitos rara pero presente: {petan:.3f}")
+top10 = sum(us_sorted[int(0.9 * N):])
+total = sum(us_sorted)
+check(top10 / total > 0.5, f"el decil superior debería acaparar >50% de las ventas, acapara {top10/total:.2f}")
 
 # --- media empírica ≈ esperada por la tabla ----------------------------------
 exp = expected_units(br, f)
