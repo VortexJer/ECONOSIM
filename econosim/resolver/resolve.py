@@ -51,19 +51,23 @@ def _adjusted_pzero(cat: Category, mod: dict, ficha: Ficha) -> float:
     return min(0.98, max(0.02, p0))
 
 
-def _unit_multiplier(cat: Category, mod: dict, ficha: Ficha, saturation: int) -> float:
+def _unit_multiplier(cat: Category, mod: dict, ficha: Ficha, saturation: int,
+                     price_ref: Optional[float] = None) -> float:
     m = 1.0
     m *= math.exp((ficha.quality - 5.0) * mod["quality"]["units_per_point"])
     if ficha.marketing_reach > 0:
         m *= math.exp(mod["marketing"]["units_log_gain"] * math.log1p(ficha.marketing_reach))
-    price = ficha.price if ficha.price is not None else cat.get("median_price")
-    if price and cat.get("median_price"):
-        m *= (price / cat["median_price"]) ** cat.get("price_elasticity", 0.0)
+    # elasticidad contra el precio de referencia del nicho (competencia) o la mediana de la tabla
+    ref = price_ref if price_ref else cat.get("median_price")
+    price = ficha.price if ficha.price is not None else ref
+    if price and ref:
+        m *= (price / ref) ** cat.get("price_elasticity", 0.0)
     m *= 1.0 / (1.0 + saturation / float(mod["saturation"]["units_half_at"]))
     return m
 
 
-def expected_units(rates: BaseRates, ficha: Ficha, saturation: int = 0) -> float:
+def expected_units(rates: BaseRates, ficha: Ficha, saturation: int = 0,
+                   price_ref: Optional[float] = None) -> float:
     """Unidades esperadas E[U] (para validar el muestreo). Media lognormal = mediana·e^(σ²/2)."""
     cat = rates[ficha.category]
     ln = cat.get("units_lognormal")
@@ -71,11 +75,11 @@ def expected_units(rates: BaseRates, ficha: Ficha, saturation: int = 0) -> float
         return 0.0
     p0 = _adjusted_pzero(cat, rates.modulation, ficha)
     mean_ln = ln["median"] * math.exp(ln["sigma"] ** 2 / 2.0)
-    return (1.0 - p0) * mean_ln * _unit_multiplier(cat, rates.modulation, ficha, saturation)
+    return (1.0 - p0) * mean_ln * _unit_multiplier(cat, rates.modulation, ficha, saturation, price_ref)
 
 
 def resolve(ficha: Ficha, rates: BaseRates, seed: str, action_id: str,
-            saturation: int = 0) -> Outcome:
+            saturation: int = 0, price_ref: Optional[float] = None) -> Outcome:
     ficha = ficha.sane()
     cat = rates[ficha.category]
     rng = _rng(seed, action_id)
@@ -114,7 +118,7 @@ def resolve(ficha: Ficha, rates: BaseRates, seed: str, action_id: str,
         else:
             mu = math.log(ln["median"])
             draw = math.exp(rng.gauss(mu, ln["sigma"]))
-            units = max(0, int(round(draw * _unit_multiplier(cat, rates.modulation, ficha, saturation))))
+            units = max(0, int(round(draw * _unit_multiplier(cat, rates.modulation, ficha, saturation, price_ref))))
         price = ficha.price if ficha.price is not None else cat.get("median_price", 0.0)
         out.units = units
         out.revenue_usd = units * price
@@ -134,5 +138,5 @@ def resolve(ficha: Ficha, rates: BaseRates, seed: str, action_id: str,
             if remaining > 0:
                 out.events.append(Event(window + start, remaining * price, f"Venta ({remaining}u)", "sale"))
         out.detail = {"p_zero": round(p0, 3), "price": price,
-                      "expected_units": round(expected_units(rates, ficha, saturation), 2)}
+                      "expected_units": round(expected_units(rates, ficha, saturation, price_ref), 2)}
     return out
