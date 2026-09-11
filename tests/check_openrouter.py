@@ -65,7 +65,7 @@ with LiveApp(o.app()) as net:
     check(expected_cost > 0, "el modelo elegido no cobra")
     # lo que llegó al proveedor real: modelo mapeado, sin campos propios de OpenRouter
     sent = up.calls[-1]
-    check(sent["model"] == cfg["upstream"]["default"] or sent["model"] in cfg["upstream"]["map"].values(), sent["model"])
+    check(sent["model"] == cfg["upstream"]["map"].get(MODEL, cfg["upstream"]["default"]), sent["model"])
     check("usage" not in sent and sent["messages"] == body["messages"] and sent["tools"] == body["tools"], "payload al upstream")
 
     # --- créditos: compra automática al primer uso, y gasto exacto --------------------------
