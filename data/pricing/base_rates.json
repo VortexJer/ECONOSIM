@@ -1,0 +1,126 @@
+{
+  "_about": "Tasas base por categoría de negocio. La IA NO puede tocarlas ni convencer a nadie de cambiarlas (§2.2). Cada número cita su fuente. Distribuciones pensadas para muestreo de cola pesada: la mayoría rinde poco/nada, una minoría lo peta.",
+  "_currency": "USD",
+  "categories": {
+    "digital_product": {
+      "label": "Producto digital (plantilla, ebook, preset, curso corto)",
+      "p_zero": 0.44,
+      "units_lognormal": {"median": 28, "sigma": 1.6},
+      "median_price": 13.0,
+      "price_elasticity": -1.1,
+      "initial_cost": 0.0,
+      "recurring_cost_monthly": 0.0,
+      "first_result_days": 2,
+      "sales_window_days": 120,
+      "source": {
+        "what": "44% de los productos ganan $0; producto mediano 28 ventas a $13 (~$364 de por vida); <5% pasan de $1000/mes; top 1% >$10k/mes",
+        "url": "https://insightraider.com/en/state-of-gumroad-2026",
+        "study": "State of Gumroad 2026 (146.271 productos analizados)",
+        "retrieved": "2026-09-11"
+      }
+    },
+    "freelance_service": {
+      "label": "Servicio freelance (diseño, redacción, código a medida, edición)",
+      "p_zero": 0.35,
+      "units_lognormal": {"median": 3, "sigma": 1.1},
+      "median_price": 120.0,
+      "price_elasticity": -0.8,
+      "initial_cost": 0.0,
+      "recurring_cost_monthly": 0.0,
+      "first_result_days": 3,
+      "sales_window_days": 30,
+      "source": {
+        "what": "tasa de conversión baja por propuesta y precio medio por encargo; la mayoría de perfiles nuevos consiguen pocos o ningún cliente",
+        "url": "https://www.upwork.com/research/freelance-forward",
+        "study": "Upwork Freelance Forward (informe anual del mercado freelance)",
+        "retrieved": "2026-09-11",
+        "note": "aproximación calibrable; sustituir por la conversión por propuesta cuando haya el dato exacto"
+      }
+    },
+    "ecommerce_physical": {
+      "label": "E-commerce de producto físico (dropshipping, print-on-demand, tienda)",
+      "p_zero": 0.55,
+      "units_lognormal": {"median": 15, "sigma": 1.7},
+      "median_price": 25.0,
+      "price_elasticity": -1.3,
+      "initial_cost": 50.0,
+      "recurring_cost_monthly": 29.0,
+      "gross_margin": 0.25,
+      "first_result_days": 4,
+      "sales_window_days": 90,
+      "source": {
+        "what": "márgenes finos (~20-30% bruto), alta tasa de tiendas que no venden; coste recurrente de plataforma tipo Shopify",
+        "url": "https://www.shopify.com/blog/ecommerce-statistics",
+        "study": "Estadísticas públicas de e-commerce (Shopify) + tarifas de plataforma",
+        "retrieved": "2026-09-11"
+      }
+    },
+    "saas_micro": {
+      "label": "Micro-SaaS / app de suscripción",
+      "p_zero": 0.7,
+      "units_lognormal": {"median": 8, "sigma": 1.8},
+      "median_price": 15.0,
+      "price_elasticity": -0.7,
+      "initial_cost": 20.0,
+      "recurring_cost_monthly": 25.0,
+      "subscription": true,
+      "monthly_churn": 0.08,
+      "first_result_days": 14,
+      "sales_window_days": 180,
+      "source": {
+        "what": "~90% de las startups no llegan a ingresos relevantes; churn mensual típico de micro-SaaS 5-10%",
+        "url": "https://www.cbinsights.com/research/startup-failure-reasons-top/",
+        "study": "CB Insights — por qué fracasan las startups; benchmarks de churn SaaS",
+        "retrieved": "2026-09-11"
+      }
+    },
+    "content_affiliate": {
+      "label": "Contenido / afiliación (blog, canal, newsletter monetizada)",
+      "p_zero": 0.6,
+      "units_lognormal": {"median": 10, "sigma": 1.9},
+      "median_price": 2.0,
+      "price_elasticity": -0.5,
+      "initial_cost": 0.0,
+      "recurring_cost_monthly": 0.0,
+      "first_result_days": 20,
+      "sales_window_days": 240,
+      "source": {
+        "what": "ingresos por afiliación muy sesgados: la mayoría gana casi nada y unos pocos capturan la mayor parte; el tráfico orgánico crece despacio",
+        "url": "https://insightraider.com/en/state-of-gumroad-2026",
+        "study": "Distribuciones de ingresos de creadores (misma cola pesada que Gumroad)",
+        "retrieved": "2026-09-11"
+      }
+    },
+    "sports_betting": {
+      "label": "Apuestas deportivas",
+      "negative_ev": true,
+      "house_margin": 0.055,
+      "variance": "high",
+      "p_ruin_long_run": 0.95,
+      "first_result_days": 1,
+      "source": {
+        "what": "margen del corredor (overround/vig) típico 4,8-6% en mercados líquidos (8-10% en nicho); EV negativo para el apostante, ~95% pierde a largo plazo",
+        "url": "https://altenar.com/en-us/blog/house-edge-in-sports-betting-how-the-best-sportsbooks-manage-their-edge/",
+        "study": "Explicación del house edge en apuestas (Altenar) + práctica de mercado",
+        "retrieved": "2026-09-11"
+      }
+    },
+    "retail_trading": {
+      "label": "Trading minorista (referencia; la ejecución real va por el gemelo Alpaca)",
+      "p_lose_one_year": 0.815,
+      "avg_loss_eur": [1600, 29000],
+      "source": {
+        "what": "74-89% de las cuentas minoristas de CFD pierden dinero (media del rango ~81,5%); pérdida media por cliente 1.600-29.000 €",
+        "url": "https://www.esma.europa.eu/press-news/esma-news/esma-agrees-prohibit-binary-options-and-restrict-cfds-protect-retail-investors",
+        "study": "ESMA — intervención de producto sobre CFD (análisis de las NCAs de la UE)",
+        "retrieved": "2026-09-11"
+      }
+    }
+  },
+  "modulation": {
+    "_about": "Cómo calidad/precio/marketing/saturación desplazan la distribución. Multiplicadores sobre las unidades esperadas y sobre p_zero.",
+    "quality": {"_about": "nota del juez 0-10; 5 es neutro", "units_per_point": 0.18, "pzero_per_point": -0.06},
+    "marketing": {"_about": "alcance relativo; 0 = solo orgánico", "units_log_gain": 0.6, "pzero_reach_drop": 0.4},
+    "saturation": {"_about": "acciones vivas en la misma categoría", "units_half_at": 12}
+  }
+}
