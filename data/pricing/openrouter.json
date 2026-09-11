@@ -1,0 +1,27 @@
+{
+  "_source": {
+    "catalog": "openrouter_models_raw.json = GET https://openrouter.ai/api/v1/models (público), descargado 2026-09-11; precios en USD por token (prompt/completion)",
+    "fees": "https://openrouter.ai/docs/faq — compra de créditos con Stripe: 5.5% (mínimo $0.80); free models: 50 req/día sin créditos, 1000 req/día con >= $10 comprados; 20 req/min en free",
+    "retrieved": "2026-09-11"
+  },
+  "currency": "USD",
+  "purchase_fee_rate": 0.055,
+  "purchase_fee_min_usd": 0.80,
+  "min_purchase_usd": 5.0,
+  "auto_topup": {"enabled": true, "threshold_usd": 1.0, "amount_usd": 5.0},
+  "free_models": {"per_day_without_credits": 50, "per_day_with_credits": 1000, "credits_threshold_usd": 10.0, "per_minute": 20},
+  "upstream": {
+    "_note": "modelo OpenRouter -> modelo del proveedor real (freellmapi). Lo que no está aquí va a default. La IA paga SIEMPRE el precio del modelo que pidió.",
+    "default": "openai/gpt-oss-120b",
+    "map": {
+      "openai/gpt-oss-120b": "openai/gpt-oss-120b",
+      "openai/gpt-oss-20b": "openai/gpt-oss-20b",
+      "meta-llama/llama-3.3-70b-instruct": "meta/llama-3.3-70b-instruct",
+      "meta-llama/llama-4-scout": "meta-llama/llama-4-scout-17b-16e-instruct",
+      "meta-llama/llama-4-maverick": "meta/llama-4-maverick-17b-128e-instruct",
+      "qwen/qwen3-coder": "qwen3-coder:480b",
+      "moonshotai/kimi-k2": "@cf/moonshotai/kimi-k2.5",
+      "mistralai/mistral-large": "mistralai/mistral-large-3-675b-instruct-2512"
+    }
+  }
+}
