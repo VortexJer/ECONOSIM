@@ -42,7 +42,7 @@ check(f.category == CAT, f.category)
 
 bank0 = w.balance()
 # avanzar lo suficiente para que se creen los charges, liquiden y salga el payout
-w.advance(timedelta(days=cat_window := br[CAT]["sales_window_days"] + 40))
+w.advance(timedelta(days=br[CAT]["sales_window_days"] + 40))
 check(st.charge_count > 0, "no se crearon charges en Stripe")
 check(len(st.payouts) >= 1, "no hubo ningún payout al banco")
 # el banco recibió dinero por payout (neto de comisiones), y la reputación subió por las ventas
