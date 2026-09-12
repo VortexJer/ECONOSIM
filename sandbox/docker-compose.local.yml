@@ -22,3 +22,9 @@ services:
       ECONOSIM_IDLE_SPEED: "3600"
       # Cuánto dura la vida a simular: 12h, 1d, 30d, 1mo, 1y... (vacío = sin límite)
       ECONOSIM_SIM_DURATION: "1mo"
+
+  agent:
+    # Las transcripciones de cada sesión salen al host: son la materia prima del
+    # entrenamiento (trayectorias que luego se filtran por la puntuación del episodio).
+    volumes:
+      - ../training/data/agent-logs:/var/log/agent
