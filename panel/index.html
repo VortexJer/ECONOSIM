@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src *;" />
+  <title>ECONOSIM · Panel</title>
+  <style>
+    :root{
+      --bg:#0a0b0d; --panel:#101216; --line:#1b1f26; --line2:#252a33;
+      --txt:#c9d1d9; --dim:#6b7480; --accent:#e0a340; --ok:#3fb950; --warn:#d29922;
+      --crit:#f85149; --dead:#f85149; --pos:#3fb950; --neg:#f85149;
+      --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+      font-family:var(--mono);font-size:13px;-webkit-font-smoothing:antialiased}
+    #app{padding:0}
+    .topbar{display:flex;align-items:center;gap:20px;padding:14px 20px;border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg,#0d0f13,#0a0b0d)}
+    .brand{letter-spacing:.32em;font-weight:600;color:var(--accent)}
+    .episode,.clock{letter-spacing:.14em;color:var(--dim);font-size:11px}
+    .clock{margin-left:auto}
+    .status{margin-left:16px;padding:5px 12px;border:1px solid var(--line2);letter-spacing:.2em;font-size:11px}
+    .status[data-status="alive"]{color:var(--ok);border-color:#173a22}
+    .status.warn{color:var(--warn);border-color:#3a2f10}
+    .status.critical,.status[data-status="dead"]{color:var(--dead);border-color:#3a1414;
+      animation:pulse 1.6s ease-in-out infinite}
+    @keyframes pulse{50%{opacity:.5}}
+
+    .hero{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:1px;background:var(--line);
+      border-bottom:1px solid var(--line)}
+    .metric{background:var(--panel);padding:18px 20px}
+    .metric .label{color:var(--dim);letter-spacing:.22em;font-size:10px;margin-bottom:10px}
+    .metric .value{font-size:26px;letter-spacing:.02em}
+    .metric.big .value{font-size:38px;color:#f0f3f6}
+    .metric .unit{color:var(--dim);font-size:11px;margin-left:8px;letter-spacing:.1em}
+    .metric.ok .value{color:#e8edf2}
+    .metric.warn .value{color:var(--warn)}
+    .metric.critical .value,.metric.dead .value{color:var(--crit)}
+    .metric.score .value{color:var(--accent)}
+    .metric.score.neg .value{color:var(--crit)}
+
+    .speedbar{display:flex;gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+    .speed{flex:1;background:var(--panel);color:var(--dim);border:0;border-top:2px solid transparent;
+      padding:10px;font-family:var(--mono);letter-spacing:.16em;font-size:11px;cursor:pointer}
+    .speed:hover{color:var(--txt);background:#13161b}
+    .speed[data-active="1"]{color:var(--accent);border-top-color:var(--accent);background:#13161b}
+
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);padding:1px}
+    .card{background:var(--panel);padding:14px 16px;min-height:120px}
+    .card.wide{grid-column:span 2}
+    .card-h{color:var(--dim);letter-spacing:.22em;font-size:10px;margin-bottom:12px;
+      padding-bottom:8px;border-bottom:1px solid var(--line)}
+    .card-f{color:var(--dim);letter-spacing:.1em;font-size:10px;margin-top:10px;
+      padding-top:8px;border-top:1px solid var(--line)}
+    .tbl{width:100%;border-collapse:collapse;font-size:12px}
+    .tbl td{padding:5px 8px 5px 0;border-bottom:1px solid #14171c;white-space:nowrap;
+      overflow:hidden;text-overflow:ellipsis;max-width:220px}
+    .tbl .dim{color:var(--dim)}
+    .tbl .amt{text-align:right;font-variant-numeric:tabular-nums}
+    .tbl .neg{color:var(--neg)}
+    .tbl .pos{color:var(--pos)}
+    .tbl .empty{color:var(--dim);text-align:center;letter-spacing:.2em;padding:16px}
+    .tag{text-align:right;font-size:10px;letter-spacing:.12em}
+    .tag.sancion{color:var(--crit)} .tag.detect{color:var(--warn)} .tag.latente{color:var(--dim)}
+    .kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #14171c;letter-spacing:.08em}
+    .kv span{color:var(--dim);font-size:11px} .kv b{font-weight:500;font-variant-numeric:tabular-nums}
+    .offline{position:fixed;bottom:10px;right:14px;color:var(--dim);letter-spacing:.16em;font-size:10px}
+  </style>
+</head>
+<body>
+  <div id="app"><div class="topbar"><div class="brand">ECONOSIM</div><div class="clock">CONECTANDO…</div></div></div>
+  <div class="offline" id="conn"></div>
+  <script type="module" src="renderer.js"></script>
+</body>
+</html>
