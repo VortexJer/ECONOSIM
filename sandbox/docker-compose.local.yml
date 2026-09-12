@@ -18,10 +18,11 @@ services:
       ECONOSIM_UPSTREAM_API_KEY: "ollama"
       ECONOSIM_UPSTREAM_MODEL: "qwen3b"
       # Reloj fiel: x1 mientras la IA piensa/actúa, comprimido solo mientras DUERME.
-      ECONOSIM_SPEED: "1"
-      ECONOSIM_IDLE_SPEED: "3600"
+      # Sustituibles desde el entorno para que el runner de vidas los controle.
+      ECONOSIM_SPEED: "${ECONOSIM_SPEED:-1}"
+      ECONOSIM_IDLE_SPEED: "${ECONOSIM_IDLE_SPEED:-3600}"
       # Cuánto dura la vida a simular: 12h, 1d, 30d, 1mo, 1y... (vacío = sin límite)
-      ECONOSIM_SIM_DURATION: "1mo"
+      ECONOSIM_SIM_DURATION: "${ECONOSIM_SIM_DURATION:-1mo}"
 
   agent:
     # Las transcripciones de cada sesión salen al host: son la materia prima del
