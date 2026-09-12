@@ -325,6 +325,19 @@ class AlpacaTwin:
             # simulador la rechazamos con el error real de mercado cerrado.
             return _err(403, "market is closed", 40310000)
 
+        if self.world.live.block("alpaca", "place_order", {"symbol": alias, "side": side, "qty": qty}):
+            # Modo en vivo: la orden se acepta pero NO se ejecuta (nada sale). Sin llenado,
+            # sin posición, sin movimiento de caja.
+            now = self.clock.display_iso()
+            return web.json_response({
+                "id": "00000000-0000-4000-8000-" + f"{self._next_id():08d}".rjust(12, "0"),
+                "client_order_id": secrets.token_hex(8), "created_at": now, "submitted_at": now,
+                "filled_at": None, "updated_at": now, "symbol": alias, "asset_class": "us_equity",
+                "qty": f"{qty:g}", "filled_qty": "0", "type": "market", "side": side,
+                "time_in_force": body.get("time_in_force", "day"), "status": "accepted",
+                "filled_avg_price": None, "limit_price": None, "stop_price": None,
+                "order_class": "simple", "asset_id": self._asset(alias)["id"]}, status=200)
+
         real = self.mask.to_real(alias)
         half = px * SPREAD_BPS / 1e4
         fill_mask = px + half if side == "buy" else px - half     # cruzas el spread
