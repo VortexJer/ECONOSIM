@@ -115,6 +115,12 @@ class BettingTwin:
             return _err(422, "stake required.")
         if stake <= 0:
             return _err(422, "stake must be positive.")
+        odd = e["odd_home"] if outcome == "home" else e["odd_away"]
+        if self.world.live.block("betting", "place_bet", {"event": e["id"], "outcome": outcome, "stake": stake}):
+            # Modo en vivo: ni se cobra ni se programa la liquidación (nada sale).
+            return web.json_response({"id": "bet_" + secrets.token_hex(8), "event_id": e["id"],
+                                      "outcome": outcome, "stake": stake, "odd": odd, "status": "open",
+                                      "placed_at": self.world.clock.display_iso(), "payout": 0.0}, status=200)
         if not self.world.pay(to_cents(stake / self.fx), f"Apuesta {e['id']} {outcome}", COUNTERPARTY, ref=e["id"]):
             return _err(402, "Insufficient balance.")
         bid = "bet_" + secrets.token_hex(8)
