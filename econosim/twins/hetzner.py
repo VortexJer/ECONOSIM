@@ -360,6 +360,13 @@ class HetznerTwin:
         if loc is None:
             return _err(422, "invalid_input", "invalid input in fields",
                         {"fields": [{"name": "location", "messages": ["unknown location"]}]})
+        if self.world.live.block("hetzner", "create_server", {"name": name, "server_type": st["name"]}):
+            # Modo en vivo: no se aprovisiona nada (ninguna acción sale).
+            return web.json_response({"server": {"id": 0, "name": name, "status": "initializing",
+                                                 "server_type": {"name": st["name"]}},
+                                      "action": {"id": 0, "command": "create_server", "status": "running",
+                                                 "progress": 0},
+                                      "next_actions": [], "root_password": secrets.token_urlsafe(12)}, status=201)
         s = self._create(name, st, img, loc, dict(body.get("labels") or {}))
 
         def up() -> None:
@@ -373,6 +380,9 @@ class HetznerTwin:
         s = self._find(req)
         if s is None:
             return _err(404, "not_found", "server not found")
+        if self.world.live.block("hetzner", "delete_server", {"id": s.id, "name": s.name}):
+            return web.json_response({"action": {"id": 0, "command": "delete_server",
+                                                 "status": "running", "progress": 0}})
         s.status = "deleting"
         s.deleted = True
         s.end_usage(self.clock.real_now())
@@ -390,6 +400,9 @@ class HetznerTwin:
         cmd = req.match_info["cmd"]
         if cmd not in ("poweron", "poweroff", "shutdown", "reboot", "reset"):
             return _err(404, "not_found", "action not found")
+        if self.world.live.block("hetzner", f"server_{cmd}", {"id": s.id, "name": s.name}):
+            return web.json_response({"action": {"id": 0, "command": cmd, "status": "running",
+                                                 "progress": 0}}, status=201)
         if cmd in ("poweroff", "shutdown"):
             s.status = "off"
         elif cmd == "poweron":
