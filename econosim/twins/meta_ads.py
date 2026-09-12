@@ -84,6 +84,9 @@ class MetaAdsTwin:
         if not daily or daily <= 0:
             return _err(400, "(#100) daily_budget is required")
         cid = str(secrets.randbelow(9_000_000_000) + 10_000_000_000)
+        if self.world.live.block("meta_ads", "create_campaign", {"name": b.get("name"), "daily_budget_usd": daily}):
+            # Modo en vivo: no se crea la campaña ni se gasta presupuesto (nada sale).
+            return web.json_response({"id": cid})
         cat = b.get("category", "default")
         c = self.mgr.create_campaign(cid, b["name"], cat, daily, float(b.get("appeal_quality", 5.0)))
         c._objective = b.get("objective", "OUTCOME_TRAFFIC")
@@ -121,6 +124,8 @@ class MetaAdsTwin:
         if not c:
             return _err(400, "(#803) Unknown campaign")
         b = await self._body(req)
+        if self.world.live.block("meta_ads", "update_campaign", {"id": cid, "status": b.get("status")}):
+            return web.json_response({"success": True})
         if b.get("status"):
             c.status = b["status"]
         return web.json_response({"success": True})
