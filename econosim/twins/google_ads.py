@@ -62,6 +62,10 @@ class GoogleAdsTwin:
             body = await req.json()
         except Exception:
             return _err(400, "Invalid JSON")
+        if self.world.live.block("google_ads", "mutate_campaign",
+                                 {"ops": len(body.get("operations", []))}):
+            # Modo en vivo: no se crean ni modifican campañas, no se gasta (nada sale).
+            return web.json_response({"results": []})
         results = []
         for op in body.get("operations", []):
             create = op.get("create")
