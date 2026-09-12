@@ -1,0 +1,30 @@
+{
+  "_source": {
+    "domains": "Precios de registro anual típicos de registradores (Namecheap/Porkbun/Cloudflare): .com ~$10-13, .io ~$35, .co ~$25, .net ~$12, .org ~$10, .app ~$14, .dev ~$12, .shop ~$2-30",
+    "domains_url": "https://www.namecheap.com/domains/",
+    "email": "Resend: 3.000 emails/mes gratis, luego desde $20/mes por 50.000 (~$0,0004/email). Postmark ~$15/mes por 10.000.",
+    "email_url": "https://resend.com/pricing",
+    "betting": "Margen del corredor (overround/vig) típico ~5,5% en mercados líquidos",
+    "betting_url": "https://altenar.com/en-us/blog/house-edge-in-sports-betting-how-the-best-sportsbooks-manage-their-edge/",
+    "retrieved": "2026-09-12",
+    "currency": "USD"
+  },
+  "domains": {
+    "tld_price_usd": {
+      "com": 11.28, "net": 12.98, "org": 10.28, "io": 34.98, "co": 25.98,
+      "app": 14.00, "dev": 12.00, "shop": 5.99, "xyz": 2.99, "ai": 70.00, "me": 19.98
+    },
+    "default_price_usd": 15.0,
+    "renewal_grace_days": 30
+  },
+  "email": {
+    "free_per_month": 3000,
+    "price_per_email_usd": 0.0004,
+    "monthly_base_usd": 0.0,
+    "bounce_domains": ["invalid", "example", "test", "nowhere"]
+  },
+  "betting": {
+    "house_margin": 0.055,
+    "settle_delay_days": 1
+  }
+}
