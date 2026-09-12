@@ -54,6 +54,7 @@ class StripeTwin:
         self.pending_cents = 0          # USD cents aún en tránsito (no liquidados)
         self.charge_count = 0
         self._seq = 0
+        self.on_price = None        # callback(product, price) para el puente de mercado
         world.register("stripe", self)
         self._schedule_payout_cycle()
 
@@ -184,10 +185,20 @@ class StripeTwin:
         b = await self._body(req)
         if not b.get("name"):
             return _err(400, "Missing required param: name.", "parameter_missing")
+        if self.world.live.block("stripe", "create_product", {"name": b.get("name")}):
+            pid = self._id("prod")
+            return web.json_response({"id": pid, "object": "product", "name": b["name"], "active": True,
+                                      "description": b.get("description", ""),
+                                      "created": int(self.clock.display_now.timestamp()),
+                                      "livemode": True, "metadata": {}})
+        meta = {}
+        for k, v in b.items():
+            if k.startswith("metadata[") and k.endswith("]"):
+                meta[k[9:-1]] = v
         pid = self._id("prod")
         p = {"id": pid, "object": "product", "name": b["name"], "active": True,
              "description": b.get("description", ""), "created": int(self.clock.display_now.timestamp()),
-             "livemode": True, "metadata": {}}
+             "livemode": True, "metadata": meta}
         self.products[pid] = p
         return web.json_response(p)
 
@@ -209,11 +220,22 @@ class StripeTwin:
             amount = int(amt)
         except (TypeError, ValueError):
             return _err(400, "Invalid unit_amount", "parameter_invalid_integer")
+        if self.world.live.block("stripe", "create_price", {"product": prod, "unit_amount": amount}):
+            # Modo en vivo: no se registra el precio ni se dispara el bucle de ventas (nada sale).
+            return web.json_response({"id": self._id("price"), "object": "price", "product": prod,
+                                      "unit_amount": amount, "currency": b.get("currency", "usd"),
+                                      "active": True, "type": "one_time",
+                                      "created": int(self.clock.display_now.timestamp()), "livemode": True})
         pid = self._id("price")
         pr = {"id": pid, "object": "price", "product": prod, "unit_amount": amount,
               "currency": b.get("currency", "usd"), "active": True, "type": "one_time",
               "created": int(self.clock.display_now.timestamp()), "livemode": True}
         self.prices[pid] = pr
+        if self.on_price is not None:
+            try:
+                self.on_price(self.products.get(prod), pr)
+            except Exception:
+                pass
         return web.json_response(pr)
 
     async def h_list_prices(self, _):
@@ -223,6 +245,13 @@ class StripeTwin:
     async def h_create_session(self, req):
         b = await self._body(req)
         sid = self._id("cs")
+        if self.world.live.block("stripe", "create_session", {"mode": b.get("mode", "payment")}):
+            return web.json_response({"id": sid, "object": "checkout.session", "mode": b.get("mode", "payment"),
+                                      "status": "open", "payment_status": "unpaid",
+                                      "url": f"https://checkout.stripe.com/c/pay/{sid}",
+                                      "success_url": b.get("success_url", ""), "cancel_url": b.get("cancel_url", ""),
+                                      "currency": "usd", "created": int(self.clock.display_now.timestamp()),
+                                      "livemode": True})
         sess = {"id": sid, "object": "checkout.session", "mode": b.get("mode", "payment"),
                 "status": "open", "payment_status": "unpaid",
                 "url": f"https://checkout.stripe.com/c/pay/{sid}",
@@ -261,6 +290,11 @@ class StripeTwin:
         ch = b.get("charge")
         if not ch or ch not in self.charges:
             return _err(404, "No such charge", "resource_missing")
+        if self.world.live.block("stripe", "create_refund", {"charge": ch}):
+            # Modo en vivo: no se mueve dinero (nada sale).
+            return web.json_response({"id": self._id("re"), "object": "refund", "charge": ch,
+                                      "status": "succeeded", "amount": self.charges[ch].get("amount", 0),
+                                      "currency": "usd"})
         r = self.refund(ch, dispute=False)
         if r is None:
             return _err(400, "Charge has already been refunded", "charge_already_refunded")

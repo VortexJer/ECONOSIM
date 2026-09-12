@@ -33,13 +33,23 @@ class EmailTwin:
         self.sent: list[dict] = []
         self.inbox: list[dict] = []
         self.sent_this_month = 0
+        self.owed_usd = 0.0
         self._reset_month()
         world.register("email", self)
 
     def _reset_month(self) -> None:
+        # a fin de mes se factura lo acumulado (los envíos cuestan fracciones de céntimo)
+        self._flush()
         self.sent_this_month = 0
         from datetime import timedelta
         self.world.clock.schedule_in(timedelta(days=30), self._reset_month, "email:month")
+
+    def _flush(self) -> None:
+        if self.owed_usd > 0:
+            cents = to_cents(self.owed_usd / self.fx)
+            if cents > 0:
+                self.world.pay(cents, "Factura de correo del mes", COUNTERPARTY, ref="email")
+                self.owed_usd = 0.0
 
     # ---- API interna: entregar un mensaje a la bandeja (clientes/adversarios) ----
     def deliver(self, from_addr: str, subject: str, body: str, kind: str = "customer") -> dict:
@@ -85,8 +95,7 @@ class EmailTwin:
         chargeable = max(0, (self.sent_this_month + n) - self.cfg["free_per_month"])
         chargeable = min(chargeable, n)
         if chargeable > 0:
-            cost = chargeable * self.cfg["price_per_email_usd"]
-            self.world.pay(to_cents(cost / self.fx), f"Correo ({chargeable} emails)", COUNTERPARTY, ref="email")
+            self.owed_usd += chargeable * self.cfg["price_per_email_usd"]
         self.sent_this_month += n
         mid = "em_" + secrets.token_hex(8)
         rec = {"id": mid, "from": b["from"], "to": tos, "subject": b["subject"],
