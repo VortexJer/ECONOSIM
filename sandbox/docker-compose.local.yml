@@ -1,0 +1,15 @@
+# Override para correr el sim con un CEREBRO LOCAL (Ollama) en vez de freellmapi.
+# No toca la API compartida. Uso:
+#   1) Ollama escuchando en 0.0.0.0 (para que el contenedor lo alcance):
+#        setx OLLAMA_HOST 0.0.0.0:11434   (y reiniciar Ollama)   -- o el script correr-local.ps1
+#   2) docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+#
+# El gemelo de OpenRouter enruta TODO al modelo local (ECONOSIM_UPSTREAM_MODEL); la IA
+# sigue creyendo que usa el modelo que pide y se le cobra su precio (el "engaño" intacto).
+services:
+  world:
+    environment:
+      ECONOSIM_FAKE_UPSTREAM: "0"
+      ECONOSIM_UPSTREAM_BASE_URL: "http://host.docker.internal:11434/v1"
+      ECONOSIM_UPSTREAM_API_KEY: "ollama"
+      ECONOSIM_UPSTREAM_MODEL: "qwen2.5:3b"
