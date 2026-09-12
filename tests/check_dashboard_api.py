@@ -65,11 +65,11 @@ check(d["stripe"]["charges"] >= 0 and "available" in d["stripe"], "stripe")
 check(len(d["servers"]) >= 1 and d["servers"][0]["name"] == "vps-1", "servidores")
 check(isinstance(d["ledger"], list) and d["ledger"], "ledger vacío")
 check("score" in d["score_detail"] and "expediente" in d["score_detail"], "puntuación")
-# el ledger cuadra
-running = 0
-for e in [x for x in d["ledger"] if x["account"] == "bank"]:
-    running += e["amount_cents"]
-    check(e["balance_after"] == running, "balance_after inconsistente")
+# el ledger cuadra (es un recorte: comprobar por deltas consecutivos)
+bank = [x for x in d["ledger"] if x["account"] == "bank"]
+for a, b in zip(bank, bank[1:]):
+    check(b["balance_after"] - a["balance_after"] == b["amount_cents"], "balance_after inconsistente")
+check(bank[-1]["balance_after"] == w.balance(), "el último balance_after != saldo del mundo")
 
 # --- el control de velocidad funciona ----------------------------------------
 r = requests.post(U + "/speed", json={"speed": 100}, timeout=5).json()
