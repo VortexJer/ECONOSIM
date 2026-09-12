@@ -75,6 +75,9 @@ class EmailTwin:
         tos = to if isinstance(to, list) else [to] if to else []
         if not b.get("from") or not tos or not b.get("subject"):
             return _err(422, "Missing required field: from, to or subject.")
+        if self.world.live.block("email", "send", {"to": tos, "subject": b.get("subject")}):
+            # Modo en vivo: nada se entrega ni se contabiliza (ninguna acción sale).
+            return web.json_response({"id": "em_" + secrets.token_hex(8)}, status=200)
         # rebote si alguna dirección es inválida
         bounced = [t for t in tos if self._bounces(str(t))]
         # coste: gratis hasta el tramo, luego por email
