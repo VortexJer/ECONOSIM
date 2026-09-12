@@ -47,7 +47,7 @@ with LiveApp(bt.app()) as net:
 
 # --- EV negativo a la larga: muchas apuestas dejan pérdida -------------------
 w2 = World(REAL_START, initial_eur=1e9, episode_id="EPBET2")
-bt2 = BettingTwin(w2, api_key="k", n_events=400)
+bt2 = BettingTwin(w2, api_key="k", n_events=6000)
 import asyncio
 # apostar 10 a "home" en cada evento y liquidar
 for e in bt2.events.values():

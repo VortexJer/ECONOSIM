@@ -33,12 +33,17 @@ with LiveApp(em.app()) as net:
     r = requests.post(U("/emails"), headers=H, json={"from": "yo@mitienda.com", "to": "sinarroba", "subject": "s"})
     check(requests.get(U(f"/emails/{r.json()['id']}"), headers=H).json()["last_event"] == "bounced", "sin @ debería rebotar")
 
-    # --- superar el tramo gratis cobra por email ----------------------------
+    # --- superar el tramo gratis: se acumula y se factura a fin de mes -------
     em.sent_this_month = cfg["free_per_month"]     # ya en el límite
     bank1 = w.balance()
-    for _ in range(10):
-        requests.post(U("/emails"), headers=H, json={"from": "yo@mitienda.com", "to": "c@gmail.com", "subject": "s"})
-    check(w.balance() < bank1, "pasado el tramo gratis debería cobrar")
+    for _ in range(60):     # 60 emails a 50 destinatarios = suficiente para cruzar un céntimo
+        requests.post(U("/emails"), headers=H, json={"from": "yo@mitienda.com",
+                                                     "to": [f"c{k}@gmail.com" for k in range(50)], "subject": "s"})
+    check(em.owed_usd > 0, "no se acumuló el coste de los envíos de pago")
+    check(w.balance() == bank1, "aún no debería haber cobrado (se factura a fin de mes)")
+    from datetime import timedelta
+    w.advance(timedelta(days=31))     # cruza el fin de mes -> factura
+    check(w.balance() < bank1, "a fin de mes debería facturar los envíos de pago")
     charges = [e for e in w.ledger.entries() if e.counterparty == COUNTERPARTY]
     check(len(charges) >= 1, "sin cargos de correo")
 

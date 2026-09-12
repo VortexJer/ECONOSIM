@@ -43,22 +43,30 @@ with LiveApp(dm.app()) as net:
     # no se puede registrar dos veces
     check(requests.post(U(B + "/domain/register/mitienda.com"), json=AUTH).json()["status"] == "ERROR", "doble alta")
 
-    # --- renovar antes de caducar mantiene el dominio -----------------------
-    reg2 = requests.post(U(B + "/domain/register/otra.dev"), json=AUTH).json()
-    w.advance(timedelta(days=300))
-    bank1 = w.balance()
+# --- renovar antes de caducar mantiene el dominio (mundo fresco) -----------------
+w2 = World(REAL_START, initial_eur=100000.0)
+dm2 = DomainsTwin(w2, apikey="pk", secret="sk")
+with LiveApp(dm2.app()) as net:
+    U = net.url; B = "/api/json/v3"
+    requests.post(U(B + "/domain/register/otra.dev"), json=AUTH)
+    w2.advance(timedelta(days=300))
+    bank1 = w2.balance()
     ren = requests.post(U(B + "/domain/renew/otra.dev"), json=AUTH).json()
     check(ren["status"] == "SUCCESS", ren)
-    check(w.balance() == bank1 - to_cents(dm.price_of("otra.dev") / fx), "cobro de renovación")
-    # tras renovar, pasa el año original sin caducar
-    w.advance(timedelta(days=120))
-    check("otra.dev" in dm.owned and dm.owned["otra.dev"]["status"] == "active", "un dominio renovado no debería caducar")
+    check(w2.balance() == bank1 - to_cents(dm2.price_of("otra.dev") / fx), "cobro de renovación")
+    w2.advance(timedelta(days=200))     # cruza el año original (365) tras renovar
+    check("otra.dev" in dm2.owned and dm2.owned["otra.dev"]["status"] == "active", "un dominio renovado no debería caducar")
 
-    # --- NO renovar: caduca al año y (tras la gracia) queda libre / lo pillan --
-    check("mitienda.com" in dm.owned, "mitienda.com debería seguir activa antes de caducar")
-    w.advance(timedelta(days=400))          # cruza su caducidad (365) + gracia
-    check("mitienda.com" not in dm.owned, "un dominio sin renovar debería liberarse")
-    # y ahora lo tiene otro: ya no está disponible
+# --- NO renovar: caduca al año y (tras la gracia) queda libre / lo pillan (mundo fresco) ---
+w3 = World(REAL_START, initial_eur=100000.0)
+dm3 = DomainsTwin(w3, apikey="pk", secret="sk")
+with LiveApp(dm3.app()) as net:
+    U = net.url; B = "/api/json/v3"
+    requests.post(U(B + "/domain/register/mitienda.com"), json=AUTH)
+    w3.advance(timedelta(days=200))
+    check("mitienda.com" in dm3.owned and dm3.owned["mitienda.com"]["status"] == "active", "debería seguir activa a los 200 días")
+    w3.advance(timedelta(days=400))     # cruza caducidad (365) + gracia (30)
+    check("mitienda.com" not in dm3.owned, "un dominio sin renovar debería liberarse")
     check(requests.post(U(B + "/domain/checkDomain/mitienda.com"), json=AUTH).json()["response"]["avail"] == "no",
           "un dominio caducado debería quedar ocupado por un tercero")
     check(requests.post(U(B + "/domain/register/mitienda.com"), json=AUTH).json()["status"] == "ERROR",
