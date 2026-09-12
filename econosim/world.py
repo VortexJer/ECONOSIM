@@ -15,8 +15,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable, Optional
 
-from .clock import VirtualClock, UTC
+from .clock import VirtualClock, UTC, OFFSET_YEARS
 from .ledger import Ledger, InsufficientFunds, to_cents
+from .live import LiveGuard
 
 BANK = "bank"
 ROOT = Path(__file__).resolve().parent.parent
@@ -38,8 +39,11 @@ class Episode:
 class World:
     def __init__(self, real_start: datetime, initial_eur: float = 50.0,
                  ledger_path: str = ":memory:", episode_id: Optional[str] = None,
-                 pricing_dir: Path = ROOT / "data" / "pricing"):
-        self.clock = VirtualClock(real_start)
+                 pricing_dir: Path = ROOT / "data" / "pricing",
+                 offset_years: int = OFFSET_YEARS, live: bool = False):
+        self.clock = VirtualClock(real_start, offset_years=offset_years)
+        # candado de egreso del modo en vivo: ninguna acción sale (PROYECTO.md §2.6).
+        self.live = LiveGuard(enabled=live, now=lambda: self.clock.display_iso())
         self.ledger = Ledger(ledger_path)
         self.pricing_dir = pricing_dir
         self.episode = Episode(
@@ -145,6 +149,7 @@ class World:
             "balance_cents": self.balance(),
             "speed": self.speed,
             "alive": self.alive,
+            "live": self.live.snapshot(),
             "pending_events": [(self.clock.display(w).isoformat(), l) for w, l in self.clock.pending()[:20]],
         }
         if include_real:
