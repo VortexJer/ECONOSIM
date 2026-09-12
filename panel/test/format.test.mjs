@@ -1,18 +1,18 @@
 // G2: lógica de presentación correcta y determinista; sin emojis.
-import { eur, usd, num, daysLeft, survival, fmtDate, SPEEDS, dashboardHTML, hasEmoji } from "../format.js";
+import { eur, usd, num, daysLeft, survival, fmtDate, SPEEDS, dashboardHTML, hasEmoji } from "../format.mjs";
 import { SAMPLE } from "./sample.mjs";
 
 let fails = 0;
 function ok(cond, msg) { if (!cond) { console.log("FAIL:", msg); fails++; } }
 
 // --- dinero: signo, separador de miles, dos decimales ---
-ok(eur(128455) === "1 284.55", `eur(128455) = ${eur(128455)}`);
+ok(eur(128455) === "1 284.55", `eur(128455) = ${eur(128455)}`);
 ok(eur(-509) === "−5.09", `eur(-509) = ${eur(-509)}`);
 ok(eur(5) === "0.05", `eur(5) = ${eur(5)}`);
 ok(eur(0) === "0.00", `eur(0) = ${eur(0)}`);
 ok(eur(null) === "—", "eur(null)");
 ok(usd(0.4213) === "$0.42", `usd = ${usd(0.4213)}`);
-ok(num(128400) === "128 400", `num = ${num(128400)}`);
+ok(num(128400) === "128 400", `num = ${num(128400)}`);
 
 // --- días de vida ---
 ok(Math.abs(daysLeft({ days_left: 136.7 }) - 136.7) < 1e-9, "daysLeft directo");
@@ -35,7 +35,7 @@ ok(SPEEDS[0].value === 0 && SPEEDS[SPEEDS.length - 1].value === 10000, "escala d
 
 // --- el HTML del dashboard contiene lo esperado y NADA de emojis ---
 const html = dashboardHTML(SAMPLE);
-for (const needle of ["SALDO", "1 284.55", "DÍAS DE VIDA", "PUNTUACIÓN", "812", "LEDGER",
+for (const needle of ["SALDO", "1 284.55", "DÍAS DE VIDA", "PUNTUACIÓN", "812", "LEDGER",
   "EXPEDIENTE", "ANUNCIOS", "Plantilla Notion", "SANCION", "VIVO", "27 MAY 2043"]) {
   ok(html.includes(needle), `el HTML debería contener ${needle}`);
 }
