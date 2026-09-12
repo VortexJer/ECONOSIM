@@ -87,6 +87,11 @@ class DomainsTwin:
         if not self._available(domain):
             return self._fail("Domain is not available for registration.")
         price = self.price_of(domain)
+        if self.world.live.block("domains", "register", {"domain": domain, "price_usd": price}):
+            # Modo en vivo: ni se cobra ni se da de alta el dominio (nada sale).
+            expiry = self.world.clock.real_now() + timedelta(days=365)
+            return web.json_response({"status": "SUCCESS", "domain": domain,
+                                      "expiryDate": self.world.clock.display_iso(expiry)})
         if not self.world.pay(to_cents(price / self.fx), f"Registro dominio {domain}", COUNTERPARTY, ref=domain):
             return self._fail("Insufficient balance.", 402)
         expiry = self.world.clock.real_now() + timedelta(days=365)
@@ -103,6 +108,9 @@ class DomainsTwin:
         if not d or d["status"] != "active":
             return self._fail("Domain not in your account.")
         price = self.price_of(domain)
+        if self.world.live.block("domains", "renew", {"domain": domain, "price_usd": price}):
+            return web.json_response({"status": "SUCCESS", "domain": domain,
+                                      "expiryDate": self.world.clock.display_iso(d["expiry_real"])})
         if not self.world.pay(to_cents(price / self.fx), f"Renovación dominio {domain}", COUNTERPARTY, ref=domain):
             return self._fail("Insufficient balance.", 402)
         d["expiry_real"] = max(d["expiry_real"], self.world.clock.real_now()) + timedelta(days=365)
