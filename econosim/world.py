@@ -33,6 +33,11 @@ class Episode:
     death_cause: str = ""
     died_display: str = ""
     died_real: str = ""
+    # Un episodio TERMINA por muerte (sin dinero) o por llegar al horizonte pedido.
+    # Dormir (end_session) nunca termina nada: la vida sigue.
+    ended: bool = False
+    end_cause: str = ""        # "death" | "horizon"
+    ended_display: str = ""
     notes: list[str] = field(default_factory=list)
 
 
@@ -40,7 +45,9 @@ class World:
     def __init__(self, real_start: datetime, initial_eur: float = 50.0,
                  ledger_path: str = ":memory:", episode_id: Optional[str] = None,
                  pricing_dir: Path = ROOT / "data" / "pricing",
-                 offset_years: int = OFFSET_YEARS, live: bool = False):
+                 offset_years: int = OFFSET_YEARS, live: bool = False,
+                 sim_duration: Optional[timedelta] = None,
+                 idle_speed: float = 0.0, active_grace_s: float = 2.0):
         self.clock = VirtualClock(real_start, offset_years=offset_years)
         # candado de egreso del modo en vivo: ninguna acción sale (PROYECTO.md §2.6).
         self.live = LiveGuard(enabled=live, now=lambda: self.clock.display_iso())
