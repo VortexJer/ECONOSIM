@@ -12,4 +12,4 @@ services:
       ECONOSIM_FAKE_UPSTREAM: "0"
       ECONOSIM_UPSTREAM_BASE_URL: "http://host.docker.internal:11434/v1"
       ECONOSIM_UPSTREAM_API_KEY: "ollama"
-      ECONOSIM_UPSTREAM_MODEL: "qwen2.5:3b"
+      ECONOSIM_UPSTREAM_MODEL: "qwen3b"
