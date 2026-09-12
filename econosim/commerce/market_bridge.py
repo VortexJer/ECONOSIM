@@ -37,13 +37,11 @@ class MarketBridge:
         listing_id = price["id"]
         if listing_id in self.listings:
             return
-        # el juez puntúa el contenido del producto UNA vez -> calidad de la tienda
-        quality = 5.0
-        if self.judge is not None:
-            quality = self.judge.score(Deliverable(kind="producto", content=content, niche=category)).score
+        # La calidad se juzga PEREZOSAMENTE en el primer _resolve (hilo del reloj), no aquí:
+        # este método corre dentro del handler async de Stripe, donde el juez no puede ejecutarse.
         listing = {"id": listing_id, "product": product["id"], "category": category,
                    "price_usd": price["unit_amount"] / 100.0, "content": content,
-                   "quality": quality, "cycles": 0, "active": True, "units": 0}
+                   "quality": None, "cycles": 0, "active": True, "units": 0}
         self.listings[listing_id] = listing
         self._schedule(listing)
 
@@ -55,18 +53,26 @@ class MarketBridge:
         if not listing["active"] or not self.world.alive or listing["cycles"] >= MAX_CYCLES:
             listing["active"] = False
             return
+        # el juez puntúa el contenido del producto UNA vez -> calidad de la tienda.
+        # Corre en el hilo del reloj (no en un handler), que es donde el juez sí funciona.
+        if listing["quality"] is None:
+            if self.judge is not None:
+                deliverable = Deliverable(kind="producto", content=listing["content"], niche=listing["category"])
+                listing["quality"] = self.judge.score(deliverable).score
+            else:
+                listing["quality"] = 5.0
         listing["cycles"] += 1
         aid = f"{listing['id']}-c{listing['cycles']}"
-        deliverable = Deliverable(kind="producto", content=listing["content"], niche=listing["category"])
-        # el resolutor: juez -> calidad, competencia, reputación, alcance de anuncios; ventas por Stripe
+        # el resolutor: calidad ya juzgada, competencia, reputación, alcance de anuncios; ventas por Stripe.
+        # deliverable=None: no se re-juzga cada ciclo (se usa la calidad cacheada).
         _, out = self.resolver.submit(listing["content"] or "producto", aid,
                                       price=listing["price_usd"], has_deliverable=True,
-                                      deliverable=deliverable if self.judge else None,
-                                      quality=listing["quality"])
+                                      deliverable=None, quality=listing["quality"])
         listing["units"] += out.units
         self._schedule(listing)
 
     def summary(self) -> list[dict]:
         return [{"id": l["id"], "category": l["category"], "price_usd": l["price_usd"],
-                 "quality": round(l["quality"], 2), "cycles": l["cycles"], "units": l["units"],
+                 "quality": round(l["quality"], 2) if l["quality"] is not None else None,
+                 "cycles": l["cycles"], "units": l["units"],
                  "active": l["active"]} for l in self.listings.values()]
