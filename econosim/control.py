@@ -118,6 +118,8 @@ def control_app(world: World, token: str = "", debug: bool = False) -> web.Appli
         o = world.twins.get("openrouter")
         brain = {"calls": o.calls, "usage_usd": round(o.usage_usd, 6),
                  "credits_usd": round(o.credits_usd, 4)} if o is not None else {}
+        # diario de pensamiento: una frase por llamada (qué razonó y qué hace)
+        thoughts = o.thoughts[-25:] if o is not None else []
         h = world.twins.get("hetzner")
         servers = [{"name": s.name, "type": s.stype["name"], "status": s.status}
                    for s in h.servers.values() if not s.deleted] if h is not None else []
@@ -137,6 +139,7 @@ def control_app(world: World, token: str = "", debug: bool = False) -> web.Appli
             "listings": listings,
             "actions": actions,
             "brain": brain,
+            "thoughts": thoughts,
             "servers": servers,
             "inbox": inbox,
             "ledger": ledger,
