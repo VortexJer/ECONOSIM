@@ -1,0 +1,39 @@
+{
+  "_source": {
+    "meta": "Meta/Facebook Ads (campañas de tráfico): CPM medio $7,47, CTR 1,71%, CPC $0,70; lead gen CVR 7,72%",
+    "meta_url": "https://visiblefactors.com/facebook-ads-benchmarks/",
+    "google": "Google Ads: búsqueda CPC medio $5,42, CTR 3,52%; display CPC $0,44",
+    "google_url": "https://www.wordstream.com/blog/2026-google-ads-benchmarks",
+    "note": "medias intersectoriales (WordStream/LocaliQ/Visible Factors, miles de cuentas). Los multiplicadores por sector son aproximados y calibrables.",
+    "retrieved": "2026-09-12",
+    "currency": "USD"
+  },
+  "platforms": {
+    "meta": {
+      "label": "Meta Ads (Facebook/Instagram)",
+      "cpm_usd": 7.47,
+      "base_ctr": 0.0171,
+      "base_conversion": 0.03,
+      "fatigue_half_impressions": 200000
+    },
+    "google": {
+      "label": "Google Ads (búsqueda)",
+      "cpm_usd": 190.0,
+      "base_ctr": 0.0352,
+      "base_conversion": 0.05,
+      "fatigue_half_impressions": 120000,
+      "_note_cpm": "CPM derivado de CPC $5,42 × CTR 3,52% × 1000; la búsqueda es cara pero de alta intención (mejor conversión)"
+    }
+  },
+  "sector_multiplier": {
+    "_about": "ajusta CPM (coste) y CTR/conversión (rendimiento) por categoría del resolutor; 1.0 = media",
+    "digital_product":   {"cpm": 0.9, "ctr": 1.2, "conversion": 1.1},
+    "freelance_service": {"cpm": 1.1, "ctr": 0.9, "conversion": 0.9},
+    "ecommerce_physical":{"cpm": 1.0, "ctr": 1.3, "conversion": 1.0},
+    "saas_micro":        {"cpm": 1.4, "ctr": 0.8, "conversion": 0.8},
+    "content_affiliate": {"cpm": 0.7, "ctr": 1.1, "conversion": 0.6},
+    "default":           {"cpm": 1.0, "ctr": 1.0, "conversion": 1.0}
+  },
+  "reach_per_1000_clicks": 1.0,
+  "min_daily_budget_usd": 1.0
+}
