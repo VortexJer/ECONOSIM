@@ -17,3 +17,8 @@ services:
       ECONOSIM_UPSTREAM_BASE_URL: "http://host.docker.internal:11434/v1"
       ECONOSIM_UPSTREAM_API_KEY: "ollama"
       ECONOSIM_UPSTREAM_MODEL: "qwen3b"
+      # Reloj fiel: x1 mientras la IA piensa/actúa, comprimido solo mientras DUERME.
+      ECONOSIM_SPEED: "1"
+      ECONOSIM_IDLE_SPEED: "3600"
+      # Cuánto dura la vida a simular: 12h, 1d, 30d, 1mo, 1y... (vacío = sin límite)
+      ECONOSIM_SIM_DURATION: "1mo"
