@@ -58,6 +58,91 @@ def control_app(world: World, token: str = "", debug: bool = False) -> web.Appli
         fn = world.twins.get("fakenet")
         return web.json_response({"hosts": fn.hosts(), "served": fn.served, "dropped": fn.dropped} if fn else {})
 
+    def _daily_burn_cents() -> int:
+        """Estimación del gasto diario: VPS prorrateado + presupuestos de anuncios activos."""
+        burn = 0
+        h = world.twins.get("hetzner")
+        if h is not None:
+            for s in h.servers.values():
+                if not s.deleted:
+                    burn += int(round(s.stype["monthly"] * 100 / 30 / _fx()))
+        for name in ("meta_ads", "google_ads"):
+            m = world.twins.get(name)
+            if m is not None:
+                for c in m.mgr.campaigns.values():
+                    if c.status == "ACTIVE":
+                        burn += int(round(c.daily_budget_usd * 100 / _fx()))
+        return max(1, burn)
+
+    def _fx() -> float:
+        try:
+            return world.load_pricing("fx")["usd_per_eur"]
+        except Exception:
+            return 1.0
+
+    async def dashboard(_):
+        st = world.state(include_real=debug)
+        burn = _daily_burn_cents()
+        days_left = world.balance() / burn if burn > 0 else None
+        alp = world.twins.get("alpaca")
+        positions = []
+        equity_cents = world.balance()
+        if alp is not None:
+            equity_cents = alp.equity_cents()
+            for pos in alp.positions.values():
+                if pos.qty > 0:
+                    try:
+                        positions.append(alp._position_json(pos))
+                    except Exception:
+                        pass
+        stripe = world.twins.get("stripe")
+        stripe_info = {}
+        if stripe is not None:
+            stripe_info = {"available": stripe.available_cents, "pending": stripe.pending_cents,
+                           "charges": stripe.charge_count, "payouts": len(stripe.payouts),
+                           "disputes": len(stripe.disputes), "refunds": len(stripe.refunds)}
+        campaigns = []
+        for name in ("meta_ads", "google_ads"):
+            m = world.twins.get(name)
+            if m is not None:
+                for c in m.mgr.campaigns.values():
+                    campaigns.append({"platform": m.mgr.platform, "name": c.name, "status": c.status,
+                                      "daily_budget_usd": c.daily_budget_usd, "spend_usd": round(c.spend_usd, 2),
+                                      "impressions": c.impressions, "clicks": int(round(c.clicks))})
+        mb = world.twins.get("market_bridge")
+        listings = mb.summary() if mb is not None else []
+        resolver = world.twins.get("resolver")
+        actions = resolver.actions[-30:] if resolver is not None else []
+        hostile = world.twins.get("hostile")
+        score = hostile.score() if hostile is not None else {}
+        o = world.twins.get("openrouter")
+        brain = {"calls": o.calls, "usage_usd": round(o.usage_usd, 6),
+                 "credits_usd": round(o.credits_usd, 4)} if o is not None else {}
+        h = world.twins.get("hetzner")
+        servers = [{"name": s.name, "type": s.stype["name"], "status": s.status}
+                   for s in h.servers.values() if not s.deleted] if h is not None else []
+        email = world.twins.get("email")
+        inbox = len(email.inbox) if email is not None else 0
+        ledger = [e.__dict__ for e in world.ledger.entries()][-60:]
+        return web.json_response({
+            **st,
+            "equity_cents": equity_cents,
+            "daily_burn_cents": burn,
+            "days_left": round(days_left, 1) if days_left is not None else None,
+            "score": score.get("score"),
+            "score_detail": score,
+            "positions": positions,
+            "stripe": stripe_info,
+            "campaigns": campaigns,
+            "listings": listings,
+            "actions": actions,
+            "brain": brain,
+            "servers": servers,
+            "inbox": inbox,
+            "ledger": ledger,
+        })
+
+    app.router.add_get("/dashboard", dashboard)
     app.router.add_get("/state", state)
     app.router.add_post("/speed", speed)
     app.router.add_post("/advance", advance)
