@@ -50,6 +50,7 @@ class OpenRouterTwin:
         self.api_key = api_key or "sk-or-v1-" + secrets.token_hex(32)
         self.credits_usd = 0.0          # saldo de créditos
         self.usage_usd = 0.0            # gasto acumulado
+        self.thoughts: list[dict] = []  # qué piensa/hace en cada llamada (panel humano)
         self.purchased_usd = 0.0        # compras acumuladas (decide el tier free)
         self.purchases: list[dict] = []
         self.generations: dict[str, dict] = {}
@@ -246,9 +247,40 @@ class OpenRouterTwin:
             "origin": "", "app_id": None, "upstream_id": None}
         payload = {"id": gen_id, "provider": provider_name, "model": model_id, "object": "chat.completion",
                    "created": created, "choices": choices, "usage": out_usage}
+        self._note_thought(choices, cost)
         if not stream:
             return web.json_response(payload)
         return await self._stream(req, payload)
+
+    # ---- diario de pensamiento (SOLO para el panel humano; la IA nunca lo ve) ----
+    def _note_thought(self, choices: list, cost: float) -> None:
+        """Una frase por llamada: qué acaba de razonar y qué va a hacer."""
+        if not choices:
+            return
+        msg = choices[0].get("message") or {}
+        said = " ".join(str(msg.get("content") or "").split())[:220]
+        calls = msg.get("tool_calls") or []
+        doing = ""
+        if calls:
+            fn = (calls[0].get("function") or {})
+            name = fn.get("name", "?")
+            try:
+                args = json.loads(fn.get("arguments") or "{}")
+            except ValueError:
+                args = {}
+            if name == "bash":
+                doing = "ejecuta: " + " ".join(str(args.get("command", "")).split())[:160]
+            elif name == "end_session":
+                doing = f"se duerme {args.get('wake_in_minutes', '?')} min"
+                if args.get("note"):
+                    doing += f" · {str(args['note'])[:80]}"
+            else:
+                doing = f"{name}({json.dumps(args, ensure_ascii=False)[:100]})"
+        if not said and not doing:
+            return
+        self.thoughts.append({"ts": self.clock.display_iso(), "said": said,
+                              "doing": doing, "cost_usd": round(cost, 6)})
+        del self.thoughts[:-80]      # anillo: solo lo reciente
 
     @staticmethod
     def _estimate(messages: list) -> int:
