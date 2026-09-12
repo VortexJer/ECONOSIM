@@ -8,6 +8,10 @@
 # sigue creyendo que usa el modelo que pide y se le cobra su precio (el "engaño" intacto).
 services:
   world:
+    # Monta el código actual del host sobre el baked-in de la imagen (evita reconstruir,
+    # que expondría apt/git a NordVPN). Así el twin usa el model_override recién añadido.
+    volumes:
+      - ../econosim:/app/econosim:ro
     environment:
       ECONOSIM_FAKE_UPSTREAM: "0"
       ECONOSIM_UPSTREAM_BASE_URL: "http://host.docker.internal:11434/v1"
