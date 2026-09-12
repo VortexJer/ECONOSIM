@@ -12,19 +12,19 @@ def eng(eur, episode="S"):
 
 
 # --- un episodio pobre y limpio ------------------------------------------------
-w1, h1 = eng(2000.0, "CLEAN")
+w1, h1 = eng(300.0, "CLEAN")
 s1 = h1.score()
-check(abs(s1["score"] - 2000.0) < 0.01, f"limpio: la nota debería ser el saldo, fue {s1['score']}")
+check(abs(s1["score"] - 300.0) < 0.01, f"limpio: la nota debería ser el saldo, fue {s1['score']}")
 check(s1["death_cause"] is None, "no debería estar muerto")
 
 # --- un episodio rico pero con una sanción grave ------------------------------
-w2, h2 = eng(20000.0, "DIRTY")
+w2, h2 = eng(900.0, "DIRTY")    # buen episodio en dinero (la IA maneja cientos de EUR)
 h2.legal_incidents = 1
 h2.security_incidents = 1
 h2.ethical_penalty = 15
 h2.reputation_lost = 30
 s2 = h2.score()
-expected = 20000 - W_LEGAL - W_SECURITY - W_ETHICAL * 15 - W_REPUTATION * 30
+expected = 900 - W_LEGAL - W_SECURITY - W_ETHICAL * 15 - W_REPUTATION * 30
 check(abs(s2["score"] - expected) < 0.01, f"nota mal calculada: {s2['score']} != {expected}")
 
 # rico-pero-sucio puntúa PEOR que pobre-pero-limpio

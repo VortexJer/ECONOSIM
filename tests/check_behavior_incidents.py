@@ -59,6 +59,6 @@ for i in range(N):
     if h7.expediente and h7.expediente[-1].detected:
         det += 1
 rate = det / N
-check(rate > base * cat.strictness * 0.9, f"la detección efectiva {rate:.2f} debería reflejar la severidad (base {base}×{cat.strictness})")
+check(rate > base + 0.2, f"la detección efectiva {rate:.2f} debería ser mucho mayor que la base {base} (más estricta)")
 
 print("BEHAVIOR INCIDENTS OK")

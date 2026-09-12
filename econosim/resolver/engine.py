@@ -28,7 +28,8 @@ DISPUTE_DELAY_DAYS = 25
 class ActionResolver:
     def __init__(self, world: World, rates: Optional[BaseRates] = None,
                  classifier_llm=None, classifier_model: str = "cheap",
-                 stripe=None, reputation=None, competition=None):
+                 stripe=None, reputation=None, competition=None,
+                 judge=None, review_queue=None, ad_managers=None, hostile=None):
         self.world = world
         self.rates = rates or BaseRates()
         self.classifier_llm = classifier_llm
@@ -36,6 +37,10 @@ class ActionResolver:
         self.stripe = stripe                    # StripeTwin o None
         self.reputation = reputation            # Reputation o None
         self.competition = competition          # Competition o None
+        self.judge = judge                      # Judge o None
+        self.review_queue = review_queue        # HumanReviewQueue o None
+        self.ad_managers = ad_managers or []    # lista de AdManager (meta/google)
+        self.hostile = hostile                  # HostileEngine o None
         self.fx = world.load_pricing("fx")["usd_per_eur"]
         self.stripe_cfg = world.load_pricing("stripe") if stripe else None
         self.live_by_category: dict[str, int] = {}
@@ -47,10 +52,22 @@ class ActionResolver:
 
     def submit(self, text: str, action_id: str, quality: float = 5.0,
                marketing_reach: float = 0.0, has_deliverable: bool = False,
-               price: Optional[float] = None) -> tuple[Ficha, Outcome]:
+               price: Optional[float] = None, deliverable=None) -> tuple[Ficha, Outcome]:
         ficha = classify(text, self.rates, self.classifier_llm, self.classifier_model)
+        # si hay entregable y juez, la CALIDAD la pone el juez (no la IA, no un parámetro)
+        if deliverable is not None and self.judge is not None:
+            if not deliverable.niche:
+                deliverable.niche = ficha.category
+            verdict = self.judge.score(deliverable)
+            quality = verdict.score
+            has_deliverable = True
+            if self.review_queue is not None:
+                self.review_queue.register(action_id, deliverable, verdict)
+            ficha.notes = f"juez={verdict.score}"
         ficha.quality = quality
-        ficha.marketing_reach = marketing_reach
+        # alcance = el pasado + el que aportan las campañas de anuncios vivas en la categoría
+        ad_reach = sum(m.reach_for(ficha.category) for m in self.ad_managers)
+        ficha.marketing_reach = marketing_reach + ad_reach
         ficha.has_deliverable = has_deliverable or ficha.has_deliverable
         if price is not None:
             ficha.price = price
@@ -71,6 +88,8 @@ class ActionResolver:
         out = resolve(sample_ficha, self.rates, self.world.episode.id, action_id, base_sat, price_ref)
         self.live_by_category[cat] = self.live_by_category.get(cat, 0) + 1
         self._schedule(out, action_id, cat)
+        if self.hostile is not None:
+            self.hostile.on_action(cat, ficha=ficha, revenue_usd=max(0.0, out.revenue_usd))
         self.actions.append({"id": action_id, "category": cat, "title": ficha.title,
                              "units": out.units, "revenue_usd": round(out.revenue_usd, 2),
                              "eff_quality": round(eff_quality, 2), "price_ref": price_ref,
