@@ -42,11 +42,13 @@ with LiveApp(st.app()) as net:
     check(price in mb.listings, "el precio no registró un listing")
     lst = mb.listings[price]
     check(lst["category"] == "digital_product" and lst["price_usd"] == 13.0, lst)
-    check(lst["quality"] > 7, f"el juez debería dar calidad alta al buen contenido, dio {lst['quality']}")
+    # la calidad se juzga en el PRIMER ciclo (hilo del reloj), no al crear (handler async)
+    check(lst["quality"] is None, "la calidad no debería juzgarse en el handler de creación")
 
     # --- al correr meses, hay ventas por Stripe y payouts al banco ----------
     bank0 = w.balance()
     w.advance(timedelta(days=RESOLVE_EVERY_DAYS * 8 + 40))     # varios ciclos + liquidación
+    check(lst["quality"] > 7, f"el juez debería dar calidad alta al buen contenido, dio {lst['quality']}")
     check(lst["cycles"] >= 4, f"deberían haberse resuelto varios ciclos, {lst['cycles']}")
     check(st.charge_count > 0, "no hubo cobros en Stripe")
     check(len(st.payouts) >= 1 and w.balance() > bank0, "no llegó dinero al banco por las ventas")
