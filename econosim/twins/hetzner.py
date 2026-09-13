@@ -32,6 +32,11 @@ def _month_start(dt: datetime) -> datetime:
     return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
 
+def _next_day(dt: datetime) -> datetime:
+    """Medianoche siguiente (el cobro es DIARIO: el panel ve el consumo de cada día)."""
+    return dt.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+
+
 def _next_month(dt: datetime) -> datetime:
     ms = _month_start(dt)
     return ms.replace(year=ms.year + (ms.month == 12), month=ms.month % 12 + 1)
@@ -96,50 +101,63 @@ class HetznerTwin:
         self.locked = False
         self.remaining = RATE_LIMIT
         self.own_vps_id: Optional[int] = None
+        self._image_created = self.clock.real_now() - timedelta(days=400)
         if own_vps_type:
             s = self._create(own_vps_name, self.types[own_vps_type], self.images["debian-12"],
                              self.locations["fsn1"], {})
             s.status = "running"
             self.own_vps_id = s.id
-        self._schedule_invoice(_next_month(self.clock.real_now()))
+        self._schedule_invoice(_next_day(self.clock.real_now()))
         world.register("hetzner", self)
 
     # ------------------------------------------------------------ facturación
     def _schedule_invoice(self, when: datetime) -> None:
         self.clock.schedule(when, lambda: self._invoice(when), "hetzner:invoice")
 
-    def _invoice(self, month_start: datetime) -> None:
-        period_start = _month_start(month_start - timedelta(days=1))
-        period_end = month_start
+    def _capped(self, s, hours: float) -> float:
+        """Lo que cuesta un servidor por `hours` horas dentro de un mes: por horas con tope mensual
+        (compute e IPv4), exactamente como factura Hetzner."""
+        return (min(hours * s.stype["hourly"], s.stype["monthly"])
+                + min(hours * IPV4_HOURLY, self.pricing["primary_ipv4_monthly"]))
+
+    def _invoice(self, day_start: datetime) -> None:
+        """Cobro DIARIO (a medianoche) del día que acaba de terminar.
+
+        Hetzner factura el día 1 con tope mensual; aquí se cobra cada día el INCREMENTO del
+        acumulado del mes con ese mismo tope, así el total del mes es idéntico al real pero el
+        consumo se ve día a día (si no, 29 días parecían 'gratis' y el saldo, plano)."""
+        period_end = day_start
+        period_start = day_start - timedelta(days=1)
+        month_start = _month_start(period_start)
         lines = []
         total = 0.0
         for s in self.servers.values():
-            h = s.billed_hours(period_start, period_end)
-            if h == 0:
+            h_prev = s.billed_hours(month_start, period_start)
+            h_now = s.billed_hours(month_start, period_end)
+            if h_now == h_prev:
                 continue
-            compute = min(h * s.stype["hourly"], s.stype["monthly"])
-            ipv4 = min(h * IPV4_HOURLY, self.pricing["primary_ipv4_monthly"])
-            lines.append({"server": s.name, "type": s.stype["name"], "hours": h,
-                          "compute": round(compute, 4), "ipv4": round(ipv4, 4)})
-            total += compute + ipv4
+            charge = self._capped(s, h_now) - self._capped(s, h_prev)
+            lines.append({"server": s.name, "type": s.stype["name"], "hours": h_now - h_prev,
+                          "charge": round(charge, 4)})
+            total += charge
         for s in [s for s in self.servers.values() if s.deleted]:
             del self.servers[s.id]
         cents = to_cents(total)
-        inv = {"period": self.clock.display(period_start).strftime("%Y-%m"), "lines": lines,
-               "total_cents": cents, "paid": False, "issued_real": month_start,
-               "display_issued": self.clock.display_iso(month_start)}
+        inv = {"period": self.clock.display(period_start).strftime("%Y-%m-%d"), "lines": lines,
+               "total_cents": cents, "paid": False, "issued_real": day_start,
+               "display_issued": self.clock.display_iso(day_start)}
         self.invoices.append(inv)
         if cents > 0:
             self._try_pay(inv, attempt=0)
         else:
             inv["paid"] = True
-        self._schedule_invoice(_next_month(month_start))
+        self._schedule_invoice(_next_day(day_start))
 
     def _try_pay(self, inv: dict, attempt: int) -> None:
         if inv["paid"]:
             return
         ref = f"INV-{inv['period']}"
-        if self.world.pay(inv["total_cents"], f"Hetzner Cloud factura {inv['period']}", COUNTERPARTY, ref):
+        if self.world.pay(inv["total_cents"], f"Hetzner Cloud uso {inv['period']}", COUNTERPARTY, ref):
             inv["paid"] = True
             return
         if attempt >= GRACE_DAYS:
@@ -217,7 +235,7 @@ class HetznerTwin:
     def _image_json(self, i: dict) -> dict:
         return {"id": i["id"], "type": "system", "status": "available", "name": i["name"],
                 "description": i["description"], "image_size": None, "disk_size": i["disk_size"],
-                "created": "2024-04-25T13:33:44+00:00", "created_from": None, "bound_to": None,
+                "created": self.clock.display_iso(self._image_created), "created_from": None, "bound_to": None,
                 "os_flavor": i["os_flavor"], "os_version": i["os_version"], "rapid_deploy": True,
                 "protection": {"delete": False}, "deprecated": None, "labels": {}, "architecture": "x86"}
 

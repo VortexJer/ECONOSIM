@@ -46,7 +46,6 @@ check(abs(total_oct - to_cents(cost(cx23, hours_oct))) <= len(octubre),
       f"total de octubre {total_oct} != tope mensual {to_cents(cost(cx23, hours_oct))}")
 check(len(octubre) >= 20, f"debería cobrarse (casi) cada día, hubo {len(octubre)} cargos")
 # con el tope alcanzado, los últimos días del mes salen a 0 (como el tope real)
-check(any(c.amount_cents == 0 or True for c in octubre), "ok")
 check(w.balance() == 5000 - total_oct, "saldo tras el mes")
 check(any(l == "hetzner:invoice" for _, l in w.clock.pending()), "no hay siguiente cobro programado")
 
