@@ -39,5 +39,17 @@ ok(!live.includes("undefined") && !live.includes("NaN"), "el HTML en vivo tiene 
 const empty = dashboardHTML({ ...SAMPLE, live: { enabled: true, blocked: 0, journal: [] } });
 ok(empty.includes('data-live="1"') && empty.includes("NADA HA SALIDO"), "el diario vacío no se pinta bien");
 
+
+// --- diario de pensamiento: una línea por llamada (qué razonó y qué hace) ---
+const th = dashboardHTML({ ...SAMPLE, thoughts: [
+  { ts: "2046-04-18T13:31:00+00:00", said: "No hay archivos, reviso mi situación.", doing: "ejecuta: ls -l /home/agent", cost_usd: 0.0001 },
+  { ts: "2046-04-18T13:32:00+00:00", said: "", doing: "se duerme 60 min", cost_usd: 0.0001 },
+]});
+ok(th.includes('data-thoughts="1"') && th.includes("QUÉ ESTÁ PENSANDO"), "falta la tarjeta de pensamiento");
+ok(th.includes("reviso mi situación") && th.includes("ejecuta: ls -l") && th.includes("se duerme 60 min"), "faltan las frases del diario");
+ok(th.includes("13:31"), "falta la hora del pensamiento");
+const th0 = dashboardHTML({ ...SAMPLE, thoughts: [] });
+ok(th0.includes("AÚN NO HA PENSADO NADA"), "el diario vacío no se pinta");
+
 if (fails) { console.log(`${fails} comprobaciones fallaron`); process.exit(1); }
 console.log("LIVE PANEL OK");
