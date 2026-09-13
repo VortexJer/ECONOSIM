@@ -6,13 +6,21 @@ Trading API: account, assets, orders, positions. Market Data API: bars, latest
 quote/trade, snapshots. Clock y calendar como los reales.
 
 Auth: cabeceras APCA-API-KEY-ID / APCA-API-SECRET-KEY (paper).
-Órdenes de mercado al cierre de la barra del día con spread y comisión reales
-(comisión 0 como Alpaca; el coste es el spread). Liquidación T+1 del efectivo.
+Órdenes de mercado al cierre de la barra del día, con spread y comisión.
+
+Decisión de diseño (§2.7, el sim es más estricto que la realidad): Alpaca no cobra
+comisión, pero la mayoría de brókers sí, y una IA entrenada con operaciones gratis
+aprende a sobreoperar. Se aplica el esquema fijo de un bróker de referencia
+(0,005 por acción, mínimo 1,00, tope 1 % del importe) más las tasas regulatorias
+que en la vida real se repercuten SOLO en las ventas y existen incluso en los
+brókers sin comisión (tasa del supervisor sobre el importe y tasa por acción con
+tope). Liquidación T+1 del efectivo.
 """
 from __future__ import annotations
 
 import secrets
 from datetime import date, datetime, timedelta
+from math import ceil as _ceil
 from typing import Optional
 
 from aiohttp import web
@@ -28,6 +36,15 @@ DATA_HOST = "data.alpaca.markets"
 COUNTERPARTY = "Alpaca Securities LLC"
 SPREAD_BPS = 5.0          # medio-spread aplicado a favor del mercado (5 pb ≈ acción líquida)
 POS_ACCOUNT = "positions"  # cuenta contable del valor de las posiciones (a coste)
+
+# Comisión de intermediación (esquema fijo por acción, como un bróker de verdad).
+COMMISSION_PER_SHARE = 0.005
+COMMISSION_MIN = 1.00
+COMMISSION_MAX_PCT = 0.01     # nunca más del 1 % del importe de la operación
+# Tasas regulatorias: solo en la venta, se repercuten al cliente.
+SEC_FEE_RATE = 0.0000278      # sobre el importe vendido
+TAF_PER_SHARE = 0.000166      # por acción vendida
+TAF_MAX = 8.30                # tope por operación
 
 
 def _err(status: int, message: str, code: int = 40010000) -> web.Response:
@@ -297,6 +314,13 @@ class AlpacaTwin:
         o = self.orders.get(req.match_info["id"])
         return web.json_response(o) if o else _err(404, "order not found", 40410000)
 
+    def _fees_cents(self, side: str, qty: float, notional_real: float) -> int:
+        """Lo que cuesta operar, en céntimos reales. Se redondea al alza, como el bróker."""
+        comm = min(max(qty * COMMISSION_PER_SHARE, COMMISSION_MIN), notional_real * COMMISSION_MAX_PCT)
+        if side == "sell":
+            comm += notional_real * SEC_FEE_RATE + min(qty * TAF_PER_SHARE, TAF_MAX)
+        return int(_ceil(comm * 100 - 1e-9))
+
     async def h_create_order(self, req):
         try:
             body = await req.json()
@@ -343,11 +367,14 @@ class AlpacaTwin:
         fill_mask = px + half if side == "buy" else px - half     # cruzas el spread
         fill_real = self.mask.unindex_price(real, fill_mask)
         cash_delta = qty * fill_real                              # dinero real que mueve
+        fee_cents = self._fees_cents(side, qty, cash_delta)       # comisión + tasas
+        fee_mask = fee_cents / 100.0                              # lo que ve la IA en su moneda
 
         if side == "buy":
-            if to_cents(cash_delta) > self.world.balance():
+            if to_cents(cash_delta) + fee_cents > self.world.balance():
                 return _err(403, "insufficient buying power", 40310000)
             self.world.pay(to_cents(cash_delta), f"Compra {qty:g} {alias} @ {fill_mask:.2f}", COUNTERPARTY, ref=alias)
+            self.world.pay(fee_cents, f"Comisión compra {alias}", COUNTERPARTY, ref=alias)
             pos = self.positions.get(alias) or Position(alias, 0.0, fill_real)
             total_cost = pos.qty * pos.avg_real + qty * fill_real
             pos.qty += qty
@@ -358,6 +385,7 @@ class AlpacaTwin:
             if not pos or pos.qty < qty:
                 return _err(403, "insufficient qty available", 40310000)
             self.world.receive(to_cents(cash_delta), f"Venta {qty:g} {alias} @ {fill_mask:.2f}", COUNTERPARTY, ref=alias)
+            self.world.pay(fee_cents, f"Comisión venta {alias}", COUNTERPARTY, ref=alias)
             pos.qty -= qty
 
         oid = f"{self._next_id():08d}"
@@ -367,6 +395,7 @@ class AlpacaTwin:
                  "symbol": alias, "asset_class": "us_equity", "qty": f"{qty:g}", "filled_qty": f"{qty:g}",
                  "type": "market", "side": side, "time_in_force": body.get("time_in_force", "day"),
                  "status": "filled", "filled_avg_price": f"{fill_mask:.4f}",
+                 "commission": f"{fee_mask:.2f}",
                  "limit_price": None, "stop_price": None, "order_class": "simple",
                  "asset_id": self._asset(alias)["id"]}
         self.orders[order["id"]] = order
