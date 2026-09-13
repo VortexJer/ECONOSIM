@@ -34,6 +34,113 @@ def _err(status: int, message: str, metadata: Optional[dict] = None) -> web.Resp
     return web.json_response(body, status=status)
 
 
+# ---------------------------------------------------------------------------
+# "QUÉ ESTÁ HACIENDO": se deduce del propio comando, sin preguntarle a nadie.
+# Es una lectura, no un resumen: reconocer el servicio y el verbo del comando
+# cuesta cero y no gasta ni una llamada. La IA nunca ve esto; es para el panel.
+# ---------------------------------------------------------------------------
+_SERVICIOS = [
+    ("api.stripe.com", "cobros"),
+    ("api.hetzner.cloud", "servidor"),
+    ("openrouter.ai", "cerebro"),
+    ("thirdparty.qonto.com", "banco"),
+    ("api.alpaca.markets", "bolsa"),
+    ("data.alpaca.markets", "bolsa"),
+    ("financialmodelingprep.com", "cuentas de empresas"),
+    ("graph.facebook.com", "anuncios"),
+    ("googleads.googleapis.com", "anuncios"),
+    ("api.porkbun.com", "dominios"),
+    ("api.resend.com", "correo"),
+    ("api.the-odds-api.com", "apuestas"),
+]
+# (fragmento que tiene que aparecer, etiqueta). Orden = prioridad: lo específico primero.
+_ACCIONES = [
+    (("stripe.com", "checkout/sessions"), "abre la caja de cobro"),
+    (("stripe.com", "/products"), "crea un producto de pago"),
+    (("stripe.com", "/prices"), "pone precio al producto"),
+    (("stripe.com", "/payouts"), "saca el dinero al banco"),
+    (("stripe.com", "/balance"), "mira cuánto ha cobrado"),
+    (("stripe.com", "/charges"), "revisa los cobros"),
+    (("stripe.com",), "monta el sistema de pago"),
+    (("hetzner.cloud", "/servers", "-x delete"), "apaga un servidor"),
+    (("hetzner.cloud", "/servers", "-x post"), "contrata un servidor"),
+    (("hetzner.cloud", "/servers"), "revisa sus servidores"),
+    (("hetzner.cloud", "/pricing"), "mira lo que cuesta un servidor"),
+    (("porkbun.com", "/create"), "registra un dominio"),
+    (("porkbun.com", "checkdomain"), "busca un dominio libre"),
+    (("porkbun.com",), "gestiona dominios"),
+    (("graph.facebook.com", "campaigns"), "lanza una campaña de anuncios"),
+    (("googleads", "campaigns"), "lanza una campaña de anuncios"),
+    (("graph.facebook.com",), "gestiona anuncios"),
+    (("googleads",), "gestiona anuncios"),
+    (("resend.com", "/emails"), "envía un correo"),
+    (("resend.com", "/inbox"), "lee su correo"),
+    (("alpaca.markets", "/orders", "-x post"), "compra o vende acciones"),
+    (("alpaca.markets", "/orders"), "revisa sus órdenes de bolsa"),
+    (("alpaca.markets", "/positions"), "mira su cartera"),
+    (("alpaca.markets", "/bars"), "estudia la cotización"),
+    (("alpaca.markets", "/account"), "consulta su cuenta de bolsa"),
+    (("alpaca.markets",), "mira la bolsa"),
+    (("financialmodelingprep", "income-statement"), "estudia las cuentas de una empresa"),
+    (("financialmodelingprep", "balance-sheet"), "estudia el balance de una empresa"),
+    (("financialmodelingprep", "cash-flow"), "mira la caja de una empresa"),
+    (("financialmodelingprep", "ratios"), "valora si una empresa está cara"),
+    (("financialmodelingprep", "key-metrics"), "valora si una empresa está cara"),
+    (("financialmodelingprep", "earning_calendar"), "mira cuándo presentan resultados"),
+    (("financialmodelingprep", "price-target"), "consulta el precio objetivo"),
+    (("financialmodelingprep",), "estudia una empresa"),
+    (("qonto.com",), "mira el dinero que le queda"),
+    (("openrouter.ai", "/models"), "compara precios de modelos"),
+    (("openrouter.ai",), "contrata otra IA"),
+    (("the-odds-api",), "mira cuotas de apuestas"),
+]
+_OBRAS = [
+    (("apt-get", "install"), "instala programas"),
+    (("apt", "install"), "instala programas"),
+    (("pip", "install"), "instala programas"),
+    (("npm", "install"), "instala programas"),
+    (("docker",), "monta un contenedor"),
+    (("nginx",), "levanta el servidor web"),
+    (("systemctl",), "toca un servicio del sistema"),
+    (("git", "clone"), "se descarga código"),
+    (("index.html",), "crea una web"),
+    (("<html",), "crea una web"),
+    (("<!doctype",), "crea una web"),
+    (("python3 -m http.server",), "publica una web"),
+    (("crontab",), "programa una tarea"),
+    (("ssh-keygen",), "prepara claves"),
+]
+_LECTURAS = [
+    (("notes.md",), "repasa sus notas"),
+    (("cat ",), "lee un archivo"),
+    (("ls",), "mira qué tiene"),
+    (("df ", "free ", "top", "ps "), "comprueba la máquina"),
+    (("date",), "mira qué día es"),
+    (("env", "echo $"), "revisa sus credenciales"),
+    (("curl",), "consulta un servicio"),
+]
+
+
+def _resumen_comando(cmd: str) -> str:
+    """De un comando de consola a una frase de una línea: qué está haciendo con él."""
+    c = " ".join(cmd.split())
+    b = c.lower()
+    if not b:
+        return "ejecuta un comando"
+    if ">" in c and any(x in b for x in ("<html", "<!doctype", "index.html")):
+        return "crea una web"
+    for grupos in (_ACCIONES, _OBRAS):
+        for claves, etiqueta in grupos:
+            if all(k in b for k in claves):
+                return etiqueta
+    for claves, etiqueta in _LECTURAS:
+        if any(k in b for k in claves):
+            return etiqueta
+    # lo que no se reconoce: el primer verbo del comando, que ya dice bastante
+    primero = b.split("|")[0].split("&&")[0].strip().split(" ")[0]
+    return f"usa {primero}" if primero and primero.isalpha() else "ejecuta un comando"
+
+
 class OpenRouterTwin:
     host = HOST
 
@@ -51,6 +158,7 @@ class OpenRouterTwin:
         self.credits_usd = 0.0          # saldo de créditos
         self.usage_usd = 0.0            # gasto acumulado
         self.thoughts: list[dict] = []  # qué piensa/hace en cada llamada (panel humano)
+        self.calls_by_day: dict[str, int] = {}   # YYYY-MM-DD (fecha mostrada) -> llamadas
         self.purchased_usd = 0.0        # compras acumuladas (decide el tier free)
         self.purchases: list[dict] = []
         self.generations: dict[str, dict] = {}
@@ -76,16 +184,14 @@ class OpenRouterTwin:
         return ok
 
     def _ensure_credits(self) -> bool:
-        """Auto top-up como el real: si el saldo baja del umbral, compra el importe fijado."""
+        """Auto top-up como el real: si el saldo baja del umbral, compra el importe fijado
+        (una compra por petición). Con saldo <= 0 tras la compra, la petición es 402."""
         at = self.cfg["auto_topup"]
-        if self.credits_usd > 0 and self.credits_usd >= at["threshold_usd"]:
+        if self.credits_usd >= at["threshold_usd"]:
             return True
-        if not at["enabled"]:
-            return self.credits_usd > 0
-        if self.credits_usd > 0 and self.credits_usd < at["threshold_usd"]:
-            self._purchase(at["amount_usd"])     # si falla, sigue con lo que queda
-            return True
-        return self._purchase(max(at["amount_usd"], self.cfg["min_purchase_usd"]))
+        if at["enabled"]:
+            self._purchase(max(at["amount_usd"], self.cfg["min_purchase_usd"]))
+        return self.credits_usd > 0
 
     def _free_limit(self) -> int:
         f = self.cfg["free_models"]
@@ -208,11 +314,14 @@ class OpenRouterTwin:
         up.pop("stream_options", None)
         try:
             res = await self.upstream.chat(up)
-        except Exception as e:  # UpstreamError u otro
+        except Exception as e:  # UpstreamError u otro; el upstream ya agotó su ventana de reintentos
             status = getattr(e, "status", 502)
-            return _err(502 if status >= 500 else 400,
-                        "Provider returned error", {"raw": str(getattr(e, "message", e))[:300],
-                                                    "provider_name": model_id.split("/")[0]})
+            raw = str(getattr(e, "message", e))
+            # Mapear como lo haría OpenRouter: saturación -> 429; petición inválida -> 400;
+            # todo lo demás (proveedor caído/bloqueado) -> 502.
+            out = 429 if status in (408, 429) else (400 if status in (400, 422) else 502)
+            return _err(out, "Provider returned error",
+                        {"raw": raw[:300], "provider_name": model_id.split("/")[0]})
         self.calls += 1
         usage = res.get("usage") or {}
         pt = int(usage.get("prompt_tokens") or self._estimate(body["messages"]))
@@ -248,6 +357,8 @@ class OpenRouterTwin:
         payload = {"id": gen_id, "provider": provider_name, "model": model_id, "object": "chat.completion",
                    "created": created, "choices": choices, "usage": out_usage}
         self._note_thought(choices, cost)
+        _d = self.clock.display_iso()[:10]
+        self.calls_by_day[_d] = self.calls_by_day.get(_d, 0) + 1
         if not stream:
             return web.json_response(payload)
         return await self._stream(req, payload)
@@ -261,6 +372,7 @@ class OpenRouterTwin:
         said = " ".join(str(msg.get("content") or "").split())[:220]
         calls = msg.get("tool_calls") or []
         doing = ""
+        detalle = ""
         if calls:
             fn = (calls[0].get("function") or {})
             name = fn.get("name", "?")
@@ -269,7 +381,9 @@ class OpenRouterTwin:
             except ValueError:
                 args = {}
             if name == "bash":
-                doing = "ejecuta: " + " ".join(str(args.get("command", "")).split())[:160]
+                cmd = " ".join(str(args.get("command", "")).split())
+                doing = _resumen_comando(cmd)
+                detalle = cmd[:160]
             elif name == "end_session":
                 doing = f"se duerme {args.get('wake_in_minutes', '?')} min"
                 if args.get("note"):
@@ -279,8 +393,8 @@ class OpenRouterTwin:
         if not said and not doing:
             return
         self.thoughts.append({"ts": self.clock.display_iso(), "said": said,
-                              "doing": doing, "cost_usd": round(cost, 6)})
-        del self.thoughts[:-80]      # anillo: solo lo reciente
+                              "doing": doing, "detalle": detalle, "cost_usd": round(cost, 6)})
+        del self.thoughts[:-600]     # anillo: cubre una vida entera para el panel
 
     @staticmethod
     def _estimate(messages: list) -> int:
