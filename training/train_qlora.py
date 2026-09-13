@@ -78,7 +78,7 @@ def main() -> None:
         output_dir=a.out, num_train_epochs=a.epochs,
         per_device_train_batch_size=1, gradient_accumulation_steps=8,
         gradient_checkpointing=True, learning_rate=a.lr, lr_scheduler_type="cosine",
-        warmup_ratio=0.05, logging_steps=5, save_strategy="epoch",
+        warmup_steps=5, logging_steps=5, save_strategy="epoch",
         bf16=True, optim="paged_adamw_8bit", report_to=[])
     trainer = Trainer(model=model, args=args, train_dataset=ds,
                       data_collator=DataCollatorForLanguageModeling(tok, mlm=False))
