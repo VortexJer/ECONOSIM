@@ -54,5 +54,75 @@ const vq = viewerHTML({ tab: "red", url: 'x.com/a?q="1"', servicios: [], simbolo
 ok(vq.includes("&quot;1&quot;"), "la dirección con comillas rompería el input");
 ok(!v.includes("undefined") && !v.includes("NaN"), "visor con valores rotos");
 
+// --- su máquina: los archivos de la IA y las webs que monta -----------------
+import { maquinaHTML } from "../format.mjs";
+const M = { ruta: "/home/agent", items: [
+  { nombre: "sitio", dir: true, ruta: "/home/agent/sitio" },
+  { nombre: "NOTES.md", dir: false, ruta: "/home/agent/NOTES.md" },
+]};
+const maq = maquinaHTML(M);
+ok(maq.includes('data-dir="/home/agent/sitio"') && maq.includes("sitio/"), "las carpetas deben poder abrirse");
+ok(maq.includes('data-file="/home/agent/NOTES.md"'), "los archivos deben poder leerse");
+ok(maq.includes('data-dir="/home"') && maq.includes('data-dir="/home/agent"'), "faltan las migas de pan");
+ok(maq.includes("ELIGE UN ARCHIVO"), "sin archivo elegido debería guiar");
+
+const web = maquinaHTML({ ...M, archivo: "/home/agent/sitio/index.html",
+                          contenido: "<h1>Mi \"tienda\"</h1>", render: true });
+ok(web.includes("<iframe") && web.includes("sandbox=\"\""), "la web debe verse aislada, sin scripts");
+ok(web.includes("&quot;tienda&quot;"), "las comillas del html romperían el srcdoc");
+ok(web.includes("VER CÓDIGO"), "debe poder volverse al código");
+const cod = maquinaHTML({ ...M, archivo: "/home/agent/sitio/index.html", contenido: "<h1>hola</h1>", render: false });
+ok(cod.includes("&lt;h1&gt;") && !cod.includes("<iframe"), "en modo código no se renderiza");
+ok(cod.includes("VER LA WEB"), "debe poder verse la web");
+const txt = maquinaHTML({ ...M, archivo: "/home/agent/NOTES.md", contenido: "plan", render: false });
+ok(!txt.includes("VER LA WEB"), "un .md no es una web");
+ok(maquinaHTML({ error: "no hay mundo" }).includes("no hay mundo"), "el error no se ve");
+
+const vm = viewerHTML({ tab: "maquina", maquina: M });
+ok(vm.includes('id="v-tab-maquina" data-on="1"') && vm.includes("v-maq"), "la pestaña de la máquina no abre");
+
+// --- la bolsa: elegir acción y ver el gráfico -------------------------------
+import { bolsaHTML, grafico } from "../format.mjs";
+const BARRAS = [];
+for (let i = 0; i < 40; i++) {
+  const base = 100 + i * 0.4;
+  BARRAS.push({ d: `2046-0${1 + (i % 9)}-1${i % 9}`, o: base, h: base + 2, l: base - 2,
+                c: base + (i % 3 === 0 ? -1 : 1), v: 1000 + i });
+}
+// pocas barras -> velas; muchas -> línea (dibujar 5000 velas no se ve ni se aguanta)
+const velas = grafico(BARRAS);
+ok(velas.includes("<svg") && velas.includes("<rect"), "con pocas barras deberían pintarse velas");
+ok(velas.includes("g-up") && velas.includes("g-dn"), "las velas deben distinguir subida y bajada");
+const muchas = [];
+for (let i = 0; i < 400; i++) muchas.push({ d: "2046-01-01", o: 100, h: 101, l: 99, c: 100 + Math.sin(i) });
+const linea = grafico(muchas);
+ok(linea.includes("g-linea") && !linea.includes("<rect"), "con muchas barras debería ser una línea");
+ok(grafico([]).includes("SIN COTIZACIÓN"), "sin datos debería decirlo");
+// una acción plana no puede reventar el gráfico (dividir por cero)
+const plana = grafico([{ d: "a", o: 5, h: 5, l: 5, c: 5 }, { d: "b", o: 5, h: 5, l: 5, c: 5 }]);
+ok(plana.includes("<svg") && !plana.includes("NaN"), "una cotización plana rompe el gráfico");
+
+const D = { symbol: "ACEON-57", precio: 116.4, dia: "2046-06-26", var_1d: 1.2, var_1m: -3.4, var_1a: 22.1,
+  abierto: true, barras: BARRAS,
+  cartera: { qty: 12, precio_medio: 100, valor: 1396.8, coste: 1200, resultado: 196.8, resultado_pct: 16.4 },
+  numeros: { per: 21.4, precio_ventas: 3.2, precio_valor_contable: 5.1, margen_neto: 0.183, roe: 0.42,
+             deuda_fondos_propios: 1.7, crecimiento: 0.061, proximos_resultados: "2046-07-24" } };
+const bol = bolsaHTML({ simbolos: ["ACEON-57", "BELLUX-21"], simbolo: "ACEON-57", dias: 252, data: D });
+ok(bol.includes('data-sym="BELLUX-21"') && bol.includes('class="b-sym on"'), "no se puede elegir la acción");
+ok(bol.includes("116.40") && bol.includes("+1.20%") && bol.includes("−3.40%"), "faltan precio y variaciones");
+ok(bol.includes("MERCADO ABIERTO"), "no dice si el mercado está abierto");
+ok(bol.includes('data-dias="21"') && bol.includes('data-on="1" data-dias="252"'), "faltan los rangos del gráfico");
+ok(bol.includes("<svg"), "falta el gráfico");
+ok(bol.includes("EN CARTERA") && bol.includes("12 títulos") && bol.includes("+16.40%"), "no dice lo que tenemos");
+ok(bol.includes("PER") && bol.includes("21.40") && bol.includes("18.30%") && bol.includes("2046-07-24"),
+   "faltan los números de la empresa");
+const vacio = bolsaHTML({ simbolos: ["A"], simbolo: "A", data: { ...D, cartera: null, numeros: null } });
+ok(vacio.includes("NO TENEMOS ESTA ACCIÓN") && vacio.includes("NO PRESENTA CUENTAS"), "los vacíos mal puestos");
+ok(bolsaHTML({ simbolos: [], simbolo: "", data: null }).includes("MUNDO APAGADO"), "sin mundo debería decirlo");
+ok(bolsaHTML({ simbolos: ["A"], data: null, error: "no cotiza" }).includes("no cotiza"), "el error no se ve");
+ok(!bol.includes("undefined") && !bol.includes("NaN"), "bolsa con valores rotos");
+const vb = viewerHTML({ tab: "bolsa", bolsa: { simbolos: ["A"], simbolo: "A", dias: 252, data: D } });
+ok(vb.includes('id="v-tab-bolsa" data-on="1"') && vb.includes("b-wrap"), "la pestaña de bolsa no abre");
+
 if (fails) { console.log(`${fails} comprobaciones fallaron`); process.exit(1); }
 console.log("VIEWER OK");

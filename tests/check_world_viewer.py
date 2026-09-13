@@ -28,7 +28,7 @@ w.register("fakenet", net)
 
 from _common import LiveNet  # noqa: E402
 
-with LiveNet(net), LiveApp(control_app(w, debug=False)) as ctl:
+with LiveNet(net) as red, LiveApp(control_app(w, debug=False)) as ctl:
     T = ctl.url
 
     # --- qué hay para mirar ------------------------------------------------
@@ -80,5 +80,34 @@ with LiveNet(net), LiveApp(control_app(w, debug=False)) as ctl:
     check(alias in emp and emp[alias]["real"] == mask.to_real(alias), "el alias no se traduce bien")
     check(emp[alias]["factor"] and emp[alias]["factor"] > 0, "sin factor no se entiende la escala")
     check(len(rev["empresas"]) == len(srv["simbolos"]), "faltan empresas en la traducción")
+
+    # --- LA BOLSA: una acción, su gráfico y sus números en una sola llamada ---
+    d = requests.get(T("/world/stock"), params={"symbol": alias, "days": 120}).json()
+    check(d["symbol"] == alias and d["precio"], f"sin cotización: {d}")
+    check(len(d["barras"]) > 20 and len(d["barras"]) <= 120, f"barras raras: {len(d['barras'])}")
+    b0 = d["barras"][0]
+    check(all(k in b0 for k in ("d", "o", "h", "l", "c", "v")), "a las barras les falta algo para el gráfico")
+    check(b0["l"] <= b0["o"] <= b0["h"] and b0["l"] <= b0["c"] <= b0["h"], "vela imposible (apertura/cierre fuera del rango)")
+    check(d["barras"][-1]["c"] == d["precio"], "el precio no es el del último cierre")
+    # nada del futuro tampoco aquí
+    hoy_m = w.clock.display_now.date().isoformat()
+    check(all(x["d"] <= hoy_m for x in d["barras"]), "el gráfico enseña cotizaciones del futuro")
+    check(d["barras"] == sorted(d["barras"], key=lambda x: x["d"]), "las barras vienen desordenadas")
+    # los números de la empresa viajan con la acción
+    check(d["numeros"] and d["numeros"]["per"] is not None, "sin valoración no se decide una compra")
+    # sin posición no se inventa una
+    check(d["cartera"] is None, "dice que tenemos acciones que no tenemos")
+    # un símbolo que no cotiza se dice claro
+    r = requests.get(T("/world/stock"), params={"symbol": "NOEXISTE-1"})
+    check(r.status_code == 404 and "cotiza" in r.json().get("error", ""), "símbolo inventado mal tratado")
+    # y comprando de verdad, la ficha refleja la posición
+    requests.post(red.url("/v2/orders"),
+                  headers={"Host": alp.host, "APCA-API-KEY-ID": alp.key_id,
+                           "APCA-API-SECRET-KEY": alp.secret},
+                  json={"symbol": alias, "qty": 3, "side": "buy", "type": "market"})
+    d2 = requests.get(T("/world/stock"), params={"symbol": alias}).json()
+    if d2.get("cartera"):
+        check(d2["cartera"]["qty"] == 3, "la cartera no cuadra con lo comprado")
+        check(abs(d2["cartera"]["valor"] - 3 * d2["precio"]) < 0.05, "el valor de la posición no cuadra")
 
 print("WORLD VIEWER OK")
