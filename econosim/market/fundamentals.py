@@ -171,8 +171,14 @@ class Fundamentals:
     def symbols(self) -> list[str]:
         return sorted(self.por_simbolo)
 
-    def cobertura_desde(self) -> Optional[date]:
-        """El primer día en que TODAS las empresas con cuentas ya han publicado algo.
-        Antes de esa fecha un episodio arrancaría con la mitad de las empresas a ciegas."""
-        primeros = [c.primer_dia for c in self.por_simbolo.values() if c.primer_dia]
-        return max(primeros) if primeros else None
+    def cobertura_desde(self, fraccion: float = 0.9) -> Optional[date]:
+        """El primer día en que ya publica cuentas al menos `fraccion` de las empresas.
+
+        Un episodio que arrancase antes dejaría a la IA operando casi a ciegas. No se
+        exige el 100 %: una empresa recién salida a bolsa no tiene histórico, y eso pasa
+        también en la realidad."""
+        primeros = sorted(c.primer_dia for c in self.por_simbolo.values() if c.primer_dia)
+        if not primeros:
+            return None
+        i = min(len(primeros) - 1, int(len(primeros) * fraccion))
+        return primeros[i]
