@@ -10,6 +10,9 @@ import time
 from pathlib import Path
 
 from _common import ROOT, LiveApp, check, make_world
+
+# en Windows, `bash` a secas puede ser el de WSL (sin distro): usar Git Bash explícitamente
+GIT_BASH = "\"C:/Program Files/Git/bin/bash.exe\" -lc" if os.name == "nt" else "bash -lc"
 from econosim.twins.openrouter import OpenRouterTwin, COUNTERPARTY
 from econosim.upstream import FakeUpstream
 
@@ -32,15 +35,19 @@ def script(payload: dict):
 
 w, h = make_world(initial_eur=50)
 o = OpenRouterTwin(w, FakeUpstream(script, 400, 40), api_key="k")
-MODEL = "openai/gpt-oss-120b"
+# el modelo sale de la configuración del agente: si se cambia el cerebro, el cobro
+# esperado cambia con él (antes estaba clavado y el test se rompía al tocar config.json)
+MODEL = json.loads((ROOT / "agent" / "config.json").read_text(encoding="utf-8"))["model"]
+check(MODEL in o.models, f"el modelo configurado ({MODEL}) no está en el catálogo de precios")
 per_call = o.cost_of(o.models[MODEL], 400, 40)
+check(per_call > 0, "un cerebro que no cuesta nada no enseña a economizar")
 tmp = Path(tempfile.mkdtemp(prefix="econosim-agent-"))
 (tmp / "home").mkdir()
 
 with LiveApp(o.app()) as net:
     env = {**os.environ, "OPENROUTER_API_KEY": "k", "OPENROUTER_BASE_URL": net.url("/api/v1"),
-           "AGENT_HOME": str(tmp / "home"), "AGENT_LOG_DIR": str(tmp / "log"), "AGENT_MAX_SESSIONS": "3",
-           "AGENT_SHELL": "bash -lc", "PYTHONIOENCODING": "utf-8"}
+           "AGENT_HOME": str(tmp / "home"), "AGENT_LOG_DIR": str(tmp / "log"), "AGENT_MAX_SESSIONS": "3", "AGENT_MIN_SLEEP_MINUTES": "0",
+           "AGENT_SHELL": GIT_BASH, "PYTHONIOENCODING": "utf-8"}
     proc = subprocess.Popen([sys.executable, str(ROOT / "agent" / "agent.py")], env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8")
     # cuando vaya por la 3ª sesión, se acaban los créditos y no hay recarga
