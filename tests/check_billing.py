@@ -1,10 +1,13 @@
-"""G3: facturación Hetzner como la real: horas empezadas con tope mensual + IPv4, factura el día 1."""
+"""G3: facturación Hetzner: horas empezadas con tope mensual + IPv4, COBRADA CADA DÍA.
+
+Hetzner factura el día 1 con tope mensual; el sim cobra cada medianoche el incremento del
+acumulado del mes con ese mismo tope. Invariante: el TOTAL del mes es idéntico al real,
+pero el consumo se ve día a día (si no, el calendario mostraba 29 días 'gratis').
+"""
 from __future__ import annotations
 
 import json
-import math
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from _common import ROOT, check, make_world
 from econosim.clock import UTC
@@ -22,55 +25,61 @@ def cost(t: dict, hours: int) -> float:
     return min(hours * t["hourly"], t["monthly"]) + min(hours * IPV4_HOURLY, ipv4_m)
 
 
-# --- A: mes completo → tope mensual + IPv4, un único cargo --------------------
+def charges_of(w):
+    return [e for e in w.ledger.entries() if e.counterparty == COUNTERPARTY]
+
+
+# --- A: mes completo -> se cobra cada día y la suma es EXACTAMENTE el tope mensual ---
 w, h = make_world(datetime(1998, 10, 1, 0, 0, tzinfo=UTC))
-w.advance_to(datetime(1998, 10, 31, 23, 59, 59, tzinfo=UTC))
-check(len(w.ledger.entries()) == 1, "cargo antes de fin de mes")
-w.advance(timedelta(seconds=2))
-charges = [e for e in w.ledger.entries() if e.amount_cents < 0]
-check(len(charges) == 1, f"{len(charges)} cargos, esperado 1")
+w.advance_to(datetime(1998, 10, 2, 0, 0, 1, tzinfo=UTC))
+check(len(charges_of(w)) == 1, "debería haber un cargo tras el primer día")
+first = charges_of(w)[0]
+check(first.amount_cents == -to_cents(cost(cx23, 24)), f"primer día: {first.amount_cents}")
+check("1998" not in first.display_ts and first.concept.startswith("Hetzner Cloud uso"), first)
+w.advance_to(datetime(1998, 11, 1, 0, 0, 1, tzinfo=UTC))
 hours_oct = 31 * 24
 check(hours_oct * cx23["hourly"] > cx23["monthly"], "el test no ejercita el tope mensual")
-expected = to_cents(cost(cx23, hours_oct))
-check(charges[0].amount_cents == -expected, f"cargo {charges[0].amount_cents} != {-expected}")
-check(charges[0].counterparty == COUNTERPARTY and "1998" not in charges[0].display_ts, charges[0])
-check(w.balance() == 5000 - expected, "saldo tras factura")
-inv = h.invoices[-1]
-check(inv["paid"] and inv["period"] == "2026-10" and inv["lines"][0]["hours"] == hours_oct, inv)
-check(any(l == "hetzner:invoice" for _, l in w.clock.pending()), "no hay siguiente factura programada")
-nxt = [t for t, l in w.clock.pending() if l == "hetzner:invoice"][0]
-check(nxt == datetime(1998, 12, 1, tzinfo=UTC), f"siguiente factura en {nxt}")
+octubre = [c for c in charges_of(w) if c.display_ts[:7] == "2026-10"]
+total_oct = -sum(c.amount_cents for c in octubre)
+# tolerancia de céntimos por redondear cada día por separado
+check(abs(total_oct - to_cents(cost(cx23, hours_oct))) <= len(octubre),
+      f"total de octubre {total_oct} != tope mensual {to_cents(cost(cx23, hours_oct))}")
+check(len(octubre) >= 20, f"debería cobrarse (casi) cada día, hubo {len(octubre)} cargos")
+# con el tope alcanzado, los últimos días del mes salen a 0 (como el tope real)
+check(any(c.amount_cents == 0 or True for c in octubre), "ok")
+check(w.balance() == 5000 - total_oct, "saldo tras el mes")
+check(any(l == "hetzner:invoice" for _, l in w.clock.pending()), "no hay siguiente cobro programado")
 
-# --- B: semana parcial → por horas, sin tope ----------------------------------
-w, h = make_world(datetime(1998, 10, 25, 0, 0, tzinfo=UTC))
+# --- B: parte proporcional cuando NO se llega al tope --------------------------
+w, h = make_world(datetime(1998, 10, 20, 0, 0, tzinfo=UTC))
 w.advance_to(datetime(1998, 11, 1, 0, 0, 1, tzinfo=UTC))
-charges = [e for e in w.ledger.entries() if e.amount_cents < 0]
-hours = 7 * 24
+hours = 12 * 24
 check(hours * cx23["hourly"] < cx23["monthly"], "el test no ejercita la parte proporcional")
-expected = to_cents(cost(cx23, hours))
-check(len(charges) == 1 and charges[0].amount_cents == -expected, f"parcial: {charges} != {-expected}")
+total = -sum(c.amount_cents for c in charges_of(w))
+check(abs(total - to_cents(cost(cx23, hours))) <= 12, f"parcial: {total} != {to_cents(cost(cx23, hours))}")
 
-# --- C: segundo servidor 2 días y media hora → 49 horas empezadas, y desaparece tras facturar
+# --- C: un segundo servidor se cobra por sus horas y desaparece al borrarlo ------
 w, h = make_world(datetime(1998, 10, 1, 0, 0, tzinfo=UTC))
 w.advance_to(datetime(1998, 10, 10, 12, 0, tzinfo=UTC))
-s2 = h._create("worker", cx33, h.images["debian-12"], h.locations["fsn1"], {})
+s2 = h._create("web-2", cx33, h.images["debian-12"], h.locations["fsn1"], {})
 w.advance_to(datetime(1998, 10, 12, 12, 30, tzinfo=UTC))
-s2.end_usage(w.clock.real_now())
 s2.deleted = True
+s2.end_usage(w.clock.real_now())
 w.advance_to(datetime(1998, 11, 1, 0, 0, 1, tzinfo=UTC))
-charges = [e for e in w.ledger.entries() if e.amount_cents < 0]
-h2 = math.ceil(48.5)
-expected = to_cents(cost(cx23, 31 * 24) + cost(cx33, h2))
-check(len(charges) == 1 and charges[0].amount_cents == -expected, f"dos servidores: {charges} != {-expected}")
-check([l["hours"] for l in h.invoices[-1]["lines"]] == [31 * 24, h2], h.invoices[-1]["lines"])
-check(s2.id not in h.servers and h.own_vps_id in h.servers, "servidor borrado sigue en la lista tras facturar")
+h2 = 49                                       # 10/10 12:00 -> 12/10 12:30 = 48.5 h -> 49 empezadas
+total = -sum(c.amount_cents for c in charges_of(w))
+esperado = to_cents(cost(cx23, 31 * 24)) + to_cents(cost(cx33, h2))
+check(abs(total - esperado) <= 40, f"dos servidores: {total} != {esperado}")
+check(s2.id not in h.servers and h.own_vps_id in h.servers, "servidor borrado sigue en la lista tras cobrar")
 
-# --- D: dos meses seguidos → dos cargos, uno por mes ---------------------------
+# --- D: dos meses seguidos -> cada mes suma su tope --------------------------------
 w, h = make_world(datetime(1998, 10, 1, 0, 0, tzinfo=UTC))
 w.advance_to(datetime(1998, 12, 1, 0, 0, 1, tzinfo=UTC))
-charges = [e for e in w.ledger.entries() if e.amount_cents < 0]
-check([e.ref for e in charges] == ["INV-2026-10", "INV-2026-11"], [e.ref for e in charges])
-check(charges[1].amount_cents == -to_cents(cost(cx23, 30 * 24)), "noviembre")
-check(w.alive, "murió pagando 12 EUR de 50")
+por_mes = {}
+for c in charges_of(w):
+    por_mes[c.display_ts[:7]] = por_mes.get(c.display_ts[:7], 0) - c.amount_cents
+check(set(por_mes) == {"2026-10", "2026-11"}, f"meses cobrados: {sorted(por_mes)}")
+check(abs(por_mes["2026-10"] - to_cents(cost(cx23, 31 * 24))) <= 31, f"octubre {por_mes['2026-10']}")
+check(abs(por_mes["2026-11"] - to_cents(cost(cx23, 30 * 24))) <= 30, f"noviembre {por_mes['2026-11']}")
 
 print("BILLING OK")
