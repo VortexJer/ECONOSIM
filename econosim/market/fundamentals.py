@@ -98,12 +98,35 @@ class CompanyFacts:
         return p[0] if p else None
 
     def ttm(self, day: date, campo: str) -> Optional[float]:
-        """Suma de los cuatro trimestres publicados: lo que se usa para el PER y los márgenes."""
+        """Suma de los cuatro últimos trimestres, y solo si son CONTIGUOS.
+
+        Los bancos, por ejemplo, no publican el cuarto trimestre por separado: sumar los
+        cuatro últimos que haya daría un año inventado con un trimestre repetido. Si no
+        encajan, no hay 12 meses; que lo resuelva quien llame (ver `doce_meses`)."""
         q = self.periodos(day, campo, TRIM, 4)
-        if len(q) < 4:
-            a = self.periodos(day, campo, ANUAL, 1)
-            return a[0].val if a else None
+        if len(q) < 4 or any(h.inicio is None for h in q):
+            return None
+        cubierto = (q[0].fin - q[-1].inicio).days
+        if not (ANUAL[0] <= cubierto <= ANUAL[1]):
+            return None
+        # y sin huecos: cada trimestre empieza donde acaba el anterior (±5 días)
+        for antes, despues in zip(q[1:], q[:-1]):
+            if abs((despues.inicio - antes.fin).days) > 5:
+                return None
         return sum(h.val for h in q)
+
+    def anual(self, day: date, campo: str) -> Optional[Hecho]:
+        a = self.periodos(day, campo, ANUAL, 1)
+        return a[0] if a else None
+
+    def doce_meses(self, day: date, campo: str) -> tuple[Optional[float], str]:
+        """Cifra de doce meses y sobre qué base se ha calculado, que no es lo mismo:
+        ('ultimos_12m') suma de trimestres, ('ultimo_ejercicio') el último año cerrado."""
+        v = self.ttm(day, campo)
+        if v is not None:
+            return v, "ultimos_12m"
+        a = self.anual(day, campo)
+        return (a.val, "ultimo_ejercicio") if a else (None, "sin_datos")
 
     def ultima_publicacion(self, day: date) -> Optional[date]:
         p = self.publicados(day)
