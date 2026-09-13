@@ -8,13 +8,14 @@ sola con el tiempo, sin que el motor enumere actividades (§2.1).
 """
 from __future__ import annotations
 
+import os
 from datetime import timedelta
 from typing import Optional
 
 from ..judge.judge import Deliverable
 from ..world import World
 
-RESOLVE_EVERY_DAYS = 14
+RESOLVE_EVERY_DAYS = int(os.environ.get('ECONOSIM_RESOLVE_DAYS', '14'))
 MAX_CYCLES = 26            # ~1 año de ciclos quincenales
 
 
