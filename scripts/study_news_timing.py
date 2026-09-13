@@ -1,11 +1,14 @@
 """¿El periódico informa TARDE o PRONTO? Medición con datos reales.
 
-Para cada titular fechado de una acción, mira el retorno de esa acción en los días
-alrededor de la publicación (t-3..t+3). Si el movimiento gordo está ANTES o EN t0,
-el papel cuenta lo que ya pasó (no da ventaja). Si está DESPUÉS, hay ventaja explotable.
+Yahoo solo sirve titulares de hoy, así que se mide sobre el evento fechado que un diario
+financiero publica siempre: los RESULTADOS trimestrales (histórico disponible).
 
-Salida: retorno absoluto medio por desfase, y qué fracción del movimiento total de la
-ventana ocurre antes vs después de publicarse.
+Dos preguntas, dos medidas:
+  1) ¿Dónde ocurre el movimiento? |retorno| medio en t-3..t+5 alrededor del anuncio.
+     Si el pico está en t0/t+1, cuando el papel del día siguiente lo cuenta ya pasó.
+  2) ¿Queda algo que explotar después? Deriva con signo (PEAD): condicionada a la
+     dirección del día del anuncio, cuánto se mueve DESPUÉS en esa misma dirección.
+     Si es > 0, un lector del papel del día siguiente aún tiene una ventaja pequeña.
 """
 from __future__ import annotations
 
@@ -13,97 +16,80 @@ import json
 import sys
 import time
 from collections import defaultdict
-from datetime import datetime, timezone
 
+import pandas as pd
 import yfinance as yf
 
 TICKERS = ["AAPL", "AMZN", "BA", "BAC", "CAT", "CVX", "DIS", "JPM", "KO", "MSFT",
            "NVDA", "PFE", "T", "WMT", "XOM"]
-OFFSETS = [-3, -2, -1, 0, 1, 2, 3]
-
-
-def news_dates(t: str) -> list[datetime]:
-    """Fechas (UTC) de los titulares que expone Yahoo para ese ticker."""
-    out = []
-    try:
-        items = yf.Ticker(t).news or []
-    except Exception as e:
-        print(f"  {t}: sin noticias ({type(e).__name__})", file=sys.stderr)
-        return out
-    for it in items:
-        ts = it.get("providerPublishTime")
-        if ts is None:                      # yfinance 1.x anida en 'content'
-            c = it.get("content") or {}
-            pub = c.get("pubDate") or c.get("displayTime")
-            if pub:
-                try:
-                    out.append(datetime.fromisoformat(str(pub).replace("Z", "+00:00")).astimezone(timezone.utc))
-                except ValueError:
-                    pass
-            continue
-        out.append(datetime.fromtimestamp(int(ts), tz=timezone.utc))
-    return out
+OFFSETS = list(range(-3, 6))          # t-3 .. t+5
 
 
 def main() -> None:
-    by_offset = defaultdict(list)          # desfase -> [retorno absoluto %]
-    signed = defaultdict(list)
-    n_headlines = 0
+    absr = defaultdict(list)          # desfase -> |retorno %|
+    drift = defaultdict(list)         # desfase -> retorno % alineado con el signo de t0
+    n_ev = 0
     for t in TICKERS:
-        dates = news_dates(t)
-        if not dates:
-            continue
         try:
-            px = yf.Ticker(t).history(period="6mo", interval="1d", auto_adjust=True)
-        except Exception:
-            continue
-        if px.empty:
-            continue
-        ret = px["Close"].pct_change() * 100
-        idx = [d.date() for d in ret.index]
-        pos = {d: i for i, d in enumerate(idx)}
+            tk = yf.Ticker(t)
+            ed = tk.get_earnings_dates(limit=40)
+            px = tk.history(period="5y", interval="1d", auto_adjust=True)
+        except Exception as e:
+            print(f"  {t}: fallo ({type(e).__name__})", file=sys.stderr); continue
+        if ed is None or ed.empty or px.empty:
+            print(f"  {t}: sin datos"); continue
+        ret = (px["Close"].pct_change() * 100).dropna()
+        days = [d.date() for d in ret.index]
+        pos = {d: i for i, d in enumerate(days)}
         used = 0
-        for d in dates:
-            day = d.date()
-            # el día de cotización igual o siguiente a la publicación
+        for ts in ed.index:
+            day = ts.date()
             i = pos.get(day)
-            if i is None:
-                cand = [j for j, dd in enumerate(idx) if dd >= day]
-                if not cand:
+            if i is None:                       # anuncio fuera de sesión: primer día hábil siguiente
+                nxt = [j for j, dd in enumerate(days) if dd >= day]
+                if not nxt:
                     continue
-                i = cand[0]
-            ok = all(0 <= i + o < len(ret) for o in OFFSETS)
-            if not ok:
+                i = nxt[0]
+            if not all(0 <= i + o < len(ret) for o in OFFSETS):
                 continue
+            r0 = float(ret.iloc[i])
+            if r0 == 0:
+                continue
+            sign = 1.0 if r0 > 0 else -1.0
             for o in OFFSETS:
-                v = ret.iloc[i + o]
-                if v == v:                  # no NaN
-                    by_offset[o].append(abs(float(v)))
-                    signed[o].append(float(v))
+                v = float(ret.iloc[i + o])
+                absr[o].append(abs(v))
+                drift[o].append(v * sign)       # alineado con la dirección del día del anuncio
             used += 1
-        n_headlines += used
-        print(f"  {t}: {used} titulares emparejados con precios", flush=True)
-        time.sleep(0.4)
+        n_ev += used
+        print(f"  {t}: {used} anuncios de resultados", flush=True)
+        time.sleep(0.3)
 
-    if not n_headlines:
-        raise SystemExit("no se pudo emparejar ningún titular con precios")
+    if not n_ev:
+        raise SystemExit("no se pudo medir ningún anuncio")
 
-    print(f"\n=== {n_headlines} titulares fechados, movimiento medio |retorno| por desfase ===")
+    print(f"\n=== {n_ev} anuncios de resultados · |retorno| medio por día ===")
+    base = sum(absr[-3] + absr[-2]) / len(absr[-3] + absr[-2])       # día "normal" de referencia
     for o in OFFSETS:
-        v = by_offset[o]
-        if v:
-            marca = "  <-- día del titular" if o == 0 else ""
-            print(f"  t{o:+d}: {sum(v)/len(v):5.2f}% (n={len(v)}){marca}")
-    antes = [x for o in (-3, -2, -1) for x in by_offset[o]]
-    dia = by_offset[0]
-    despues = [x for o in (1, 2, 3) for x in by_offset[o]]
-    ma, md, mp = (sum(antes)/len(antes), sum(dia)/len(dia), sum(despues)/len(despues))
-    print(f"\n  ANTES (t-3..t-1): {ma:.2f}%   DÍA (t0): {md:.2f}%   DESPUÉS (t+1..t+3): {mp:.2f}%")
-    print(f"  ratio despues/antes = {mp/ma:.2f}  (>1 = el papel adelanta; <1 = el papel llega tarde)")
-    json.dump({"n": n_headlines, "abs_por_desfase": {str(o): (sum(by_offset[o])/len(by_offset[o])) for o in OFFSETS if by_offset[o]},
-               "antes": ma, "dia": md, "despues": mp},
+        v = absr[o]
+        marca = "  <-- ANUNCIO" if o == 0 else ("  <-- el papel del día siguiente" if o == 1 else "")
+        print(f"  t{o:+d}: {sum(v)/len(v):5.2f}%  (x{(sum(v)/len(v))/base:4.2f} vs día normal){marca}")
+
+    print(f"\n=== ¿queda deriva explotable? (retorno alineado con la dirección del anuncio) ===")
+    acum = 0.0
+    for o in range(1, 6):
+        m = sum(drift[o]) / len(drift[o])
+        acum += m
+        print(f"  t+{o}: {m:+.3f}%   acumulado {acum:+.3f}%")
+    m0 = sum(drift[0]) / len(drift[0])
+    print(f"\n  salto del día del anuncio: {m0:+.2f}%")
+    print(f"  deriva posterior (t+1..t+5): {acum:+.3f}%  =  {100*acum/m0:.1f}% del salto")
+    json.dump({"eventos": n_ev, "abs": {str(o): sum(absr[o])/len(absr[o]) for o in OFFSETS},
+               "dia_normal": base, "salto_t0": m0,
+               "deriva": {str(o): sum(drift[o])/len(drift[o]) for o in range(1, 6)},
+               "deriva_acumulada": acum},
               open("scripts/news_timing.json", "w", encoding="utf-8"), indent=1)
-    print("\n  guardado en scripts/news_timing.json")
+    print("  guardado en scripts/news_timing.json")
 
 
 if __name__ == "__main__":
