@@ -40,22 +40,23 @@ with LiveApp(a.app()) as trade:
     fill_mask = float(o["filled_avg_price"])
     expected_fill = px * (1 + SPREAD_BPS / 1e4)       # cruzas el spread al comprar
     check(abs(fill_mask - round(expected_fill, 4)) < 1e-3, f"fill {fill_mask} != {expected_fill}")
-    # efectivo real gastado = qty * precio real de ejecución
-    fill_real = mask.unindex_price(real, fill_mask)
-    spent = to_cents(qty * fill_real)
-    check(cash0 - w.balance() == spent, f"efectivo movido {cash0-w.balance()} != {spent}")
-    charge = [e for e in w.ledger.entries() if e.counterparty == COUNTERPARTY][-1]
-    check(charge.amount_cents == -spent and charge.ref == alias, "asiento de compra")
+    # efectivo gastado = qty * precio de ejecución (+ comisión, anotada aparte)
+    spent = to_cents(qty * fill_mask)
+    comm = to_cents(float(o["commission"]))
+    check(comm > 0, "operar tiene que costar comisión")
+    check(cash0 - w.balance() == spent + comm, f"efectivo movido {cash0-w.balance()} != {spent}+{comm}")
+    cargos = [e for e in w.ledger.entries() if e.counterparty == COUNTERPARTY][-2:]
+    check(cargos[0].amount_cents == -spent and cargos[0].ref == alias, "asiento de compra")
+    check(cargos[1].amount_cents == -comm and cargos[1].concept.startswith("Comisión"), "asiento de comisión")
     # posición
     pos = requests.get(T(f"/v2/positions/{alias}"), headers=H).json()
     check(pos["symbol"] == alias and float(pos["qty"]) == qty and abs(float(pos["avg_entry_price"]) - fill_mask) < 1e-3, pos)
     check(len(requests.get(T("/v2/positions"), headers=H).json()) == 1, "debería haber 1 posición")
 
     # --- sin efectivo: comprar carísimo -> 403 insufficient buying power -----
-    huge = (w.balance() / 100) / 100 + 1000            # más acciones de las que puede pagar
-    r = requests.post(T("/v2/orders"), headers=H, json={"symbol": alias, "qty": huge, "side": "buy", "type": "market"})
+    r = requests.post(T("/v2/orders"), headers=H, json={"symbol": alias, "qty": 1e9, "side": "buy", "type": "market"})
     check(r.status_code == 403 and "buying power" in r.json()["message"], r.text)
-    check(w.balance() == cash0 - spent, "un rechazo movió efectivo")
+    check(w.balance() == cash0 - spent - comm, "un rechazo movió efectivo")
 
     # --- vender más de lo que tienes -> 403 --------------------------------
     r = requests.post(T("/v2/orders"), headers=H, json={"symbol": alias, "qty": qty + 1, "side": "sell", "type": "market"})
@@ -67,7 +68,7 @@ with LiveApp(a.app()) as trade:
     check(r.status_code == 200, r.text)
     sell_mask = float(r.json()["filled_avg_price"])
     check(abs(sell_mask - round(px * (1 - SPREAD_BPS / 1e4), 4)) < 1e-3, "venta no ejecuta al bid")
-    got = to_cents(50 * mask.unindex_price(real, sell_mask))
+    got = to_cents(50 * sell_mask) - to_cents(float(r.json()["commission"]))
     check(w.balance() - cash1 == got, "efectivo de la venta")
     check(float(requests.get(T(f"/v2/positions/{alias}"), headers=H).json()["qty"]) == 50, "posición tras vender la mitad")
 
