@@ -87,7 +87,9 @@ class EpisodeMask:
 
     # ---- traducción de precio -------------------------------------------
     def index_price(self, real_symbol: str, price: float) -> float:
-        return round(price * self._factor[real_symbol], 4)
+        # Sin redondear: conserva los retornos EXACTOS. El redondeo de presentación
+        # lo hace el gemelo al serializar el JSON (como haría un feed real).
+        return price * self._factor[real_symbol]
 
     def unindex_price(self, real_symbol: str, masked_price: float) -> float:
         """Precio enmascarado -> precio real (para contabilizar internamente si hiciera falta)."""
@@ -104,9 +106,8 @@ class EpisodeMask:
 
     def mask_bar(self, real_symbol: str, bar: Bar) -> MaskedBar:
         f = self._factor[real_symbol]
-        return MaskedBar(open=round(bar.open * f, 4), high=round(bar.high * f, 4),
-                         low=round(bar.low * f, 4), close=round(bar.close * f, 4),
-                         volume=bar.volume)
+        return MaskedBar(open=bar.open * f, high=bar.high * f, low=bar.low * f,
+                         close=bar.close * f, volume=bar.volume)
 
     def series_for(self, alias: str) -> Optional[Series]:
         real = self.to_real(alias)

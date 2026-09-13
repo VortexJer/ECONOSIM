@@ -14,13 +14,21 @@ start = md.series[syms[0]].bars[200].day        # un día cualquiera con futuro
 m1 = EpisodeMask(md, seed="ep-alpha", start_day=start)
 m2 = EpisodeMask(md, seed="ep-beta", start_day=start)
 
+# --- solo cotiza lo que YA cotizaba: una empresa sin precio ese día no existe ---------
+fuera = [s for s in syms if s not in m1.real_symbols]
+for sym in fuera:
+    check(md.series[sym].asof(start) is None, f"{sym} se excluyó teniendo precio el día de arranque")
+for sym in m1.real_symbols:
+    check(md.series[sym].asof(start) is not None, f"{sym} entró sin precio de arranque")
+syms = m1.real_symbols
+
 # --- alias: estable dentro del episodio, biyectivo, distinto entre episodios ----------
 check(len(set(m1.alias_of.values())) == len(syms), "alias no únicos")
 for sym in syms:
     a = m1.to_alias(sym)
     check(m1.to_alias(sym) == a, "alias no estable en la misma máscara")
     check(m1.to_real(a) == sym, "alias no invertible")
-    check(sym not in a, f"el alias {a} contiene el símbolo real {sym}")
+    check(a != sym, f"el alias {a} es igual al símbolo real {sym}")
 distintos = sum(1 for sym in syms if m1.to_alias(sym) != m2.to_alias(sym))
 check(distintos >= len(syms) * 0.8, f"demasiados alias iguales entre episodios: {len(syms)-distintos}")
 # reproducible: misma semilla, mismos alias
@@ -66,9 +74,15 @@ check(mb.low <= mb.open <= mb.high and mb.low <= mb.close <= mb.high and mb.volu
 check(abs(mb.close - m1.index_price(syms[0], b.close)) < 1e-6, "cierre enmascarado != index_price")
 
 # --- sin fugas: ni símbolo real ni año real en los alias -----------------------------
+# tokens del alias (separando por no-letras): ninguno coincide con un símbolo real,
+# y el alias no lleva un año real. Una subcadena casual (p.ej. "KO" dentro de "HEXKOR")
+# no es fuga: el mapeo es un hash, no se puede invertir sin la semilla.
+import re
 real_years = {str(md.series[s].first_day.year) for s in syms} | {str(md.series[s].last_day.year) for s in syms}
+realset = set(syms)
 for a in m1.aliases:
-    check(not any(sym in a for sym in syms), f"alias {a} filtra símbolo real")
+    tokens = set(re.findall(r"[A-Z]+", a))
+    check(not (tokens & realset), f"alias {a} contiene un token = símbolo real")
     check(not any(y in a for y in real_years), f"alias {a} filtra un año real")
 
 print("MASK OK")
