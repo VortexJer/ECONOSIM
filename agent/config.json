@@ -1,0 +1,7 @@
+{
+ "model": "anthropic/claude-sonnet-4",
+ "max_steps": 14,
+ "max_tokens": 1500,
+ "default_sleep_minutes": 60,
+ "min_sleep_minutes": 120
+}
