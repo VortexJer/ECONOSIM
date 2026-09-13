@@ -71,8 +71,13 @@ def run_bash(command: str, timeout_s: int = 120) -> str:
     # intervalos que libfaketime corrompe (OSError 22). El timeout lo aplica un
     # hilo watchdog que mata el proceso; communicate() espera sin polling de reloj.
     timeout_s = max(1, min(int(timeout_s or 120), 600))
+    # El shell va en su PROPIA sesión/grupo de procesos: al vencer el plazo se mata el
+    # grupo entero. Matar solo al shell dejaba vivos a los nietos (un `apt-get` contra un
+    # host que no contesta, por ejemplo), y como siguen sujetando la tubería de salida la
+    # lectura no terminaba nunca: la vida se quedaba congelada ahí para siempre.
     proc = subprocess.Popen(SHELL + [command], cwd=str(HOME), stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, text=True, errors="replace")
+                            stderr=subprocess.STDOUT, text=True, errors="replace",
+                            start_new_session=True)
     timer = threading.Timer(timeout_s, _kill_tree, args=(proc,))
     timer.start()
     try:
@@ -87,11 +92,25 @@ def run_bash(command: str, timeout_s: int = 120) -> str:
 
 
 def _kill_tree(proc: subprocess.Popen) -> None:
+    """Mata al shell Y a todo lo que haya arrancado. Primero pide salir, luego fuerza."""
     proc._timed_out = True  # type: ignore[attr-defined]
     try:
-        proc.kill()
+        grupo = os.getpgid(proc.pid)
     except OSError:
-        pass
+        grupo = None
+    for señal, espera in ((signal.SIGTERM, 3.0), (signal.SIGKILL, 0.0)):
+        try:
+            if grupo is not None:
+                os.killpg(grupo, señal)
+            else:
+                proc.send_signal(señal)
+        except OSError:
+            pass
+        if espera and proc.poll() is None:
+            # espera corta sin tocar el reloj falseado: sondeo con eventos, no time.sleep
+            threading.Event().wait(espera)
+        if proc.poll() is not None:
+            return
 
 
 def chat(cfg: dict, messages: list) -> requests.Response:
