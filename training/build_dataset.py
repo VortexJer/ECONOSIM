@@ -19,8 +19,9 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 DATA = HERE / "data"
 SYSTEM_MD = ROOT / "agent" / "SYSTEM.md"
-USER_SEED = ("Empieza una sesión nueva. No recuerdas nada anterior: revisa tus notas en disco si existen, "
-             "comprueba tu situación y actúa. Termina con end_session.")
+USER_SEED = ("Empieza una sesión nueva. No recuerdas nada anterior. Lee /home/agent/NOTES.md: si ya tiene "
+             "la SITUACIÓN, no la vuelvas a comprobar; ejecuta el PRÓXIMO PASO del PLAN (o crea el plan si no "
+             "existe). Avanza al menos un paso hacia un ingreso, reescribe NOTES.md y termina con end_session.")
 
 
 def session_to_messages(path: Path, system: str) -> list[dict]:
@@ -54,6 +55,8 @@ def main() -> None:
                     help="umbral de puntuación; por defecto, la mediana de las vidas jugadas")
     ap.add_argument("--min-steps", type=int, default=2,
                     help="descarta sesiones triviales (la IA que solo mira y se duerme)")
+    ap.add_argument("--only-brain", default="",
+                    help="usar solo vidas de este cerebro (p.ej. teacher = destilación)")
     a = ap.parse_args()
 
     system = SYSTEM_MD.read_text(encoding="utf-8")
@@ -64,7 +67,11 @@ def main() -> None:
     scored = []
     for ep in eps:
         out = json.loads((ep / "outcome.json").read_text(encoding="utf-8"))
+        if a.only_brain and out.get("brain", "student") != a.only_brain:
+            continue
         scored.append((ep, float(out.get("score") or 0.0)))
+    if not scored:
+        raise SystemExit(f"no hay vidas del cerebro '{a.only_brain}'")
     scores = sorted(s for _, s in scored)
     thr = a.min_score if a.min_score is not None else scores[len(scores) // 2]
     print(f"{len(eps)} vidas · puntuaciones {scores[0]:.0f}..{scores[-1]:.0f} · umbral {thr:.0f}")
