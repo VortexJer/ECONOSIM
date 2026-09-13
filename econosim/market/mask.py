@@ -88,6 +88,15 @@ class EpisodeMask:
         """Precio enmascarado -> precio real (para contabilizar internamente si hiciera falta)."""
         return masked_price / self._factor[real_symbol]
 
+    def factor(self, real_symbol: str) -> float:
+        return self._factor[real_symbol]
+
+    def mask_amount(self, real_symbol: str, amount: float) -> float:
+        """Cifras absolutas de las cuentas (ingresos, beneficio, deuda…) al MISMO factor
+        que el precio. Así el PER, el margen, el crecimiento y cualquier ratio salen
+        exactos, pero el tamaño de la empresa no la delata."""
+        return amount * self._factor[real_symbol]
+
     def mask_bar(self, real_symbol: str, bar: Bar) -> MaskedBar:
         f = self._factor[real_symbol]
         return MaskedBar(open=round(bar.open * f, 4), high=round(bar.high * f, 4),
