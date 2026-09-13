@@ -52,7 +52,12 @@ class EpisodeMask:
         self.data = data
         self.seed = seed
         self.start_day = start_day
-        self.real_symbols = symbols or data.symbols
+        pedidos = symbols or data.symbols
+        # Una empresa que aún no cotizaba el día de arranque NO existe en este episodio:
+        # sin precio base no hay escala, y listarla dejaba huecos que reventaban al
+        # preguntar por ella. Fuera es igual: una empresa sin salir a bolsa no se compra.
+        self.real_symbols = [s for s in pedidos
+                             if (b := data.series[s].asof(start_day)) is not None and b.close > 0]
         # alias <-> real, únicos
         self.alias_of: dict[str, str] = {}
         self.real_of: dict[str, str] = {}
