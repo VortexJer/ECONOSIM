@@ -30,7 +30,13 @@ DETACHED = 0x00000008 | 0x00000200          # DETACHED_PROCESS | CREATE_NEW_PROC
 
 def log(msg: str) -> None:
     line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} {msg}"
-    print(line, flush=True)
+    try:
+        print(line, flush=True)
+    except UnicodeEncodeError:
+        # una consola en cp1252 no puede con un acento: que se pierda el carácter, no la
+        # noche entera de entrenamiento (una tilde tumbaba todo el proceso).
+        enc = (sys.stdout.encoding or "ascii")
+        print(line.encode(enc, "replace").decode(enc, "replace"), flush=True)
     DATA.mkdir(parents=True, exist_ok=True)
     with open(LOG, "a", encoding="utf-8") as f:
         f.write(line + "\n")
