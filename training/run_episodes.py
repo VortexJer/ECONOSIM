@@ -189,11 +189,9 @@ def main() -> None:
 
     import os
     env_base = dict(os.environ)
-    if a.modo == "inversor":
-        # el mundo se queda solo con banco, servidor, cerebro, bolsa y cuentas de empresas,
-        # y el agente despierta con el encargo de inversor en vez del de emprendedor
-        env_base["ECONOSIM_SOLO_INVERSION"] = "1"
-        env_base["AGENT_PROFILE"] = "inversor"
+    # Fase 14: solo inversión por defecto. El encargo lo decide qué SYSTEM.md hay en agent/
+    # (scripts/modo.py), así que el modo completo exige además haber cambiado los ficheros.
+    env_base["ECONOSIM_SOLO_INVERSION"] = "1" if a.modo == "inversor" else "0"
     if a.active_speed and a.active_speed != 1.0:
         env_base["ECONOSIM_ACTIVE_SPEED"] = str(a.active_speed)
     EPISODES.mkdir(parents=True, exist_ok=True)
