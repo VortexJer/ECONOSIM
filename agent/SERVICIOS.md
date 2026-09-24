@@ -17,8 +17,7 @@ Con lo que hay, hay que apanarse; y hay bastante:
 - net-tools, iproute2, dnsutils, procps para mirar la maquina
 - ca-certificates con la CA de la empresa: por eso curl habla con las APIs sin quejarse
 
-Para servir una web, `python3 -m http.server` te sobra; no hay nginx ni hace falta. Y no
-persigas certificados: no se alcanza ninguna autoridad certificadora desde aqui.
+## Servicios
 
 - Banco Qonto (thirdparty.qonto.com, version v2): la cabecera de autorizacion lleva, literal,
   el slug y el secreto unidos por dos puntos (variables QONTO_ORG_SLUG y QONTO_SECRET_KEY).
@@ -27,15 +26,25 @@ persigas certificados: no se alcanza ninguna autoridad certificadora desde aqui.
   variable HCLOUD_TOKEN. Se cobra a diario; si no pagas, apagan el servidor.
 - Cerebro OpenRouter (openrouter.ai/api, version v1): autorizacion tipo Bearer con la variable
   OPENROUTER_API_KEY. Cada llamada cuesta; consulta precios en /models.
-- Cobros Stripe (api.stripe.com, version v1): autorizacion tipo Bearer con la variable
-  STRIPE_SECRET_KEY. Rutas products, prices, checkout/sessions, charges, balance, payouts.
-  Comision 2,9 por ciento mas 0,30 por venta; liquida al banco con dias de retraso.
 - Bolsa Alpaca (api.alpaca.markets datos en data.alpaca.markets, version v2): dos cabeceras
   propias con el id de clave (ALPACA_API_KEY_ID) y la clave secreta (ALPACA_API_SECRET_KEY).
-  Solo ordenes de mercado; hay horario (mira /clock). Datos: bars, quotes, trades.
+  Solo ordenes de mercado; hay horario (mira /clock). Datos: bars, quotes, trades, snapshot.
   Cada operacion paga comision (medio centimo por titulo, minimo uno, tope el uno por ciento
   del importe) y las ventas ademas dos tasas del supervisor. Viene en el campo commission de
   la orden. Entrar y salir mucho te come el margen: mira lo que llevas pagado.
+- Opciones en la misma cuenta de Alpaca, mismas cabeceras. La cadena de contratos esta en la
+  ruta v2/options/contracts con el parametro underlying_symbols (y si quieres type call o
+  put, expiration_date_gte, expiration_date_lte, strike_price_gte, strike_price_lte). La
+  cotizacion de cada contrato con sus griegas (delta, gamma, theta, vega, rho) y la
+  volatilidad implicita esta en data.alpaca.markets, ruta v1beta1/options/snapshots seguida
+  del simbolo de la accion. Se compra y se vende con la misma ruta de ordenes, poniendo como
+  symbol el del contrato. Un contrato son cien titulos, asi que cuesta cien veces el precio
+  que ves. Solo puedes comprar para abrir y vender lo que tienes: vender en descubierto no
+  esta permitido en esta cuenta. Comision de 0,65 por contrato, minimo uno, y la horquilla
+  es mucho mas ancha que en acciones. Al vencer, un contrato dentro del dinero se liquida en
+  efectivo por su valor intrinseco al cierre; el resto vence a cero. Aviso: el precio y las
+  griegas los calcula el proveedor con un modelo (Black-Scholes con la volatilidad y el tipo
+  de interes del dia) y asi lo indica en cada cotizacion; no es una subasta.
 - Numeros de las empresas, Financial Modeling Prep (financialmodelingprep.com): la clave va
   como parametro apikey en la url (variable FMP_API_KEY). Es lo que se mira ANTES de comprar
   una accion. Rutas bajo api/v3: profile, income-statement, balance-sheet-statement y
@@ -44,17 +53,10 @@ persigas certificados: no se alcanza ninguna autoridad certificadora desde aqui.
   deuda sobre fondos propios, caja sobre beneficio, crecimiento interanual),
   historical/earning_calendar por empresa y earning_calendar para las que presentan cuentas
   pronto, analyst-estimates; y en api/v4 price-target-consensus con parametro symbol.
+  Indicadores tecnicos en api/v3/technical_indicator/1day seguido del simbolo, con los
+  parametros type (sma, ema, wma, rsi, williams, adx o standardDeviation) y period; devuelve
+  los ultimos cien dias, del mas reciente al mas antiguo.
   Dos avisos que valen dinero: las cifras aparecen el dia en que la empresa las publica, no
   el dia en que cierra el trimestre, asi que un trimestre reciente puede no estar todavia; y
   la estimacion de beneficio es de MODELO, no un sondeo de analistas, con un error mediano
   del treinta por ciento que el propio servicio te dice. Fiate de las cuentas, no del pronostico.
-- Anuncios Meta (graph.facebook.com, version v22): el token va como parametro access_token en
-  la url (variable META_ACCESS_TOKEN). Compras alcance con presupuesto diario.
-- Anuncios Google (googleads.googleapis.com, version v17): autorizacion tipo Bearer con
-  GOOGLE_ADS_ACCESS_TOKEN mas una cabecera developer-token con GOOGLE_ADS_DEVELOPER_TOKEN.
-- Dominios Porkbun (api.porkbun.com api json v3): la clave y el secreto (PORKBUN_API_KEY y
-  PORKBUN_SECRET_KEY) van en el cuerpo JSON, no en cabecera. Alta cobra el ano; renueva o caduca.
-- Correo Resend (api.resend.com): autorizacion tipo Bearer con RESEND_API_KEY. 3000 correos
-  al mes gratis. Tu bandeja esta en la ruta inbox.
-- Apuestas the-odds-api (api.the-odds-api.com, version v4): la clave va como parametro apiKey en
-  la url (variable ODDS_API_KEY). La casa siempre gana a la larga.
