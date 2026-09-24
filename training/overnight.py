@@ -144,7 +144,7 @@ def main() -> None:
     ap.add_argument("--iterations", type=int, default=3)
     ap.add_argument("--lives", type=int, default=3)
     ap.add_argument("--duration", default="10d")
-    ap.add_argument("--modo", choices=["completo", "inversor"], default="completo",
+    ap.add_argument("--modo", choices=["completo", "inversor"], default="inversor",
                     help="inversor = mundo sin tienda/anuncios/dominios; solo bolsa y cuentas")
     ap.add_argument("--active-speed", type=float, default=1.0,
                     help="velocidad del reloj mientras la IA trabaja (x1 = fiel)")

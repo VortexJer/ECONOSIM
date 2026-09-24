@@ -242,8 +242,10 @@ async def main(argv=None) -> None:
                         "siempre a x1. 0 = velocidad constante clásica (--speed)")
     p.add_argument("--hang", type=float, default=300.0)
     p.add_argument("--solo-inversion", action="store_true",
-                   help="mundo de inversor: banco, servidor, cerebro, bolsa y cuentas de empresas; "
-                        "sin tienda, anuncios, dominios, correo ni apuestas")
+                   help="(por defecto) mundo de inversor: banco, servidor, cerebro, bolsa y cuentas de empresas")
+    p.add_argument("--completo", action="store_true",
+                   help="reactiva el mundo completo (tienda, anuncios, dominios, correo, apuestas), "
+                        "DESACTIVADO desde la fase 14; antes: python scripts/modo.py completo")
     p.add_argument("--allow-past", action="store_true", help="permitir fecha mostrada anterior a hoy (tests)")
     a = p.parse_args(argv)
 
@@ -256,7 +258,9 @@ async def main(argv=None) -> None:
         real_start = datetime(1998, 10, 14, 9, 30, tzinfo=UTC)
     sim_duration = parse_duration(os.environ.get("ECONOSIM_SIM_DURATION", a.sim_duration))
     idle_speed = float(os.environ.get("ECONOSIM_IDLE_SPEED", a.idle_speed))
-    solo_inversion = a.solo_inversion or os.environ.get("ECONOSIM_SOLO_INVERSION", "") not in ("", "0", "false")
+    # Fase 14: por defecto SOLO inversión. El resto del mundo está desactivado (no borrado):
+    # --completo o ECONOSIM_SOLO_INVERSION=0 lo vuelven a montar.
+    solo_inversion = not (a.completo or os.environ.get("ECONOSIM_SOLO_INVERSION", "1") in ("0", "false"))
     if solo_inversion:
         market = True                                   # sin bolsa no hay modo inversor
     world, fakenet = build_world(real_start, a.initial_eur, a.ledger, a.hang,

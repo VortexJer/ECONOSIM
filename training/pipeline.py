@@ -43,7 +43,7 @@ def main() -> None:
     ap.add_argument("--lives", type=int, default=4)
     ap.add_argument("--duration", default="2d")
     ap.add_argument("--epochs", type=float, default=2.0)
-    ap.add_argument("--modo", choices=["completo", "inversor"], default="completo")
+    ap.add_argument("--modo", choices=["completo", "inversor"], default="inversor")
     ap.add_argument("--active-speed", type=float, default=1.0)
     ap.add_argument("--timeout", type=float, default=14400,
                     help="segundos reales máximos por vida; una vida de 30 días no cabe en una hora")

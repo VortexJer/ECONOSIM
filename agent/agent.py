@@ -152,13 +152,10 @@ def sleep_virtual(minutes: float) -> None:
 
 
 def briefing() -> str:
-    """El encargo con el que despierta. `AGENT_PROFILE=inversor` cambia el mundo entero:
-    solo hay banco, servidor, cerebro y bolsa, así que el briefing también es otro."""
-    perfil = (os.environ.get("AGENT_PROFILE") or "").strip().lower()
-    fichero = HERE / ("SYSTEM_INVERSOR.md" if perfil == "inversor" else "SYSTEM.md")
-    if not fichero.exists():
-        fichero = HERE / "SYSTEM.md"
-    return fichero.read_text(encoding="utf-8")
+    """El encargo con el que despierta: SYSTEM.md, sin variantes. Qué mundo ve la IA lo
+    decide qué hay en esta carpeta (scripts/modo.py cambia los ficheros), no una variable
+    que delataría que existen otros encargos."""
+    return (HERE / "SYSTEM.md").read_text(encoding="utf-8")
 
 
 def session(cfg: dict, n: int) -> tuple[str, float]:
