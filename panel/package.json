@@ -1,0 +1,34 @@
+{
+  "name": "econosim-panel",
+  "version": "0.1.0",
+  "description": "Panel humano de ECONOSIM (Electron): saldo, reloj, ledger, acciones, mercado, incidentes y puntuación.",
+  "main": "main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/format.test.mjs && node test/render.test.mjs && node test/live.test.mjs && node test/calendar.test.mjs && node test/viewer.test.mjs",
+    "dist": "electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.vortexjer.econosim.panel",
+    "productName": "ECONOSIM Panel",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "renderer.mjs",
+      "format.mjs"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "dir",
+      "icon": "build-icon.ico"
+    }
+  }
+}

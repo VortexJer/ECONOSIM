@@ -70,10 +70,12 @@ with LiveApp(f.app()) as api:
         r = requests.get(T(ruta), params=params)
         check(r.status_code == 200, f"{ruta} -> {r.status_code}")
         crudo += r.text
-    for año in range(2000, 2000 + off + 30):
-        if año >= w.clock.display_now.year - 1:
-            break
-        check(str(año) not in crudo, f"se filtró un año real ({año})")
+    import re
+    fechas = set(re.findall(r'"(\d{4})-\d{2}-\d{2}"', crudo))
+    check(fechas, "ninguna fecha en la respuesta: el test no está mirando nada")
+    for año in sorted(fechas):
+        check(int(año) >= w.clock.display_now.year - 12,
+              f"se filtró un año de la época real ({año}); mostrado {hoy_mostrado}")
     check(real not in crudo, f"se filtró el símbolo real ({real})")
     check(str(c.cik) not in crudo, "se filtró el identificador del registro público")
     # el tamaño tampoco: los importes van al factor del precio
@@ -138,5 +140,35 @@ with LiveApp(f.app()) as api:
     if sin:
         check(requests.get(T(f"/api/v3/income-statement/{sin}"), params=K).json() == [],
               "un fondo cotizado no presenta cuentas: debe venir vacío")
+
+# --- 7) LA ESTIMACIÓN NO PUEDE SER UNA BOLA DE CRISTAL --------------------
+# Si alguien "mejorase" el estimador anclándolo al resultado real, la sorpresa se
+# volvería diminuta y la IA aprendería una ventaja que en la vida real no existe.
+# Este guardián lo impide: sobre TODO el histórico, el error tiene que ser grande.
+import statistics                                                    # noqa: E402
+errores = []
+for real_sym, cf in fund.por_simbolo.items():
+    al = mask.to_alias(real_sym)
+    for h in cf.periodos(datetime(2026, 1, 1).date(), "eps_diluted", TRIM, 40):
+        e = f._estimacion(al, cf, h.fin, h.publicado)
+        if e and abs(e) > 0.05 and h.val > 0:
+            errores.append(abs(100 * (h.val / e - 1)))
+check(len(errores) > 300, f"pocos anuncios para juzgar el estimador ({len(errores)})")
+mediana = statistics.median(errores)
+check(mediana > 8.0, f"el estimador acierta demasiado ({mediana:.1f}%): huele a datos del futuro")
+check(mediana < 60.0, f"el estimador es inservible ({mediana:.1f}%)")
+
+# y es INDEPENDIENTE del día desde el que se pregunta: el consenso de un trimestre no
+# se reescribe después del anuncio (si dependiera del día, estaría mirando el resultado)
+cf = fund.get(real)
+antes = [(h.fin, f._estimacion(alias, cf, h.fin, h.publicado))
+         for h in cf.periodos(hoy, "eps_diluted", TRIM, 4)]
+ultima = max(h.publicado for h in cf.periodos(hoy, "eps_diluted", TRIM, 4))
+w.advance_to(datetime.combine(ultima + timedelta(days=400), datetime.min.time(),
+                              w.clock.real_now().tzinfo))
+for fin_q, e1 in antes:
+    e2 = f._estimacion(alias, cf, fin_q, [h.publicado for h in cf.periodos(
+        w.clock.real_now().date(), "eps_diluted", TRIM, 40) if h.fin == fin_q][0])
+    check(e1 == e2, f"la estimación de {fin_q} cambió al mirarla más tarde: depende del futuro")
 
 print("FUNDAMENTALS OK")

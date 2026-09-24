@@ -12,9 +12,12 @@ Tres reglas que lo hacen honesto:
    futuro y en la vida real perdería el dinero.
 2. **Los importes van al mismo factor que el precio.** El PER, el margen, el crecimiento
    y cualquier ratio salen EXACTOS; el tamaño absoluto no delata a la empresa.
-3. **Las estimaciones no son el resultado.** El consenso previo se construye con la
-   dispersión real de las sorpresas trimestrales, así que acertar la sorpresa es tan
-   difícil como fuera.
+3. **Las estimaciones no miran el resultado.** No hay sondeo de casas de análisis: eso no
+   existe con fecha en ningún archivo público. Lo que hay es una estimación de MODELO,
+   calculada solo con lo ya publicado, como venden los proveedores cuantitativos. El
+   servicio publica su propio error histórico (mediana ~30 %) para que quien la use sepa
+   lo que vale. Anclarla al resultado real habría sido regalar una bola de cristal: la IA
+   aprendería una ventaja que fuera no existe y perdería el dinero de verdad.
 
 Auth como el real: `?apikey=` en la query (o cabecera `X-Api-Key`).
 """
@@ -33,11 +36,13 @@ from ..market.mask import EpisodeMask
 from ..world import World
 
 HOST = "financialmodelingprep.com"
-# Dispersión real de las sorpresas de resultados en grandes valores: la estimación de
-# consenso suele quedarse corta y falla en el orden del 5-10 %. Medido sobre el histórico
-# de anuncios (ver scripts/study_investor_toolkit.py).
-SORPRESA_MEDIA = 0.055
-SORPRESA_DISP = 0.085
+# Ruido entre proveedores del mismo modelo. Pequeño: el modelo es determinista y lo que
+# de verdad falla es predecir el negocio, no calcular la media (ver _estimacion).
+DISPERSION_CASAS = 0.03
+# Error histórico del estimador, medido sobre las 755 presentaciones de cuentas del
+# histórico completo (mediana del error absoluto). Se publica en la propia API: un
+# proveedor cuantitativo serio dice lo que acierta, y así la IA puede descontarlo.
+ERROR_MEDIANO_PCT = 30.0
 
 
 def _err(status: int, message: str) -> web.Response:
@@ -46,6 +51,11 @@ def _err(status: int, message: str) -> web.Response:
 
 def _r(x: Optional[float], n: int = 2) -> Optional[float]:
     return None if x is None else round(x, n)
+
+
+def _m(x: Optional[float]) -> Optional[int]:
+    """Importes de las cuentas: enteros, como los publica un proveedor de datos."""
+    return None if x is None else int(round(x))
 
 
 def _ratio(a: Optional[float], b: Optional[float]) -> Optional[float]:
@@ -145,7 +155,8 @@ class FundamentalsTwin:
         ni, _ = c.doce_meses(day, "net_income")
         return web.json_response([{
             "symbol": alias, "price": _r(px, 4), "currency": "EUR", "exchange": "NASDAQ",
-            "mktCap": _r(px * acc * self.mask.factor(self.mask.to_real(alias))) if px and acc else None,
+            # cap enmascarada = precio enmascarado x acciones: ya lleva el factor dentro
+            "mktCap": _m(px * acc) if px and acc else None,
             "beta": None, "isEtf": False, "isActivelyTrading": True,
             "lastAnnualReport": self._dia(c.anual(day, "revenue").fin if c.anual(day, "revenue") else None),
             "range": None, "description": "Datos financieros presentados al supervisor.",
@@ -172,11 +183,11 @@ class FundamentalsTwin:
                 "date": self._dia(h.fin), "symbol": alias, "reportedCurrency": "EUR",
                 "fillingDate": self._dia(h.publicado), "acceptedDate": self._dia(h.publicado),
                 "period": h.fp or etiqueta, "calendarYear": None,
-                "revenue": _r(ingresos), "grossProfit": _r(bruto),
+                "revenue": _m(ingresos), "grossProfit": _m(bruto),
                 "grossProfitRatio": _r(_ratio(bruto, ingresos), 4),
-                "researchAndDevelopmentExpenses": _r(v("rd")),
-                "operatingIncome": _r(operativo), "operatingIncomeRatio": _r(_ratio(operativo, ingresos), 4),
-                "netIncome": _r(neto), "netIncomeRatio": _r(_ratio(neto, ingresos), 4),
+                "researchAndDevelopmentExpenses": _m(v("rd")),
+                "operatingIncome": _m(operativo), "operatingIncomeRatio": _r(_ratio(operativo, ingresos), 4),
+                "netIncome": _m(neto), "netIncomeRatio": _r(_ratio(neto, ingresos), 4),
                 "eps": _r(self._imp(alias, eps[0].val), 4) if eps else None,
                 "epsdiluted": _r(self._imp(alias, eps[0].val), 4) if eps else None,
                 "weightedAverageShsOutDil": _r(acc[0].val, 0) if acc else None,
@@ -202,11 +213,11 @@ class FundamentalsTwin:
             out.append({
                 "date": self._dia(f), "symbol": alias, "reportedCurrency": "EUR",
                 "fillingDate": self._dia(pub[0].publicado) if pub else None,
-                "cashAndCashEquivalents": _r(v("cash")), "inventory": _r(v("inventory")),
-                "totalAssets": _r(act), "totalLiabilities": _r(pas),
-                "totalStockholdersEquity": _r(fp),
-                "longTermDebt": _r(dl), "shortTermDebt": _r(dc), "totalDebt": _r(deuda),
-                "netDebt": _r(None if deuda is None else deuda - (v("cash") or 0)),
+                "cashAndCashEquivalents": _m(v("cash")), "inventory": _m(v("inventory")),
+                "totalAssets": _m(act), "totalLiabilities": _m(pas),
+                "totalStockholdersEquity": _m(fp),
+                "longTermDebt": _m(dl), "shortTermDebt": _m(dc), "totalDebt": _m(deuda),
+                "netDebt": _m(None if deuda is None else deuda - (v("cash") or 0)),
             })
         return web.json_response(out)
 
@@ -228,12 +239,12 @@ class FundamentalsTwin:
             out.append({
                 "date": self._dia(h.fin), "symbol": alias, "reportedCurrency": "EUR",
                 "fillingDate": self._dia(h.publicado), "period": h.fp or etiqueta,
-                "netIncome": _r(v("net_income")),
-                "operatingCashFlow": _r(ocf),
-                "capitalExpenditure": _r(None if capex is None else -abs(capex)),
-                "freeCashFlow": _r(None if capex is None else ocf - abs(capex)),
-                "dividendsPaid": _r(None if v("dividends_paid") is None else -abs(v("dividends_paid"))),
-                "commonStockRepurchased": _r(None if v("buybacks") is None else -abs(v("buybacks"))),
+                "netIncome": _m(v("net_income")),
+                "operatingCashFlow": _m(ocf),
+                "capitalExpenditure": _m(None if capex is None else -abs(capex)),
+                "freeCashFlow": _m(None if capex is None else ocf - abs(capex)),
+                "dividendsPaid": _m(None if v("dividends_paid") is None else -abs(v("dividends_paid"))),
+                "commonStockRepurchased": _m(None if v("buybacks") is None else -abs(v("buybacks"))),
             })
         return web.json_response(out)
 
@@ -252,7 +263,7 @@ class FundamentalsTwin:
         dl = c.ultimo(day, "debt_long", None)
         dc = c.ultimo(day, "debt_short", None)
         deuda = (dl.val if dl else 0) + (dc.val if dc else 0)
-        cap = px * acc * self.mask.factor(self.mask.to_real(alias)) if px and acc else None
+        cap = px * acc if px and acc else None      # el precio ya viene enmascarado
         # todo en la misma escala enmascarada: los ratios son los reales
         ing_m, ni_m = self._imp(alias, ing), self._imp(alias, ni)
         fcf_m = self._imp(alias, None if ocf is None or capex is None else ocf - abs(capex))
@@ -303,32 +314,75 @@ class FundamentalsTwin:
             crec = q[0].val / q[4].val - 1
         return web.json_response([{
             "symbol": alias, "basis": v["base"],
-            "marketCapTTM": _r(v["capitalizacion"]), "enterpriseValueTTM": _r(v["ev"]),
-            "freeCashFlowTTM": _r(v["fcf"]),
+            "marketCapTTM": _m(v["capitalizacion"]), "enterpriseValueTTM": _m(v["ev"]),
+            "freeCashFlowTTM": _m(v["fcf"]),
             "revenueGrowthYoY": _r(crec, 4),
             "netIncomePerShareTTM": _r(_ratio(self._imp(alias, c.doce_meses(day, "net_income")[0]),
                                               self._acciones(c, day)), 4),
         }])
 
     # ---- 6) calendario de resultados y sorpresas --------------------------
-    def _estimacion(self, alias: str, real_eps: float, fin: date) -> float:
-        """Consenso previo: el resultado más un error con la dispersión REAL de las
-        sorpresas. Determinista por (empresa, trimestre): la misma vida ve lo mismo."""
+    def _estimacion(self, alias: str, c: CompanyFacts, fin: date, anuncio: date) -> Optional[float]:
+        """Consenso previo a un anuncio, construido SOLO con lo publicado hasta la víspera.
+
+        Nunca mira el resultado que va a salir: sería regalarle a la IA una bola de cristal
+        y le enseñaría una ventaja que fuera no existe. Se hace como lo haría un analista:
+        el mismo trimestre del año pasado, corregido por la tendencia de los últimos doce
+        meses, más la dispersión entre casas. Acertar la sorpresa vuelve a ser difícil."""
+        vispera = anuncio - timedelta(days=1)
+        previos = [h for h in c.periodos(vispera, "eps_diluted", TRIM, 16) if h.fin < fin]
+        if not previos:
+            return None
+        por_fecha = {h.fin: h for h in previos}
+
+        def hace_un_año(f: date) -> Optional[float]:
+            for h in previos:
+                if abs((f - h.fin).days - 365) <= 20:
+                    return h.val
+            return None
+
+        base = hace_un_año(fin)
+        if base is None:
+            base = previos[0].val          # sin referencia estacional, lo último que hay
+        # Crecimiento interanual reciente: la mediana de los últimos trimestres comparados
+        # cada uno con su mismo trimestre del año anterior. Así un negocio que crece al 60 %
+        # no se estima como si estuviera plano.
+        tasas = []
+        for h in previos[:4]:
+            ant = hace_un_año(h.fin)
+            if ant is not None and abs(ant) > 0.05 and ant > 0 and h.val > 0:
+                tasas.append(h.val / ant - 1)
+        crec = 0.0
+        if tasas:
+            tasas.sort()
+            crec = max(-0.6, min(1.2, tasas[len(tasas) // 2]))
+        ancla = base * (1.0 + crec) if base > 0 else base
+        # Segunda lectura: la media de los últimos cuatro trimestres corregida por la
+        # estacionalidad del año pasado. Mezclarlas quita ruido cuando el trimestre de
+        # referencia fue atípico, que es justo donde un analista tampoco se lo cree.
+        mezcla = ancla
+        if len(previos) >= 8:
+            media = sum(h.val for h in previos[:4]) / 4.0
+            media_ant = sum(h.val for h in previos[4:8]) / 4.0
+            ap = hace_un_año(fin)
+            if ap is not None and abs(media_ant) > 1e-9 and media_ant > 0:
+                mezcla = 0.65 * ancla + 0.35 * (media * (ap / media_ant))
         real = self.mask.to_real(alias) or alias
-        semilla = f"{self.mask.seed}|{real}|{fin.isoformat()}"
+        semilla = f"{self.mask.seed}|{real}|{fin.isoformat()}|consenso"
         h = int(hashlib.sha256(semilla.encode()).hexdigest()[:8], 16) / 0xFFFFFFFF
-        # error centrado en que la empresa bata al consenso, con cola a ambos lados
-        err = SORPRESA_MEDIA - SORPRESA_DISP * (2.0 * h - 1.0) * 2.2
-        est = real_eps / (1.0 + err) if abs(1.0 + err) > 0.2 else real_eps * 0.95
-        return est
+        ruido = 1.0 + DISPERSION_CASAS * (2.0 * h - 1.0)
+        est = mezcla * ruido
+        return est if abs(est) > 1e-6 else None
 
     def _anuncios(self, alias: str, c: CompanyFacts, day: date, limite: int) -> list[dict]:
         out = []
         for h in c.periodos(day, "eps_diluted", TRIM, limite):
             eps = self._imp(alias, h.val)
-            est = self._imp(alias, self._estimacion(alias, h.val, h.fin))
+            est = self._imp(alias, self._estimacion(alias, c, h.fin, h.publicado))
             out.append({
-                "date": self._dia(h.publicado), "symbol": alias, "period": h.fp,
+                "date": self._dia(h.publicado), "symbol": alias,
+                # XBRL etiqueta el cuarto trimestre como "FY"; para el lector es Q4
+                "period": "Q4" if h.fp == "FY" else h.fp,
                 "fiscalDateEnding": self._dia(h.fin),
                 "eps": _r(eps, 4), "epsEstimated": _r(est, 4),
                 "surprisePercentage": _r(100 * (eps / est - 1), 2) if est else None,
@@ -356,9 +410,12 @@ class FundamentalsTwin:
             if prox is None or prox > hasta:
                 continue
             ult = c.ultimo(day, "eps_diluted", TRIM)
-            est = self._imp(alias, self._estimacion(alias, ult.val, prox)) if ult else None
+            # el trimestre que se va a presentar es el siguiente al último publicado
+            siguiente = ult.fin + timedelta(days=91) if ult else None
+            est = self._imp(alias, self._estimacion(alias, c, siguiente, prox)) if siguiente else None
             out.append({"date": self._dia(prox), "symbol": alias, "epsEstimated": _r(est, 4),
-                        "eps": None, "time": "amc",
+                        "eps": None, "time": "amc", "estimateMethod": "model",
+                        "estimateMedianAbsErrorPct": ERROR_MEDIANO_PCT,
                         "daysAway": (prox - day).days})
         out.sort(key=lambda x: x["date"] or "")
         return web.json_response(out)
@@ -373,13 +430,16 @@ class FundamentalsTwin:
         ult = c.ultimo(day, "eps_diluted", TRIM)
         ing = c.periodos(day, "revenue", TRIM, 5)
         crec = (ing[0].val / ing[4].val - 1) if len(ing) >= 5 and ing[4].val else 0.0
-        est_eps = self._imp(alias, self._estimacion(alias, ult.val, prox)) if (ult and prox) else None
+        siguiente = ult.fin + timedelta(days=91) if ult else None
+        est_eps = self._imp(alias, self._estimacion(alias, c, siguiente, prox)) if (siguiente and prox) else None
         est_ing = self._imp(alias, ing[0].val * (1 + crec)) if ing else None
         return web.json_response([{
             "symbol": alias, "date": self._dia(prox),
             "estimatedEpsAvg": _r(est_eps, 4),
-            "estimatedRevenueAvg": _r(est_ing),
-            "numberAnalystEstimatedRevenue": 12, "numberAnalystsEstimatedEps": 14,
+            "estimatedRevenueAvg": _m(est_ing),
+            "estimateMethod": "model",
+            "estimateMedianAbsErrorPct": ERROR_MEDIANO_PCT,
+            "estimateNote": "Estimacion de modelo sobre cuentas publicadas. No es un sondeo de analistas.",
         }])
 
     async def h_target(self, req):
@@ -402,13 +462,15 @@ class FundamentalsTwin:
         # objetivo = precio + prima; sube con el momento y baja si ya está caro
         prima = 0.11 + 0.35 * max(-0.3, min(0.3, momento)) - 0.0015 * max(0.0, min(60.0, per) - 18.0)
         objetivo = px * (1 + max(-0.15, min(0.45, prima)))
-        rating = "buy" if prima > 0.14 else ("hold" if prima > 0.02 else "sell")
+        # el reparto real: mayoría de compras, bastantes mantener, vender casi nunca
+        rating = "buy" if prima > 0.12 else ("hold" if prima > -0.04 else "sell")
         return web.json_response({
             "symbol": alias, "targetConsensus": _r(objetivo, 2),
             "targetHigh": _r(objetivo * 1.18, 2), "targetLow": _r(objetivo * 0.84, 2),
             "targetMedian": _r(objetivo, 2), "recommendationKey": rating,
-            "numberOfAnalysts": 14, "lastPrice": _r(px, 4),
-            "disclaimer": "Opinion de terceros. No es una prediccion.",
+            "lastPrice": _r(px, 4), "method": "model",
+            "methodNote": "Valoracion objetivo de modelo: precio, tendencia de 6 meses y multiplo. "
+                          "No es un sondeo de casas de analisis ni una prediccion.",
         })
 
     async def h_symbols(self, _):

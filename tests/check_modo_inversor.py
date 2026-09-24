@@ -72,4 +72,21 @@ check("clientes" not in emp.split("Reglas")[0] or True, "")     # el de emprende
 os.environ["AGENT_PROFILE"] = "loquesea"
 check(agent.briefing() == emp, "un perfil desconocido debe caer en el encargo normal")
 
+# --- el acelerador del reloj no puede volver a colarse ----------------------
+# Acelerar el reloj MIENTRAS la IA trabaja rompe todos los plazos dentro de su
+# contenedor (su reloj es el del mundo): con x60, dos segundos reales son 119 para ella.
+# Pasó de verdad: cinco meses sin poder hablar con el bróker y muerta sin comprar nada.
+from econosim.world import World                              # noqa: E402
+from datetime import datetime, timezone                       # noqa: E402
+os.environ.pop("ECONOSIM_ACTIVE_SPEED_FORZAR", None)
+try:
+    World(datetime(2020, 1, 1, tzinfo=timezone.utc), active_speed=60)
+    check(False, "acelerar el reloj en activo debería estar prohibido")
+except ValueError as err:
+    check("plazos" in str(err), f"el error no explica el motivo: {err}")
+World(datetime(2020, 1, 1, tzinfo=timezone.utc), active_speed=1.0)      # x1 siempre vale
+os.environ["ECONOSIM_ACTIVE_SPEED_FORZAR"] = "1"
+World(datetime(2020, 1, 1, tzinfo=timezone.utc), active_speed=60)       # a sabiendas, se deja
+os.environ.pop("ECONOSIM_ACTIVE_SPEED_FORZAR")
+
 print("MODO INVERSOR OK")

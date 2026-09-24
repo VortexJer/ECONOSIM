@@ -14,9 +14,13 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
+import signal
 import subprocess
 import sys
+import threading
 import time
+import traceback
 from datetime import datetime
 from pathlib import Path
 
@@ -26,7 +30,7 @@ HERE = Path(__file__).resolve().parent
 HOME = Path(os.environ.get("AGENT_HOME", "/home/agent"))
 LOG_DIR = Path(os.environ.get("AGENT_LOG_DIR", "/var/log/agent"))
 BASE_URL = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/")
-SHELL = os.environ.get("AGENT_SHELL", "bash -lc").split()
+SHELL = shlex.split(os.environ.get("AGENT_SHELL", "bash -lc"))
 
 TOOLS = [
     {"type": "function", "function": {
@@ -58,11 +62,14 @@ def log(msg: str) -> None:
 
 
 def load_config() -> dict:
-    cfg = {"model": "openai/gpt-oss-120b", "max_steps": 40, "max_tokens": 1500, "default_sleep_minutes": 60}
+    cfg = {"model": "openai/gpt-oss-120b", "max_steps": 40, "max_tokens": 1500, "default_sleep_minutes": 60,
+           "min_sleep_minutes": 30}
     try:
         cfg.update(json.loads((HERE / "config.json").read_text(encoding="utf-8")))
     except (OSError, ValueError) as e:
         log(f"config.json ilegible ({e}); uso valores por defecto")
+    if os.environ.get("AGENT_MIN_SLEEP_MINUTES") is not None:       # tests
+        cfg["min_sleep_minutes"] = float(os.environ["AGENT_MIN_SLEEP_MINUTES"])
     return cfg
 
 
@@ -113,12 +120,25 @@ def _kill_tree(proc: subprocess.Popen) -> None:
             return
 
 
-def chat(cfg: dict, messages: list) -> requests.Response:
-    return requests.post(f"{BASE_URL}/chat/completions", timeout=300,
-                         headers={"Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}",
-                                  "HTTP-Referer": "https://vps-1.local", "X-Title": "vps-agent"},
-                         json={"model": cfg["model"], "messages": messages, "tools": TOOLS,
-                               "max_tokens": cfg["max_tokens"], "usage": {"include": True}})
+def chat(cfg: dict, messages: list, forzar_bash: bool = False) -> requests.Response:
+    """Una llamada al modelo.
+
+    En el PRIMER paso de cada sesión se fuerza la herramienta `bash`. Pedir solo
+    "usa alguna herramienta" salió mal: obligado a elegir una, el modelo cogía la más
+    barata (`end_session`) y se dormía nada más despertar, sesión tras sesión. Forzar
+    `bash` garantiza que la sesión empieza haciendo algo; a partir de ahí decide él.
+    Si el proveedor no admite el campo (400), se reintenta sin él."""
+    cuerpo = {"model": cfg["model"], "messages": messages, "tools": TOOLS,
+              "max_tokens": cfg["max_tokens"], "usage": {"include": True}}
+    if forzar_bash:
+        cuerpo["tool_choice"] = {"type": "function", "function": {"name": "bash"}}
+    r = requests.post(f"{BASE_URL}/chat/completions", timeout=300,
+                      headers={"Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}",
+                               "HTTP-Referer": "https://vps-1.local", "X-Title": "vps-agent"},
+                      json=cuerpo)
+    if r.status_code == 400 and forzar_bash:
+        return chat(cfg, messages, forzar_bash=False)
+    return r
 
 
 def sleep_virtual(minutes: float) -> None:
@@ -131,13 +151,36 @@ def sleep_virtual(minutes: float) -> None:
         time.sleep(min(2.0, max(0.05, remaining)))
 
 
+def briefing() -> str:
+    """El encargo con el que despierta. `AGENT_PROFILE=inversor` cambia el mundo entero:
+    solo hay banco, servidor, cerebro y bolsa, así que el briefing también es otro."""
+    perfil = (os.environ.get("AGENT_PROFILE") or "").strip().lower()
+    fichero = HERE / ("SYSTEM_INVERSOR.md" if perfil == "inversor" else "SYSTEM.md")
+    if not fichero.exists():
+        fichero = HERE / "SYSTEM.md"
+    return fichero.read_text(encoding="utf-8")
+
+
 def session(cfg: dict, n: int) -> tuple[str, float]:
-    system = (HERE / "SYSTEM.md").read_text(encoding="utf-8")
+    system = briefing()
     now = datetime.now().strftime("%A %d de %B de %Y, %H:%M")
+    # Las notas se entregan YA LEÍDAS: despertarse y tenerlas delante. Antes, la primera
+    # decisión de cada sesión era siempre "cat NOTES.md" — un paso pagado, de catorce, para
+    # leer un archivo que el propio sistema podía poner en la mesa.
+    notas = ""
+    try:
+        notas = (HOME / "NOTES.md").read_text(encoding="utf-8", errors="replace").strip()[:6000]
+    except OSError:
+        notas = ""
+    bloque = (f"\n\nTus notas de la sesión anterior (`/home/agent/NOTES.md`), ya leídas:\n\n"
+              f"```\n{notas}\n```\n") if notas else \
+             "\n\nNo hay notas: es tu primera sesión, o las perdiste. Escribe `/home/agent/NOTES.md` antes de dormir.\n"
     messages = [
         {"role": "system", "content": system + f"\n\n## Ahora\n\nFecha y hora del sistema: {now}. Directorio de trabajo: {HOME}."},
-        {"role": "user", "content": "Empieza una sesión nueva. No recuerdas nada anterior: revisa tus notas en disco si existen, "
-                                    "comprueba tu situación y actúa. Termina con end_session."},
+        {"role": "user", "content": "Empieza una sesión nueva. No recuerdas nada anterior." + bloque +
+                                    "No vuelvas a leer las notas ni a comprobar lo que ya dicen: ejecuta el PRÓXIMO PASO del PLAN "
+                                    "(o crea el plan si no existe). Avanza al menos un paso hacia un ingreso, reescribe NOTES.md "
+                                    "y termina con end_session."},
     ]
     transcript = LOG_DIR / "sessions" / f"{n:05d}.jsonl"
     transcript.parent.mkdir(parents=True, exist_ok=True)
@@ -147,13 +190,22 @@ def session(cfg: dict, n: int) -> tuple[str, float]:
             f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
     nudges = 0
+    trabajo_hecho = False          # ¿ha ejecutado algo en esta sesión?
+    empujon_vagancia = False       # solo se le insiste una vez
+    transient = 0
     cost = 0.0
     for step in range(cfg["max_steps"]):
         try:
-            r = chat(cfg, messages)
+            # el primer paso de la sesión tiene que ser trabajo, no una siesta
+            r = chat(cfg, messages, forzar_bash=(step == 0 and not trabajo_hecho))
         except requests.RequestException as e:
-            log(f"sesión {n} paso {step}: sin conexión con OpenRouter ({e}); duermo 10 min")
-            return "network_error", 10
+            transient += 1
+            if transient <= 8:
+                log(f"sesión {n} paso {step}: sin conexión ({e}); reintento {transient}/8")
+                sleep_virtual(min(30, 5 * transient) / 60)
+                continue
+            log(f"sesión {n} paso {step}: sin conexión persistente; reintento en 30 s")
+            return "network_error", 0.5
         if r.status_code == 402:
             log(f"sesión {n}: OpenRouter sin créditos (402). Duermo 60 min.")
             return "no_credits", 60
@@ -161,9 +213,15 @@ def session(cfg: dict, n: int) -> tuple[str, float]:
             log(f"sesión {n}: 429, espero 60 s")
             sleep_virtual(1)
             continue
+        if r.status_code >= 500:
+            # el "OpenRouter" ya reintentó internamente ~60 s; si aún falla, el proveedor
+            # está caído de verdad: descansar unos minutos en vez de re-martillear.
+            log(f"sesión {n} paso {step}: HTTP {r.status_code} (proveedor caído); reintento en 3 min")
+            return f"http_{r.status_code}", 3
         if r.status_code != 200:
             log(f"sesión {n} paso {step}: HTTP {r.status_code}: {r.text[:200]}; duermo 15 min")
             return f"http_{r.status_code}", 15
+        transient = 0
         data = r.json()
         msg = data["choices"][0]["message"]
         cost += float((data.get("usage") or {}).get("cost") or 0)
@@ -184,12 +242,39 @@ def session(cfg: dict, n: int) -> tuple[str, float]:
             except ValueError:
                 args = {}
             if fn == "end_session":
+                # Cerrar sin haber hecho NADA sale barato y no lleva a ningún sitio: al
+                # abaratar las llamadas, el agente empezó a dormirse 24 h nada más
+                # despertar. El dueño lo dejó configurado para exigir un paso, e insiste
+                # una sola vez. Se contesta como RESULTADO de la herramienta: dejar una
+                # llamada sin respuesta rompe el formato de conversación de algunos modelos.
+                sin_notas = not (HOME / "NOTES.md").exists()
+                if (not trabajo_hecho or sin_notas) and not empujon_vagancia:
+                    empujon_vagancia = True
+                    if not trabajo_hecho:
+                        aviso = ("No se cierra la sesión: no has hecho nada en ella. Dormir solo tiene "
+                                 "sentido si ya has puesto algo en marcha que necesita tiempo; si no "
+                                 "tienes nada funcionando, dormir es morir más despacio. Da un paso real "
+                                 "ahora, aunque sea pequeño, y deja escrito NOTES.md antes de cerrar.")
+                    else:
+                        # Sin notas, la próxima sesión despierta ciega y repite esto mismo para
+                        # siempre. Pasó: tres sesiones seguidas redescubriendo la misma máquina.
+                        aviso = ("No se cierra la sesión: no existe /home/agent/NOTES.md. Al despertar "
+                                 "no recordarás nada de lo que acabas de hacer y volverás a empezar de "
+                                 "cero. Escribe ahí tu situación, tu tesis, lo hecho y el próximo paso, "
+                                 "y entonces cierra.")
+                    messages.append({"role": "tool", "tool_call_id": call["id"],
+                                     "name": fn, "content": aviso})
+                    record({"step": step, "tool": fn, "args": args, "result": aviso})
+                    continue
                 mins = float(args.get("wake_in_minutes") or cfg["default_sleep_minutes"])
+                # el dueño no deja al agente despertarse cada dos por tres quemando tokens
+                mins = max(mins, float(cfg.get("min_sleep_minutes", 0)))
                 log(f"sesión {n}: end_session {mins:g} min · {args.get('note', '')!s:.120} · coste ${cost:.4f}")
                 record({"step": step, "end_session": args})
                 return "end_session", max(0.0, mins)
             if fn == "bash":
                 out = run_bash(args.get("command", ""), args.get("timeout_s", 120))
+                trabajo_hecho = True
             else:
                 out = f"herramienta desconocida: {fn}"
             record({"step": step, "tool": fn, "args": args, "result": out[:2000]})
@@ -212,6 +297,7 @@ def main() -> None:
             why, minutes = session(cfg, n)
         except Exception as e:  # nunca morir por un bug propio: dormir y reintentar
             log(f"sesión {n}: error interno {type(e).__name__}: {e}; duermo 15 min")
+            log("  " + traceback.format_exc().strip().replace(chr(10), " | "))
             why, minutes = "crash", 15
         if max_sessions and n >= max_sessions:
             log(f"fin tras {n} sesiones ({why})")

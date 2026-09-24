@@ -29,15 +29,19 @@ UA = __import__("os").environ.get("SEC_USER_AGENT", "econosim research (define S
 TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json"
 
-# Los conceptos que de verdad se miran, con sus sinónimos XBRL (las empresas no usan
-# todas la misma etiqueta). El primero que exista gana.
+# Los conceptos que de verdad se miran, con sus sinónimos XBRL. Las empresas cambian de
+# etiqueta con los años (CAT pasó de NetIncomeLoss a ProfitLoss en 2011), así que se
+# RELLENAN por orden de preferencia: la primera etiqueta manda, las siguientes solo
+# cubren los periodos que la anterior no trae.
 CONCEPTS: dict[str, list[str]] = {
     "revenue": ["RevenueFromContractWithCustomerExcludingAssessedTax",
                 "RevenueFromContractWithCustomerIncludingAssessedTax",
-                "Revenues", "SalesRevenueNet", "SalesRevenueGoodsNet"],
+                "Revenues", "SalesRevenueNet", "SalesRevenueGoodsNet",
+                # los bancos no tienen "ventas": su cifra de negocio es el margen
+                "RevenuesNetOfInterestExpense", "InterestAndDividendIncomeOperating"],
     "gross_profit": ["GrossProfit"],
     "operating_income": ["OperatingIncomeLoss"],
-    "net_income": ["NetIncomeLoss", "ProfitLoss"],
+    "net_income": ["NetIncomeLoss", "NetIncomeLossAvailableToCommonStockholdersBasic", "ProfitLoss"],
     "eps_diluted": ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted"],
     "shares_diluted": ["WeightedAverageNumberOfDilutedSharesOutstanding"],
     "assets": ["Assets"],
@@ -59,6 +63,10 @@ CONCEPTS: dict[str, list[str]] = {
 # Un dato de flujo (ingresos, beneficio) cubre un periodo; uno de saldo (activo, caja) es
 # una foto a una fecha. Se guardan igual, pero el periodo se marca con start/end.
 FORMS = {"10-K", "10-Q", "10-K/A", "10-Q/A", "20-F", "40-F"}
+
+# Empresas que se reorganizaron: el histórico vive bajo el CIK antiguo y hay que unirlo,
+# o el simulador se queda sin cuentas para los años anteriores al cambio.
+PREDECESORES = {"XOM": [34088], "DIS": [1001039], "GOOGL": [1288776]}
 
 
 def get(url: str) -> dict:
@@ -82,7 +90,11 @@ def extract(facts: dict) -> tuple[list[dict], dict[str, str]]:
     out: list[dict] = []
     usados: dict[str, str] = {}
     for campo, etiquetas in CONCEPTS.items():
-        for tag in etiquetas:
+        # Se miran TODAS las etiquetas y gana la publicación MÁS TEMPRANA de cada periodo.
+        # Ordenar por preferencia de etiqueta sería un error grave: cuando una empresa
+        # cambia de norma contable re-presenta los años anteriores con la etiqueta nueva,
+        # y quedarse con esa haría creer que un dato de 2017 se publicó en 2019.
+        for prioridad, tag in enumerate(etiquetas):
             nodo = gaap.get(tag)
             if not nodo:
                 continue
@@ -90,25 +102,25 @@ def extract(facts: dict) -> tuple[list[dict], dict[str, str]]:
             unidad = next((u for u in ("USD", "USD/shares", "shares", "pure") if u in unidades), None)
             if unidad is None:
                 continue
-            n = 0
             for f in unidades[unidad]:
                 if f.get("form") not in FORMS or not f.get("filed") or f["filed"] < SINCE:
                     continue
                 out.append({"campo": campo, "unidad": unidad, "val": f.get("val"),
                             "inicio": f.get("start"), "fin": f.get("end"), "publicado": f["filed"],
                             "forma": f["form"], "fy": f.get("fy"), "fp": f.get("fp"),
-                            "frame": f.get("frame")})
-                n += 1
-            if n:
-                usados[campo] = tag
-                break        # la primera etiqueta que existe manda; no se mezclan sinónimos
+                            "etiqueta": tag, "_pri": prioridad})
+                usados.setdefault(campo, tag)
+
     # el mismo hecho aparece repetido en informes posteriores: nos quedamos con la
     # PRIMERA publicación de cada (campo, periodo), que es cuando el mercado lo supo
     primero: dict[tuple, dict] = {}
     for f in out:
         k = (f["campo"], f["inicio"], f["fin"])
-        if k not in primero or f["publicado"] < primero[k]["publicado"]:
+        prev = primero.get(k)
+        if prev is None or (f["publicado"], f["_pri"]) < (prev["publicado"], prev["_pri"]):
             primero[k] = f
+    for f in primero.values():
+        f.pop("_pri", None)
     hechos = sorted(primero.values(), key=lambda f: (f["publicado"], f["campo"], f["fin"] or ""))
     return hechos, usados
 
@@ -134,12 +146,26 @@ def main() -> None:
         if cik is None:
             print(f"  {t}: sin CIK (¿es un ETF?), se omite")
             continue
-        try:
-            facts = get(FACTS_URL.format(cik=cik))
-        except Exception as e:
-            print(f"  {t}: fallo {type(e).__name__} {e}")
-            continue
-        hechos, usados = extract(facts)
+        hechos: list[dict] = []
+        usados: dict[str, str] = {}
+        for c in [cik] + PREDECESORES.get(t, []):
+            try:
+                facts = get(FACTS_URL.format(cik=c))
+            except Exception as e:
+                print(f"  {t}: fallo {type(e).__name__} {e} (CIK {c})")
+                continue
+            h, u = extract(facts)
+            hechos += h
+            for k, v in u.items():
+                usados.setdefault(k, v)
+            time.sleep(0.2)
+        # al unir predecesor y sucesor, cada hecho se queda con su primera publicación
+        primero: dict[tuple, dict] = {}
+        for f in hechos:
+            k = (f["campo"], f["inicio"], f["fin"])
+            if k not in primero or f["publicado"] < primero[k]["publicado"]:
+                primero[k] = f
+        hechos = sorted(primero.values(), key=lambda f: (f["publicado"], f["campo"], f["fin"] or ""))
         if not hechos:
             print(f"  {t}: sin hechos utilizables")
             continue

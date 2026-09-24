@@ -31,16 +31,18 @@
       color:var(--accent);letter-spacing:.2em;font-size:11px;text-align:center}
     .card.egress .card-h{color:var(--accent)}
 
-    .hero{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:1px;background:var(--line);
+    .hero{display:grid;grid-template-columns:1.4fr repeat(6,1fr);gap:1px;background:var(--line);
       border-bottom:1px solid var(--line)}
     .metric{background:var(--panel);padding:18px 20px}
     .metric .label{color:var(--dim);letter-spacing:.22em;font-size:10px;margin-bottom:10px}
-    .metric .value{font-size:26px;letter-spacing:.02em}
-    .metric.big .value{font-size:38px;color:#f0f3f6}
+    .metric .value{font-size:24px;letter-spacing:.02em;white-space:nowrap}
+    .metric.big .value{font-size:34px;white-space:nowrap;color:#f0f3f6}
     .metric .unit{color:var(--dim);font-size:11px;margin-left:8px;letter-spacing:.1em}
     .metric.ok .value{color:#e8edf2}
     .metric.warn .value{color:var(--warn)}
     .metric.critical .value,.metric.dead .value{color:var(--crit)}
+    .metric.pl.pos .value{color:var(--pos)}
+    .metric.pl.neg .value{color:var(--neg)}
     .metric.score .value{color:var(--accent)}
     .metric.score.neg .value{color:var(--crit)}
 
@@ -75,12 +77,183 @@
 
     .kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #14171c;letter-spacing:.08em}
     .kv span{color:var(--dim);font-size:11px} .kv b{font-weight:500;font-variant-numeric:tabular-nums}
-    .offline{position:fixed;bottom:10px;right:14px;color:var(--dim);letter-spacing:.16em;font-size:10px}
+    /* --- calendario de progreso: rojo hoy · amarillo quedan · naranja vividos · blanco fuera --- */
+    .cal-legend{display:flex;gap:14px;margin-bottom:10px;font-size:10px;letter-spacing:.18em;color:var(--dim)}
+    .lg::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px;border:1px solid #0a0b0d}
+    .lg.today::before{background:#f85149} .lg.future::before{background:#e3c34a} .lg.past::before{background:#e0782a} .lg.outside::before{background:#f0f3f6}
+    .cal-months{display:flex;flex-wrap:wrap;gap:14px}
+    .cal-month{min-width:236px}
+    .cal-month.small{min-width:150px}
+    .cal-mh{color:var(--dim);letter-spacing:.2em;font-size:10px;margin-bottom:6px}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+    .cal-dow{color:var(--dim);font-size:9px;text-align:center;letter-spacing:.1em;padding:2px 0}
+    .cal-day{position:relative;min-height:34px;padding:3px 4px;border:1px solid #14171c;font-size:11px;
+      display:flex;flex-direction:column;justify-content:space-between;color:#0a0b0d;background:#f0f3f6}
+    .cal-month.small .cal-day{min-height:18px;padding:1px 3px;font-size:9px}
+    .cal-day.blank{background:transparent;border-color:transparent}
+    .cal-day.outside{background:#f0f3f6;color:#5a6270}
+    .cal-day.past{background:#e0782a}
+    .cal-day.today{background:#f85149;color:#fff;box-shadow:0 0 0 2px #f85149 inset}
+    .cal-day.future{background:#e3c34a}
+    .cal-day[data-click="1"]{cursor:pointer}
+    .cal-day[data-click="1"]:hover{filter:brightness(1.12)}
+    .cal-day.sel{outline:2px solid #fff;outline-offset:-2px}
+    .cal-n{font-weight:600;font-variant-numeric:tabular-nums}
+    .cal-b{font-size:9px;font-variant-numeric:tabular-nums;opacity:.9;white-space:nowrap}
+    .cal-c{position:absolute;top:3px;right:4px;font-size:8px;opacity:.75}
+    .cal-hint{color:var(--dim);letter-spacing:.18em;font-size:10px;text-align:center;padding:12px}
+    .cal-detail{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+    .cal-dh{color:var(--accent);letter-spacing:.2em;font-size:10px;margin-bottom:8px}
+    .cal-logs{margin-top:8px}
+    .kv b.neg{color:var(--neg)} .kv b.pos{color:var(--pos)}
+    /* generaciones anteriores */
+    .gen{padding:10px 0;border-bottom:1px solid var(--line)}
+    .gen-h{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px;font-size:11px}
+    .gen-id{color:var(--txt);letter-spacing:.14em}
+    .gen-tag{font-size:10px;letter-spacing:.16em;padding:2px 8px;border:1px solid var(--line2);color:var(--dim)}
+    .gen-tag[data-status="alive"]{color:var(--ok);border-color:#173a22}
+    .gen-tag[data-status="dead"]{color:var(--crit);border-color:#3a1414}
+    .gen-kv{color:var(--dim);letter-spacing:.1em;font-size:10px} .gen-kv b{color:var(--txt);font-variant-numeric:tabular-nums;margin-left:4px}
+    .status[data-status="off"]{color:var(--dim)}
+    /* --- probar freellm --- */
+    .fl-bar{display:flex;align-items:center;gap:12px;padding:8px 16px;border-bottom:1px solid var(--line)}
+    .fl-h{color:var(--dim);letter-spacing:.22em;font-size:10px;white-space:nowrap}
+    #fl-input{flex:1;background:var(--bg);color:var(--txt);border:1px solid var(--line2);
+      font-family:var(--mono);font-size:12px;padding:6px 10px}
+    .fl-status{color:var(--dim);letter-spacing:.1em;font-size:10px;white-space:nowrap}
+    .fl-status[data-ok="1"]{color:var(--ok)} .fl-status[data-ok="0"]{color:var(--crit)}
+    #fl-out{max-height:120px;overflow:auto;padding:0 16px;color:var(--txt);font-size:12px;line-height:1.5;
+      white-space:pre-wrap;word-break:break-word}
+    #fl-out[data-open="1"]{padding:8px 16px;border-bottom:1px solid var(--line)}
+    /* --- entrenamiento (dock inferior, fuera de #app) --- */
+    #train{position:fixed;left:0;right:0;bottom:0;background:#0d0f13;border-top:1px solid var(--line2);
+      font-family:var(--mono);z-index:5}
+    .train-bar{display:flex;align-items:center;gap:14px;padding:8px 16px}
+    .train-h{color:var(--dim);letter-spacing:.22em;font-size:10px}
+    .train-btn{background:transparent;color:var(--accent);border:1px solid #3a2f10;padding:6px 14px;
+      font-family:var(--mono);letter-spacing:.18em;font-size:11px;cursor:pointer}
+    .train-btn:hover{background:#1a1205}
+    .train-btn[disabled]{color:var(--dim);border-color:var(--line2);cursor:default}
+    .train-btn.stop{color:var(--crit);border-color:#3a1414}
+    .train-status{color:var(--txt);letter-spacing:.08em;font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .train-status[data-running="1"]{color:var(--accent);animation:pulse 1.6s ease-in-out infinite}
+    .train-opts{display:flex;gap:8px;align-items:center;color:var(--dim);font-size:10px;letter-spacing:.12em}
+    .train-opts input{width:44px;background:var(--bg);color:var(--txt);border:1px solid var(--line2);
+      font-family:var(--mono);font-size:11px;padding:3px 5px;text-align:center}
+    #trainlog{max-height:0;overflow:auto;transition:max-height .2s;border-top:1px solid var(--line);
+      padding:0 16px;font-size:11px;color:var(--dim);line-height:1.5}
+    #trainlog[data-open="1"]{max-height:190px;padding:8px 16px}
+    #trainlog .st{color:var(--accent)} #trainlog .er{color:var(--crit)} #trainlog .ok{color:var(--ok)}
+    /* --- visor del mundo (superpuesto, fuera de #app) --- */
+    #viewer{position:fixed;inset:0;background:rgba(6,7,9,.97);z-index:20;display:flex;flex-direction:column}
+    #viewer[hidden]{display:none}
+    .v-top{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line2)}
+    .v-title{color:var(--accent);letter-spacing:.28em;font-size:11px;white-space:nowrap}
+    .v-url{flex:1;background:var(--bg);color:var(--txt);border:1px solid var(--line2);
+      font-family:var(--mono);font-size:12px;padding:7px 10px}
+    .train-btn[data-on="1"]{background:#1a1205;color:var(--accent)}
+    /* --- la bolsa --- */
+    .b-wrap{display:grid;grid-template-columns:150px 1fr;gap:1px;background:var(--line);height:100%;overflow:hidden}
+    .b-list{background:var(--panel);overflow:auto;padding:8px 0}
+    .b-sym{display:block;width:100%;text-align:left;background:transparent;color:var(--txt);border:0;
+      border-left:2px solid transparent;font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+      padding:7px 12px;cursor:pointer}
+    .b-sym:hover{background:#161a20;color:var(--accent)}
+    .b-sym.on{color:var(--accent);border-left-color:var(--accent);background:#12151a}
+    .b-main{background:var(--panel);overflow:auto;padding:14px 18px}
+    .b-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+    .b-name{font-size:20px;letter-spacing:.14em;color:#f0f3f6}
+    .b-precio{font-size:28px;color:var(--accent)}
+    .b-vars,.b-estado{font-size:10px;letter-spacing:.14em;color:var(--dim)}
+    .b-rangos{margin-left:auto;display:flex;gap:5px}
+    .b-rango{padding:4px 9px;font-size:10px}
+    .g-svg{width:100%;height:340px;display:block}
+    .g-grid{stroke:#1b1f26;stroke-width:1}
+    .g-eje{fill:#6b7480;font-family:var(--mono);font-size:10px}
+    .g-up{fill:#3fb950;stroke:#3fb950} .g-dn{fill:#f85149;stroke:#f85149}
+    .g-mecha{stroke-width:1}
+    .g-linea{fill:none;stroke-width:1.6} .g-linea.up{stroke:#3fb950} .g-linea.dn{stroke:#f85149}
+    .g-area{stroke:none} .g-area.up{fill:rgba(63,185,80,.10)} .g-area.dn{fill:rgba(248,81,73,.10)}
+    .b-pos{margin:12px 0;padding:9px 12px;border:1px solid var(--line2);font-size:11px;letter-spacing:.08em}
+    .b-pos.pos{border-color:#173a22} .b-pos.neg{border-color:#3a1414}
+    .b-pos.vacia{color:var(--dim)}
+    .b-datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--line)}
+    .b-dato{background:var(--panel);padding:11px 13px;display:flex;justify-content:space-between;gap:10px}
+    .b-dato span{color:var(--dim);letter-spacing:.16em;font-size:10px}
+    .b-dato b{font-weight:400;color:var(--txt)}
+    .v-maq{display:flex;flex-direction:column;height:100%;overflow:hidden}
+    .v-migas{padding:9px 16px;border-bottom:1px solid var(--line);color:var(--dim);font-size:10px;letter-spacing:.1em}
+    .v-migas i{font-style:normal;margin:0 2px;color:var(--line2)}
+    .v-miga{background:transparent;border:0;color:var(--dim);font-family:var(--mono);font-size:10px;
+      letter-spacing:.1em;cursor:pointer;padding:0 2px}
+    .v-miga:hover{color:var(--accent)}
+    .v-maq-main{flex:1;display:grid;grid-template-columns:280px 1fr;gap:1px;background:var(--line);overflow:hidden}
+    .v-files{background:var(--panel);overflow:auto;padding:8px 0}
+    .v-file{display:block;width:100%;text-align:left;background:transparent;color:var(--txt);border:0;
+      font-family:var(--mono);font-size:11px;padding:6px 14px;cursor:pointer;word-break:break-all}
+    .v-file:hover{background:#161a20;color:var(--accent)}
+    .v-file.dir{color:var(--accent)}
+    .v-toggle{background:transparent;border:1px solid var(--line2);color:var(--accent);font-family:var(--mono);
+      font-size:10px;letter-spacing:.14em;padding:3px 8px;cursor:pointer;margin-left:6px}
+    .v-web{width:100%;height:calc(100vh - 190px);border:1px solid var(--line2);background:#fff}
+    .v-sym{background:var(--bg);color:var(--txt);border:1px solid var(--line2);
+      font-family:var(--mono);font-size:11px;padding:6px 8px}
+    .v-main{flex:1;display:grid;grid-template-columns:260px 1fr;gap:1px;background:var(--line);overflow:hidden}
+    .v-main.solo{grid-template-columns:1fr}
+    .v-side{background:var(--panel);overflow:auto;padding:10px 0}
+    .v-out{background:var(--panel);overflow:auto;padding:12px 16px}
+    .v-srv{border-bottom:1px solid var(--line)}
+    .v-host{display:block;width:100%;text-align:left;background:transparent;color:var(--txt);border:0;
+      font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:9px 14px;cursor:pointer}
+    .v-host:hover{background:#161a20;color:var(--accent)}
+    .v-srv.open .v-host{color:var(--accent)}
+    .v-rutas{padding:0 0 8px 0}
+    .v-ruta{display:block;width:100%;text-align:left;background:transparent;color:var(--dim);border:0;
+      font-family:var(--mono);font-size:10px;padding:5px 14px 5px 26px;cursor:pointer;word-break:break-all}
+    .v-ruta:hover{background:#161a20;color:var(--txt)}
+    .v-meta{color:var(--dim);letter-spacing:.1em;font-size:10px;margin-bottom:10px}
+    .v-meta.v-err,.v-err{color:var(--crit)}
+    .v-body{margin:0;white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-height:1.55;color:var(--txt)}
+    .v-cortina{padding:16px 20px;overflow:auto}
+    .v-par{display:flex;gap:16px;padding:7px 0;border-bottom:1px solid var(--line)}
+    .v-par span{color:var(--dim);letter-spacing:.18em;font-size:10px;width:240px}
+    .v-cortina .tbl{margin-top:18px}
+    #v-open{position:fixed;bottom:64px;left:14px;background:transparent;color:var(--dim);
+      border:1px solid var(--line2);font-family:var(--mono);letter-spacing:.18em;font-size:10px;
+      padding:6px 12px;cursor:pointer;z-index:6}
+    #v-open:hover{color:var(--accent);border-color:#3a2f10}
+    body{padding-bottom:56px}
+    .offline{position:fixed;bottom:64px;right:14px;color:var(--dim);letter-spacing:.16em;font-size:10px}
   </style>
 </head>
 <body>
   <div id="app"><div class="topbar"><div class="brand">ECONOSIM</div><div class="clock">CONECTANDO…</div></div></div>
+  <div id="train">
+    <div class="fl-bar">
+      <div class="fl-h">PROBAR FREELLM</div>
+      <input id="fl-input" placeholder="escribe un mensaje y pulsa PROBAR…" />
+      <button class="train-btn" id="fl-send">PROBAR</button>
+      <div class="fl-status" id="fl-status">—</div>
+    </div>
+    <div id="fl-out"></div>
+    <div class="train-bar">
+      <div class="train-h">ENTRENAMIENTO</div>
+      <button class="train-btn" id="train-start">ENTRENAR</button>
+      <button class="train-btn stop" id="train-stop" disabled>PARAR</button>
+      <div class="train-opts">
+        ITERACIONES <input id="train-iters" value="1" />
+        VIDAS <input id="train-lives" value="3" />
+        DURACIÓN <input id="train-duration" value="10d" style="width:52px" />
+        <label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" id="train-freellm" checked /> FREELLM</label>
+      </div>
+      <div class="train-status" id="train-status">LISTO · profesor freellm, alumno qwen3b; cada iteración lo mejora en sitio</div>
+      <button class="train-btn" id="train-toggle">LOG</button>
+    </div>
+    <div id="trainlog"></div>
+  </div>
+  <button id="v-open">VER EL MUNDO</button>
+  <div id="viewer" hidden></div>
   <div class="offline" id="conn"></div>
-  <script type="module" src="renderer.js"></script>
+  <script type="module" src="renderer.mjs"></script>
 </body>
 </html>

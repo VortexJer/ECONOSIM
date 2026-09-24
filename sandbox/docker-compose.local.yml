@@ -14,18 +14,35 @@ services:
       - ../econosim:/app/econosim:ro
     environment:
       ECONOSIM_FAKE_UPSTREAM: "0"
-      ECONOSIM_UPSTREAM_BASE_URL: "http://host.docker.internal:11434/v1"
-      ECONOSIM_UPSTREAM_API_KEY: "ollama"
-      ECONOSIM_UPSTREAM_MODEL: "qwen3b"
+      # CEREBRO: por defecto el ALUMNO local (qwen3b en Ollama). El runner puede poner el
+      # PROFESOR (freellmapi/auto) exportando *_BRAIN; MODEL_BRAIN vacío = enviar "auto".
+      ECONOSIM_UPSTREAM_BASE_URL: "${ECONOSIM_UPSTREAM_BASE_URL_BRAIN:-http://host.docker.internal:11434/v1}"
+      ECONOSIM_UPSTREAM_API_KEY: "${ECONOSIM_UPSTREAM_API_KEY_BRAIN:-ollama}"
+      ECONOSIM_UPSTREAM_MODEL: "${ECONOSIM_UPSTREAM_MODEL_BRAIN-qwen3b}"
       # Reloj fiel: x1 mientras la IA piensa/actúa, comprimido solo mientras DUERME.
       # Sustituibles desde el entorno para que el runner de vidas los controle.
       ECONOSIM_SPEED: "${ECONOSIM_SPEED:-1}"
+      # Ojo con subirlo: mientras la IA ejecuta un comando LOCAL el mundo no ve peticiones
+      # y se cree ocioso. Con 100000, un comando atascado dos minutos se llevó 65 días
+      # de vida por delante. 3600 = una hora virtual por segundo real, ya es mucho.
       ECONOSIM_IDLE_SPEED: "${ECONOSIM_IDLE_SPEED:-3600}"
       # Cuánto dura la vida a simular: 12h, 1d, 30d, 1mo, 1y... (vacío = sin límite)
       ECONOSIM_SIM_DURATION: "${ECONOSIM_SIM_DURATION:-1mo}"
+      # cada cuántos días cuajan las ventas (14 real; menos en entrenamiento para dar señal)
+      ECONOSIM_RESOLVE_DAYS: "${ECONOSIM_RESOLVE_DAYS:-14}"
+      # MODO INVERSOR: sin tienda, anuncios, dominios, correo ni apuestas; solo bolsa.
+      ECONOSIM_SOLO_INVERSION: "${ECONOSIM_SOLO_INVERSION:-0}"
+      # Velocidad del reloj MIENTRAS la IA trabaja (×1 = fiel). Se sube solo cuando hacen
+      # falta muchos meses de mercado; con esto pensar deja de costar tiempo.
+      ECONOSIM_ACTIVE_SPEED: "${ECONOSIM_ACTIVE_SPEED:-1}"
 
   agent:
     # Las transcripciones de cada sesión salen al host: son la materia prima del
     # entrenamiento (trayectorias que luego se filtran por la puntuación del episodio).
     volumes:
       - ../training/data/agent-logs:/var/log/agent
+      # el briefing y el bucle del agente, actualizables sin reconstruir la imagen
+      - ../agent:/opt/agent:ro
+    environment:
+      # qué encargo recibe al despertar: emprendedor (por defecto) o inversor
+      AGENT_PROFILE: "${AGENT_PROFILE:-}"

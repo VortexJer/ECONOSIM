@@ -2,6 +2,9 @@
 
 La IA invierte en bolsa a través de esto. Ve símbolos enmascarados y precios
 indexados a 100; por dentro son datos históricos reales en la fecha virtual actual.
+Una unidad del activo enmascarado equivale a f acciones reales (f = 100/cierre de
+arranque), así que el dinero es el MISMO que el de la caja: comprar 3 a 100 cuesta
+300, y el rendimiento en % es exactamente el de la acción real.
 Trading API: account, assets, orders, positions. Market Data API: bars, latest
 quote/trade, snapshots. Clock y calendar como los reales.
 
@@ -11,7 +14,7 @@ Auth: cabeceras APCA-API-KEY-ID / APCA-API-SECRET-KEY (paper).
 Decisión de diseño (§2.7, el sim es más estricto que la realidad): Alpaca no cobra
 comisión, pero la mayoría de brókers sí, y una IA entrenada con operaciones gratis
 aprende a sobreoperar. Se aplica el esquema fijo de un bróker de referencia
-(0,005 por acción, mínimo 1,00, tope 1 % del importe) más las tasas regulatorias
+(0,005 por unidad, mínimo 1,00, tope 1 % del importe) más las tasas regulatorias
 que en la vida real se repercuten SOLO en las ventas y existen incluso en los
 brókers sin comisión (tasa del supervisor sobre el importe y tasa por acción con
 tope). Liquidación T+1 del efectivo.
@@ -52,10 +55,10 @@ def _err(status: int, message: str, code: int = 40010000) -> web.Response:
 
 
 class Position:
-    def __init__(self, alias: str, qty: float, avg_real: float):
+    def __init__(self, alias: str, qty: float, avg: float):
         self.alias = alias
         self.qty = qty
-        self.avg_real = avg_real     # precio medio de coste, en escala REAL
+        self.avg = avg               # precio medio de coste, en la escala que ve la IA
 
 
 class AlpacaTwin:
@@ -101,11 +104,10 @@ class AlpacaTwin:
         cash = self.world.balance()
         mv = 0
         for pos in self.positions.values():
-            px = self._masked_price(pos.alias)     # escala enmascarada
+            px = self._masked_price(pos.alias)
             if px is None:
                 continue
-            real = self.mask.to_real(pos.alias)
-            mv += to_cents(pos.qty * self.mask.unindex_price(real, px))   # valor a escala real = dinero de verdad
+            mv += to_cents(pos.qty * px)     # una unidad vale su precio: misma moneda que la caja
         return cash + mv
 
     # ================================================================= HTTP
@@ -279,9 +281,8 @@ class AlpacaTwin:
 
     # ---- Trading: posiciones -------------------------------------------
     def _position_json(self, pos: Position) -> dict:
-        real = self.mask.to_real(pos.alias)
         cur_mask = self._masked_price(pos.alias) or 0.0
-        avg_mask = self.mask.index_price(real, pos.avg_real)
+        avg_mask = pos.avg
         mv = pos.qty * cur_mask
         cost = pos.qty * avg_mask
         return {"asset_id": self._asset(pos.alias)["id"], "symbol": pos.alias, "exchange": "NASDAQ",
@@ -362,11 +363,9 @@ class AlpacaTwin:
                 "filled_avg_price": None, "limit_price": None, "stop_price": None,
                 "order_class": "simple", "asset_id": self._asset(alias)["id"]}, status=200)
 
-        real = self.mask.to_real(alias)
         half = px * SPREAD_BPS / 1e4
         fill_mask = px + half if side == "buy" else px - half     # cruzas el spread
-        fill_real = self.mask.unindex_price(real, fill_mask)
-        cash_delta = qty * fill_real                              # dinero real que mueve
+        cash_delta = qty * fill_mask                              # dinero que mueve
         fee_cents = self._fees_cents(side, qty, cash_delta)       # comisión + tasas
         fee_mask = fee_cents / 100.0                              # lo que ve la IA en su moneda
 
@@ -375,10 +374,10 @@ class AlpacaTwin:
                 return _err(403, "insufficient buying power", 40310000)
             self.world.pay(to_cents(cash_delta), f"Compra {qty:g} {alias} @ {fill_mask:.2f}", COUNTERPARTY, ref=alias)
             self.world.pay(fee_cents, f"Comisión compra {alias}", COUNTERPARTY, ref=alias)
-            pos = self.positions.get(alias) or Position(alias, 0.0, fill_real)
-            total_cost = pos.qty * pos.avg_real + qty * fill_real
+            pos = self.positions.get(alias) or Position(alias, 0.0, fill_mask)
+            total_cost = pos.qty * pos.avg + qty * fill_mask
             pos.qty += qty
-            pos.avg_real = total_cost / pos.qty
+            pos.avg = total_cost / pos.qty
             self.positions[alias] = pos
         else:
             pos = self.positions.get(alias)

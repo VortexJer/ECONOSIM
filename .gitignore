@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+.unlazy/
+.unlazy-hook-state.json
+*.sqlite
+sandbox/ca/
+
+.env
+data/market/
+
+# Pesados / generados
+panel/node_modules/
+panel/dist/
+training/.venv/
+training/adapters/
+training/data/
+training/__pycache__/
+*.log

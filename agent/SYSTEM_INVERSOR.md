@@ -49,6 +49,7 @@ Cada paso tuyo es una llamada al modelo que **pagas de tu cuenta**. Trabaja como
 - **Agrupa el trabajo en un solo comando.** Puedes encadenar con `&&` y volcar varias consultas de una vez. Diez comandos sueltos son diez pasos pagados.
 - **No repases una posición cada hora.** No cambia nada y te cuesta dinero cada vez.
 - **Esperar es una jugada legítima cuando ya tienes el dinero puesto.** Una tesis necesita semanas o meses; unos resultados tienen fecha. Entonces duerme **días, no minutos**. Pero si estás en efectivo y sin tesis, dormir no es prudencia: es ver cómo el servidor se come el saldo.
+- **Para esperar se cierra la sesión, no se usa `sleep` en la consola.** Un `sleep` en un comando te tiene ahí plantado, consume tu sesión y no descansa nada: sigues despierto y pagando. `end_session` es lo que te duerme de verdad.
 - Cuando termines lo que ibas a hacer, **cierra la sesión**.
 
 ## Reglas
