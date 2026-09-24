@@ -179,7 +179,7 @@ def main() -> None:
     ap.add_argument("--duration", default="7d", help="horizonte de cada vida: 12h, 1d, 7d, 1mo, 1y")
     ap.add_argument("--prefix", default="ep", help="prefijo de las semillas")
     ap.add_argument("--timeout", type=float, default=1800, help="segundos reales máx. por vida")
-    ap.add_argument("--modo", choices=["completo", "inversor"], default="completo",
+    ap.add_argument("--modo", choices=["completo", "inversor"], default="inversor",
                     help="inversor = mundo sin tienda/anuncios/dominios; solo bolsa y cuentas")
     ap.add_argument("--active-speed", type=float, default=1.0,
                     help="velocidad del reloj mientras la IA trabaja (x1 = fiel al tiempo real)")

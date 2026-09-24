@@ -55,22 +55,54 @@ hosts2 = set(net2.hosts())
 check(SE_VA <= hosts2, f"el mundo normal perdió servicios: {SE_VA - hosts2}")
 check("market_bridge" in w2.twins and "resolver" in w2.twins, "el mundo normal perdió el motor de ventas")
 
-# --- el encargo del agente cambia con el perfil -----------------------------
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "agent"))
+# --- lo que la IA puede leer no sabe que existe lo desactivado (fase 14) --------
+# /opt/agent es la carpeta agent/ entera: ni el encargo, ni el catálogo, ni el código
+# pueden nombrar la tienda, los anuncios, los dominios, el correo o las apuestas.
+from pathlib import Path                                      # noqa: E402
+RAIZ = Path(__file__).resolve().parent.parent
+PROHIBIDO = ("stripe", "facebook", "googleads", "google ads", "porkbun", "resend", "odds",
+             "anuncio", "dominio", "correo", "apuesta", "tienda", "cliente", "emprendedor", "inversor")
+for f in (RAIZ / "agent").rglob("*"):
+    if f.is_file() and "__pycache__" not in f.parts:
+        txt = f.read_text(encoding="utf-8", errors="ignore").lower()
+        malas = [p for p in PROHIBIDO if p in txt]
+        check(not malas, f"{f.name} delata lo desactivado: {malas}")
+sys.path.insert(0, str(RAIZ / "agent"))
 import importlib                                             # noqa: E402
 os.environ["OPENROUTER_API_KEY"] = "x"
 agent = importlib.import_module("agent")
-os.environ["AGENT_PROFILE"] = "inversor"
 inv = agent.briefing()
-os.environ["AGENT_PROFILE"] = ""
-emp = agent.briefing()
-check(inv != emp, "el inversor recibe el mismo encargo que el emprendedor")
-check("invertirlo" in inv or "invertir" in inv, "el encargo del inversor no habla de invertir")
+check("invertirlo" in inv or "invertir" in inv, "el encargo no habla de invertir")
 check("TESIS" in inv, "un inversor sin tesis escrita no aprende nada")
 check("comisión" in inv.lower() and "tasas" in inv.lower(), "no le avisa de lo que cuesta operar")
-check("clientes" not in emp.split("Reglas")[0] or True, "")     # el de emprendedor se queda como estaba
-os.environ["AGENT_PROFILE"] = "loquesea"
-check(agent.briefing() == emp, "un perfil desconocido debe caer en el encargo normal")
+servicios = (RAIZ / "agent" / "SERVICIOS.md").read_text(encoding="utf-8")
+check("options/contracts" in servicios and "gamma" in servicios and "technical_indicator" in servicios,
+      "el catálogo no cuenta las opciones y los indicadores")
+# desactivado, NO borrado: el modo completo sigue en disco y es recuperable
+for f in ("SYSTEM.md", "SERVICIOS.md"):
+    check((RAIZ / "desactivado" / "agent" / f).exists(), f"se perdió el {f} del modo completo")
+check("api.stripe.com" in (RAIZ / "desactivado" / "agent" / "SERVICIOS.md").read_text(encoding="utf-8"),
+      "el catálogo completo guardado no es el completo")
+# y el mundo arranca en solo inversión SIN pedirlo
+import econosim.run as _run                                   # noqa: E402
+import inspect                                                # noqa: E402
+src = inspect.getsource(_run.main)
+check('os.environ.get("ECONOSIM_SOLO_INVERSION", "1")' in src, "el defecto del mundo no es solo inversión")
+# el conmutador ida y vuelta, sobre una copia (no toca el proyecto)
+import shutil, tempfile                                       # noqa: E402
+sys.path.insert(0, str(RAIZ / "scripts"))
+modo = importlib.import_module("modo")
+with tempfile.TemporaryDirectory() as td:
+    td = Path(td)
+    shutil.copytree(RAIZ / "agent", td / "agent", ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(RAIZ / "desactivado", td / "desactivado")
+    modo.ROOT, modo.AGENT, modo.OFF = td, td / "agent", td / "desactivado" / "agent"
+    check(modo.activo() == "inversor", "el modo activo debería ser inversor")
+    modo.main(["completo"])
+    check(modo.activo() == "completo", "no pasó a completo")
+    modo.main(["inversor"])
+    check(modo.activo() == "inversor", "no volvió a inversor")
+    check((td / "agent" / "SYSTEM.md").read_text(encoding="utf-8") == inv, "la vuelta alteró el encargo")
 
 # --- el acelerador del reloj no puede volver a colarse ----------------------
 # Acelerar el reloj MIENTRAS la IA trabaja rompe todos los plazos dentro de su
