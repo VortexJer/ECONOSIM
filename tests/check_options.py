@@ -64,7 +64,8 @@ with LiveApp(a.app()) as trade, LiveApp(a.data_app()) as data:
     check(abs(fill - (px + max(0.01, px * HALF_SPREAD_PCT))) < 1e-3, f"fill {fill} vs ask")
     fee = round(max(3 * COMMISSION_PER_CONTRACT, COMMISSION_MIN), 2)
     check(float(r.json()["commission"]) == fee, "comisión por contrato")
-    check(cash0 - w.balance() == round(fill * MULTIPLIER * 3 * 100) + round(fee * 100), "caja movida")
+    # filled_avg_price viene redondeado a 4 decimales: tolerancia de 1 céntimo
+    check(abs((cash0 - w.balance()) - (fill * MULTIPLIER * 3 + fee) * 100) <= 1, f"caja movida {cash0 - w.balance()}")
     check(eq0 - a.equity_cents() > 0, "comprar y valorar al bid cuesta la horquilla + comisión")
     pos = requests.get(T("/v2/positions"), headers=H).json()
     check(any(p["symbol"] == atm["symbol"] and p["asset_class"] == "us_option" and p["qty"] == "3" for p in pos), pos)
@@ -107,6 +108,6 @@ c2 = a2.options.list_for(al2)[0]
 cash = w2.balance()
 st, body = a2.place_order({"symbol": c2.occ, "qty": 1, "side": "buy", "type": "market"})
 check(st == 200 and body["status"] == "accepted" and w2.balance() == cash and not a2.options.positions, "vivo mutó")
-check(w2.live.blocked >= 1, "no quedó en el diario de egreso")
+check(len(w2.live.journal) >= 1, "no quedó en el diario de egreso")
 
 print("OPTIONS OK")

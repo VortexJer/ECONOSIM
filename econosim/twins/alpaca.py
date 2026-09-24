@@ -33,6 +33,7 @@ from ..market.calendar import MARKET_CLOSE, MARKET_OPEN, MarketCalendar, UTC
 from ..market.data import MarketData
 from ..market.mask import EpisodeMask
 from ..world import World, BANK
+from .alpaca_options import OptionsDesk
 
 HOST = "api.alpaca.markets"
 DATA_HOST = "data.alpaca.markets"
@@ -78,6 +79,7 @@ class AlpacaTwin:
         self.orders: dict[str, dict] = {}
         self._seq = 0
         self.account_number = "PA" + secrets.token_hex(5).upper()
+        self.options = OptionsDesk(self)
         world.register("alpaca", self)
 
     # ---- fechas / precios internos --------------------------------------
@@ -108,7 +110,7 @@ class AlpacaTwin:
             if px is None:
                 continue
             mv += to_cents(pos.qty * px)     # una unidad vale su precio: misma moneda que la caja
-        return cash + mv
+        return cash + mv + self.options.market_value_cents()
 
     # ================================================================= HTTP
     def app(self) -> web.Application:
@@ -124,6 +126,8 @@ class AlpacaTwin:
         r.add_get("/v2/orders", self.h_orders)
         r.add_get("/v2/orders/{id}", self.h_order)
         r.add_post("/v2/orders", self.h_create_order)
+        r.add_get("/v2/options/contracts", self.options.h_contracts)
+        r.add_get("/v2/options/contracts/{sym}", self.options.h_contract)
         return app
 
     def data_app(self) -> web.Application:
@@ -134,6 +138,7 @@ class AlpacaTwin:
         r.add_get("/v2/stocks/{sym}/quotes/latest", self.h_latest_quote)
         r.add_get("/v2/stocks/{sym}/trades/latest", self.h_latest_trade)
         r.add_get("/v2/stocks/{sym}/snapshot", self.h_snapshot)
+        r.add_get("/v1beta1/options/snapshots/{sym}", self.options.h_snapshots)
         return app
 
     @web.middleware
@@ -294,10 +299,14 @@ class AlpacaTwin:
                 "change_today": "0"}
 
     async def h_positions(self, _):
-        return web.json_response([self._position_json(p) for p in self.positions.values() if p.qty > 0])
+        self.options.settle()
+        return web.json_response([self._position_json(p) for p in self.positions.values() if p.qty > 0]
+                                 + [self.options.position_json(p) for p in self.options.positions.values()])
 
     async def h_position(self, req):
         alias = req.match_info["sym"].upper()
+        if alias in self.options.positions and self.options.is_option(alias):
+            return web.json_response(self.options.position_json(self.options.positions[alias]))
         pos = self.positions.get(alias)
         if not pos or pos.qty <= 0:
             return _err(404, "position does not exist", 40410000)
@@ -327,41 +336,55 @@ class AlpacaTwin:
             body = await req.json()
         except Exception:
             return _err(422, "invalid JSON", 42210000)
+        status, payload = self.place_order(body)
+        return web.json_response(payload, status=status)
+
+    def place_order(self, body: dict) -> tuple[int, dict]:
+        """Lógica de la orden, síncrona: la usan el handler HTTP y el cerebro Laya en proceso.
+        Devuelve (código HTTP, cuerpo JSON) exactamente como la API."""
+        def err(status, message, code=42210000):
+            return status, {"code": code, "message": message}
         alias = str(body.get("symbol", "")).upper()
         side = body.get("side")
         otype = body.get("type", "market")
+        if self.options.is_option(alias):                 # símbolo OCC de un contrato listado
+            if side not in ("buy", "sell"):
+                return err(422, "side must be buy or sell")
+            if otype != "market":
+                return err(422, "only market orders are supported")
+            return self.options.place(alias, side, body.get("qty"), body)
         if self.mask.to_real(alias) is None:
-            return _err(404, f"asset {alias} not found", 40410000)
+            return err(404, f"asset {alias} not found", 40410000)
         if side not in ("buy", "sell"):
-            return _err(422, "side must be buy or sell", 42210000)
+            return err(422, "side must be buy or sell", 42210000)
         if otype != "market":
-            return _err(422, "only market orders are supported", 42210000)
+            return err(422, "only market orders are supported", 42210000)
         try:
             qty = float(body.get("qty"))
         except (TypeError, ValueError):
-            return _err(422, "qty is required", 42210000)
+            return err(422, "qty is required", 42210000)
         if qty <= 0:
-            return _err(422, "qty must be positive", 42210000)
+            return err(422, "qty must be positive", 42210000)
         px = self._masked_price(alias)
         if px is None:
-            return _err(422, "market is not open for this asset", 42210000)
+            return err(422, "market is not open for this asset", 42210000)
         if not self.cal.is_open(self.clock.real_now()):
             # Alpaca acepta la orden y la deja pendiente hasta la apertura; para el
             # simulador la rechazamos con el error real de mercado cerrado.
-            return _err(403, "market is closed", 40310000)
+            return err(403, "market is closed", 40310000)
 
         if self.world.live.block("alpaca", "place_order", {"symbol": alias, "side": side, "qty": qty}):
             # Modo en vivo: la orden se acepta pero NO se ejecuta (nada sale). Sin llenado,
             # sin posición, sin movimiento de caja.
             now = self.clock.display_iso()
-            return web.json_response({
+            return 200, ({
                 "id": "00000000-0000-4000-8000-" + f"{self._next_id():08d}".rjust(12, "0"),
                 "client_order_id": secrets.token_hex(8), "created_at": now, "submitted_at": now,
                 "filled_at": None, "updated_at": now, "symbol": alias, "asset_class": "us_equity",
                 "qty": f"{qty:g}", "filled_qty": "0", "type": "market", "side": side,
                 "time_in_force": body.get("time_in_force", "day"), "status": "accepted",
                 "filled_avg_price": None, "limit_price": None, "stop_price": None,
-                "order_class": "simple", "asset_id": self._asset(alias)["id"]}, status=200)
+                "order_class": "simple", "asset_id": self._asset(alias)["id"]})
 
         half = px * SPREAD_BPS / 1e4
         fill_mask = px + half if side == "buy" else px - half     # cruzas el spread
@@ -371,7 +394,7 @@ class AlpacaTwin:
 
         if side == "buy":
             if to_cents(cash_delta) + fee_cents > self.world.balance():
-                return _err(403, "insufficient buying power", 40310000)
+                return err(403, "insufficient buying power", 40310000)
             self.world.pay(to_cents(cash_delta), f"Compra {qty:g} {alias} @ {fill_mask:.2f}", COUNTERPARTY, ref=alias)
             self.world.pay(fee_cents, f"Comisión compra {alias}", COUNTERPARTY, ref=alias)
             pos = self.positions.get(alias) or Position(alias, 0.0, fill_mask)
@@ -382,7 +405,7 @@ class AlpacaTwin:
         else:
             pos = self.positions.get(alias)
             if not pos or pos.qty < qty:
-                return _err(403, "insufficient qty available", 40310000)
+                return err(403, "insufficient qty available", 40310000)
             self.world.receive(to_cents(cash_delta), f"Venta {qty:g} {alias} @ {fill_mask:.2f}", COUNTERPARTY, ref=alias)
             self.world.pay(fee_cents, f"Comisión venta {alias}", COUNTERPARTY, ref=alias)
             pos.qty -= qty
@@ -398,4 +421,4 @@ class AlpacaTwin:
                  "limit_price": None, "stop_price": None, "order_class": "simple",
                  "asset_id": self._asset(alias)["id"]}
         self.orders[order["id"]] = order
-        return web.json_response(order, status=200)
+        return 200, order

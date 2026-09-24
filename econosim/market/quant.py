@@ -48,19 +48,27 @@ def ema(x: Sequence[float], n: int) -> Optional[float]:
     return s[-1] if s else None
 
 
-def rsi(close: Sequence[float], n: int = 14) -> Optional[float]:
-    """RSI de Wilder (suavizado exponencial 1/n)."""
+def rsi_series(close: Sequence[float], n: int = 14) -> list[Optional[float]]:
+    """RSI de Wilder (suavizado 1/n) para cada día; None hasta tener n+1 cierres.
+    Recursivo: su valor depende del arranque, así que se calcula siempre desde el
+    principio de la serie (una misma fecha da siempre el mismo número)."""
+    out: list[Optional[float]] = [None] * len(close)
     if len(close) < n + 1:
-        return None
+        return out
     gains = [max(close[i] - close[i - 1], 0.0) for i in range(1, len(close))]
     losses = [max(close[i - 1] - close[i], 0.0) for i in range(1, len(close))]
     ag, al = sum(gains[:n]) / n, sum(losses[:n]) / n
-    for g, l in zip(gains[n:], losses[n:]):
-        ag = (ag * (n - 1) + g) / n
-        al = (al * (n - 1) + l) / n
-    if al == 0:
-        return 100.0
-    return 100.0 - 100.0 / (1.0 + ag / al)
+    f = lambda: 100.0 if al == 0 else 100.0 - 100.0 / (1.0 + ag / al)
+    out[n] = f()
+    for i in range(n, len(gains)):
+        ag = (ag * (n - 1) + gains[i]) / n
+        al = (al * (n - 1) + losses[i]) / n
+        out[i + 1] = f()
+    return out
+
+
+def rsi(close: Sequence[float], n: int = 14) -> Optional[float]:
+    return rsi_series(close, n)[-1] if close else None
 
 
 def macd(close: Sequence[float], fast: int = 12, slow: int = 26, signal: int = 9) -> Optional[dict]:
@@ -155,10 +163,11 @@ def williams_r(high: Sequence[float], low: Sequence[float], close: Sequence[floa
     return -100.0 * (hh - close[-1]) / (hh - ll) if hh > ll else -50.0
 
 
-def adx(high: Sequence[float], low: Sequence[float], close: Sequence[float], n: int = 14) -> Optional[float]:
-    """ADX de Wilder (fuerza de la tendencia, 0-100)."""
+def adx_series(high: Sequence[float], low: Sequence[float], close: Sequence[float], n: int = 14) -> list[Optional[float]]:
+    """ADX de Wilder (fuerza de la tendencia, 0-100) para cada día, desde el principio."""
+    out: list[Optional[float]] = [None] * len(close)
     if len(close) < 2 * n + 1:
-        return None
+        return out
     pdm, mdm, tr = [], [], []
     for i in range(1, len(close)):
         up, dn = high[i] - high[i - 1], low[i - 1] - low[i]
@@ -175,10 +184,17 @@ def adx(high: Sequence[float], low: Sequence[float], close: Sequence[float], n: 
         pdi = 100 * s_p / s_tr if s_tr else 0.0
         mdi = 100 * s_m / s_tr if s_tr else 0.0
         dx.append(100 * abs(pdi - mdi) / (pdi + mdi) if pdi + mdi else 0.0)
+    # dx[k] corresponde al día k+n; el primer ADX (media de n dx) al día 2n-1
     a = sum(dx[:n]) / n
-    for v in dx[n:]:
-        a = (a * (n - 1) + v) / n
-    return a
+    out[2 * n - 1] = a
+    for k in range(n, len(dx)):
+        a = (a * (n - 1) + dx[k]) / n
+        out[k + n] = a
+    return out
+
+
+def adx(high: Sequence[float], low: Sequence[float], close: Sequence[float], n: int = 14) -> Optional[float]:
+    return adx_series(high, low, close, n)[-1] if close else None
 
 
 def zscore_last(x: Sequence[float], n: int = 20) -> Optional[float]:
