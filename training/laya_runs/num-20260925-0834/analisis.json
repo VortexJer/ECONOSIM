@@ -1,0 +1,126 @@
+{
+  "run": "num-20260925-0834",
+  "champion_gen": 156,
+  "val": {
+    "IC_20": {
+      "media": 0.0462,
+      "t": 2.36,
+      "t_corregida_solape": 1.18,
+      "fechas": 169,
+      "positivas": 0.598
+    },
+    "IC_60": {
+      "media": 0.0591,
+      "t": 3.22,
+      "t_corregida_solape": 0.93,
+      "fechas": 169,
+      "positivas": 0.574
+    },
+    "IC_20_sin_mercado": {
+      "media": 0.0068,
+      "t": 0.34,
+      "t_corregida_solape": 0.17,
+      "fechas": 169,
+      "positivas": 0.509
+    },
+    "IC_60_sin_mercado": {
+      "media": 0.0177,
+      "t": 0.98,
+      "t_corregida_solape": 0.28,
+      "fechas": 169,
+      "positivas": 0.533
+    },
+    "azar": {
+      "campeona": 19.03,
+      "barajadas_media": 13.25,
+      "barajadas_max": 14.96,
+      "gana_a": "30/30"
+    }
+  },
+  "test": {
+    "IC_20": {
+      "media": 0.0798,
+      "t": 3.59,
+      "t_corregida_solape": 1.79,
+      "fechas": 196,
+      "positivas": 0.628
+    },
+    "IC_60": {
+      "media": 0.1176,
+      "t": 5.13,
+      "t_corregida_solape": 1.48,
+      "fechas": 194,
+      "positivas": 0.644
+    },
+    "IC_20_sin_mercado": {
+      "media": 0.0065,
+      "t": 0.36,
+      "t_corregida_solape": 0.18,
+      "fechas": 196,
+      "positivas": 0.505
+    },
+    "IC_60_sin_mercado": {
+      "media": 0.0072,
+      "t": 0.35,
+      "t_corregida_solape": 0.1,
+      "fechas": 194,
+      "positivas": 0.51
+    },
+    "azar": {
+      "campeona": 19.34,
+      "barajadas_media": 12.49,
+      "barajadas_max": 14.07,
+      "gana_a": "30/30"
+    }
+  },
+  "sensibilidad_comprar": [
+    {
+      "variable": "volZ",
+      "efecto_+1sd": -0.0067
+    },
+    {
+      "variable": "%B",
+      "efecto_+1sd": 0.0066
+    },
+    {
+      "variable": "beta",
+      "efecto_+1sd": 0.0061
+    },
+    {
+      "variable": "ADX",
+      "efecto_+1sd": 0.0056
+    },
+    {
+      "variable": "W%R",
+      "efecto_+1sd": -0.0047
+    },
+    {
+      "variable": "earningsIn",
+      "efecto_+1sd": -0.0045
+    },
+    {
+      "variable": "no_accounts",
+      "efecto_+1sd": -0.0042
+    },
+    {
+      "variable": "opt30_theta",
+      "efecto_+1sd": -0.0041
+    },
+    {
+      "variable": "mom_5d",
+      "efecto_+1sd": -0.0041
+    },
+    {
+      "variable": "RSI",
+      "efecto_+1sd": 0.004
+    },
+    {
+      "variable": "mom_20d",
+      "efecto_+1sd": 0.004
+    },
+    {
+      "variable": "held",
+      "efecto_+1sd": 0.0038
+    }
+  ]
+}
