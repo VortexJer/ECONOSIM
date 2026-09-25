@@ -1,0 +1,60 @@
+[08:59:10] ES · cerebro laya · es-20260925-0859 · device cuda · población 30 · sigma 0.5 · lr 0.01
+[09:09:25] caché train: 24504 estados (615s)
+[09:13:40] caché val: 9802 estados (254s)
+[09:18:33] caché test: 11368 estados (293s)
+[09:18:37] scorer: 1.05 M parámetros evolucionan
+[09:18:37] referencia cash: val 13.62 € · test 13.17 €
+[09:18:37] referencia index: val 15.59 € · test 15.31 €
+[09:18:40] gen 0 (Laya sin evolucionar): val 13.92 € · test 15.41 € · compra propia 0.0% · mundo real vs rápido [{'start': '2019-04-22', 'mundo_real': 13.51, 'rapido': 13.51, 'ops_real': 4, 'ops_rapido': 4}, {'start': '2019-05-06', 'mundo_real': 17.82, 'rapido': 17.82, 'ops_real': 4, 'ops_rapido': 4}]
+[09:18:43] gen 1: población 12.97 (mejor 13.38) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.7s
+[09:18:47] gen 2: población 13.19 (mejor 13.48) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.7s
+[09:18:51] gen 3: población 12.63 (mejor 12.79) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.7s
+[09:18:54] gen 4: población 12.53 (mejor 12.74) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.3s
+[09:18:58] gen 5: población 13.24 (mejor 13.39) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:19:01] gen 6: población 12.34 (mejor 12.84) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.6s
+[09:19:05] gen 7: población 13.80 (mejor 13.90) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:19:08] gen 8: población 12.36 (mejor 12.45) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:19:12] gen 9: población 13.46 (mejor 13.53) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.7s
+[09:19:15] gen 10: población 13.27 (mejor 13.62) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.3s
+[09:19:19] gen 11: población 11.68 (mejor 11.91) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:19:22] gen 12: población 12.03 (mejor 12.47) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.4s
+[09:19:26] gen 13: población 12.32 (mejor 12.35) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:19:29] gen 14: población 13.13 (mejor 13.26) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:19:33] gen 15: población 13.19 (mejor 13.43) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:19:36] gen 16: población 11.28 (mejor 11.46) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.6s
+[09:19:40] gen 17: población 12.79 (mejor 13.06) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.016, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:19:44] gen 18: población 13.87 (mejor 13.95) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.016, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.6s
+[09:19:47] gen 19: población 12.93 (mejor 13.06) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.3s
+[09:19:50] gen 20: población 12.03 (mejor 12.14) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.6s
+[09:19:54] gen 21: población 13.28 (mejor 13.34) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.6s
+[09:19:57] gen 22: población 12.46 (mejor 12.60) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.3s
+[09:20:01] gen 23: población 12.54 (mejor 12.61) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.015, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.6s
+[09:20:05] gen 24: población 13.16 (mejor 13.63) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.016, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.6s
+[09:20:08] gen 25: población 13.23 (mejor 13.56) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.016, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.4s
+[09:20:12] gen 26: población 12.75 (mejor 12.89) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.016, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.6s
+[09:20:15] gen 27: población 13.59 (mejor 13.75) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.016, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:20:19] gen 28: población 12.78 (mejor 12.92) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.016, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.5s
+[09:20:22] gen 29: población 12.93 (mejor 13.41) · val 13.92 € [invertir +0.6% vs índice +3.9%] (±3.21, IC sin mercado +0.016, compra propia 0.0%, 4.3 ops) · campeona gen 0 · 3.6s
+[09:20:26] gen 30: población 12.93 (mejor 13.04) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.016, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.5s
+[09:20:29] gen 31: población 12.98 (mejor 13.12) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.016, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.5s
+[09:20:33] gen 32: población 12.60 (mejor 12.72) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:20:36] gen 33: población 12.35 (mejor 12.65) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.5s
+[09:20:40] gen 34: población 11.52 (mejor 11.83) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:20:43] gen 35: población 13.54 (mejor 13.96) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.4s
+[09:20:47] gen 36: población 14.00 (mejor 14.12) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.5s
+[09:20:50] gen 37: población 12.29 (mejor 12.38) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:20:54] gen 38: población 12.25 (mejor 12.50) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.5s
+[09:20:58] gen 39: población 13.06 (mejor 13.30) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:21:01] gen 40: población 13.66 (mejor 13.71) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:21:04] gen 41: población 13.46 (mejor 13.65) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.3s
+[09:21:08] gen 42: población 12.63 (mejor 12.74) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.5s
+[09:21:12] gen 43: población 12.52 (mejor 12.61) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:21:15] gen 44: población 13.21 (mejor 13.32) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.3s
+[09:21:18] gen 45: población 13.47 (mejor 13.72) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:21:22] gen 46: población 13.65 (mejor 13.89) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:21:25] gen 47: población 12.92 (mejor 13.23) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.3s
+[09:21:29] gen 48: población 12.75 (mejor 12.97) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:21:33] gen 49: población 11.87 (mejor 11.98) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:21:36] gen 50: población 12.87 (mejor 12.99) · val 13.81 € [invertir +0.4% vs índice +3.9%] (±3.24, IC sin mercado +0.015, compra propia 0.0%, 4.4 ops) · campeona gen 0 · 3.6s
+[09:21:36] STOP: paro
+[09:21:36] FIN · campeona gen 0 · val 13.92 € · test 15.41 €
