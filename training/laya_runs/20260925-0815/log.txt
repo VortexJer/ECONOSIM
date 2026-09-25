@@ -1,0 +1,3 @@
+[08:16:05] ejecución 20260925-0815 · device cuda · 100000.0 h máx
+[08:16:06] referencia cash: val 13.52 € · test 13.00 €
+[08:16:07] referencia index: val 15.12 € · test 13.96 €
