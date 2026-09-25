@@ -63,15 +63,27 @@ function probBar(p) {
     <i class="lp-s" style="width:${(s * 100).toFixed(1)}%"></i><i class="lp-h" style="width:${(h * 100).toFixed(1)}%"></i><i class="lp-b" style="width:${(b * 100).toFixed(1)}%"></i></div>`;
 }
 
-function decisiones(lote) {
+// "sell" sin posición no manda ninguna orden: para Laya es "quedarse fuera".
+function etiqueta(d, tiene) {
+  if (d.held != null) tiene = d.held;
+  if (d.mandate) return ["COMPRA · MANDATO", "buy"];
+  if (d.kept) return ["CONSERVA · MANDATO", "hold"];
+  if (d.act === "sell") return tiene ? ["VENDE", "sell"] : ["FUERA", "out"];
+  if (d.act === "hold") return tiene ? ["MANTIENE", "hold"] : ["ESPERA", "out"];
+  return [ACT[d.act] || d.act, d.act];
+}
+
+function decisiones(lote, positions) {
+  const tiene = new Set((positions || []).map((p) => p.alias));
   if (!lote || !lote.length) return `<div class="empty-t">ESPERANDO A QUE LAYA DECIDA</div>`;
   const orden = { buy: 0, sell: 1, hold: 2 };
+  const rango = (d) => (d.act === "sell" && !tiene.has(d.alias) ? 3 : orden[d.act]);
   const vistas = new Set();
-  const filas = [...lote].sort((a, b) => (a.mandate - b.mandate) || (orden[a.act] - orden[b.act]) || (b.p[2] - a.p[2]))
+  const filas = [...lote].sort((a, b) => (a.mandate - b.mandate) || (rango(a) - rango(b)) || (b.p[2] - a.p[2]))
     .filter((d) => { const k = d.alias + (d.mandate ? "m" : ""); if (vistas.has(k)) return false; vistas.add(k); return true; });
   return `<table class="tbl lp-tbl">${filas.map((d) => `<tr>
       <td>${esc(d.alias)}</td>
-      <td class="lp-act lp-${d.act}">${d.mandate ? "COMPRA · MANDATO" : ACT[d.act] || d.act}</td>
+      <td class="lp-act lp-${etiqueta(d, tiene.has(d.alias))[1]}">${etiqueta(d, tiene.has(d.alias))[0]}</td>
       <td class="lp-cell">${probBar(d.p)}</td>
       <td class="amt dim">${pc(d.p[2])}</td></tr>`).join("")}</table>`;
 }
@@ -92,8 +104,32 @@ function tablaGen(gens) {
       <td class="tag ${g.accepted ? "lp-champ" : "dim"}">${g.gen === 0 ? "BASE" : g.accepted ? "CAMPEONA" : "DESCARTADA"}</td></tr>`).join("")}</table>`;
 }
 
+function vidasTabla(lives, sel) {
+  if (!lives.length) return `<div class="empty-t">AÚN NO HAY VIDAS GUARDADAS DE LA CAMPEONA</div>`;
+  return `<table class="tbl lp-lives"><tr class="dim"><td>#</td><td>ARRANQUE</td><td class="amt">FINAL €</td><td class="amt">OPS</td><td class="amt">COMIS.</td><td></td></tr>
+    ${lives.map((v, i) => `<tr data-life="${i}" class="${i === sel ? "lp-sel" : ""}"><td>${i + 1}</td><td>${esc(v.start)}</td>
+      <td class="amt ${v.final >= (v.inicial || 50) * 0.3 ? "" : "neg"}">${e2(v.final)}</td><td class="amt">${v.trades}</td>
+      <td class="amt dim">${e2(v.fees)}</td><td class="tag ${v.alive ? "dim" : "neg"}">${v.alive ? "VIVA" : "MUERTA"}</td></tr>`).join("")}</table>`;
+}
+
+function movimientos(v) {
+  const m = (v && v.movs) || [];
+  if (!m.length) return `<div class="empty-t">PULSA UNA VIDA PARA VER SUS COMPRAS Y VENTAS</div>`;
+  return `<table class="tbl">${m.map((x) => `<tr><td class="dim">${esc(x.t)}</td>
+    <td class="lp-act lp-${x.op === "buy" ? "buy" : "sell"}">${x.op === "buy" ? "COMPRA" : "VENDE"}</td>
+    <td>${esc(x.sym)}</td><td class="amt dim">${x.qty}</td><td class="amt">${e2(x.precio)}</td>
+    <td class="amt ${x.eur >= 0 ? "pos" : "neg"}">${signed(x.eur)}</td><td class="amt dim">${e2(x.comision)}</td></tr>`).join("")}</table>`;
+}
+
 export function layaHTML(L, opts = {}) {
-  const life = L.life || {};
+  const lives = opts.lives || [];
+  const vsel = opts.lifeSel != null && opts.lifeSel >= 0 ? lives[opts.lifeSel] : null;
+  const life0 = L.life || {};
+  // una vida pulsada sustituye a la instantánea en la curva y las cifras de arriba
+  const life = vsel ? { ...life0, start: vsel.start, curve: vsel.curve, equity: vsel.final, trades: vsel.trades,
+                         fees: vsel.fees, mandate_buys: vsel.mandate_buys, cash: vsel.cash, alive: vsel.alive,
+                         positions: vsel.positions || [], day: (vsel.curve || []).length - 1,
+                         mode: "vida " + (opts.lifeSel + 1) + " de la campeona" } : life0;
   const ini = life.initial || (L.config && L.config.initial_eur) || 50;
   const eq = life.equity, cash = life.cash;
   const res = eq != null ? eq - ini : null;
@@ -105,7 +141,8 @@ export function layaHTML(L, opts = {}) {
   return `
   <header class="topbar">
     <div class="brand">ECONOSIM</div>
-    <div class="episode">CEREBRO LAYA · ${esc(L.run || "")}</div>
+    <div class="episode">${(opts.runs || [L.run]).map((r) => `<button class="lp-tab" data-run="${esc(r)}" data-on="${r === (opts.sel || L.run) ? 1 : 0}">${
+      r.startsWith("num-crisis-") ? "NUMÉRICO + CRISIS 2008" : r.startsWith("num-ic-") ? "NUMÉRICO + LEE DATOS" : r.startsWith("num-") ? "NUMÉRICO" : r.startsWith("es-") ? "LAYA" : "LAYA (SUPERVISADO)"} · ${esc(r.slice(-4).replace(/(..)(..)/, "$1:$2"))}</button>`).join("")}</div>
     <div class="clock">${esc((L.phase || "").toUpperCase())}${life.date ? " · " + esc(life.date) : ""}</div>
     <div class="status" data-status="${vivo ? "alive" : "off"}">${vivo ? "GEN " + (L.gen ?? 0) : "PARADO" + (edad != null ? " · HACE " + Math.round(edad / 60) + " MIN" : "")}</div>
   </header>
@@ -129,8 +166,8 @@ export function layaHTML(L, opts = {}) {
       ${cartera(life.positions)}
     </div>
     <div class="card wide">
-      <div class="card-h">DECISIONES DE LAYA · ÚLTIMA SEMANA · <span class="lp-key"><i class="lp-s"></i>VENDE <i class="lp-h"></i>MANTIENE <i class="lp-b"></i>COMPRA</span></div>
-      <div class="lp-scroll">${decisiones(life.decisions)}</div>
+      <div class="card-h">DECISIONES DE LAYA · ÚLTIMA SEMANA · <span class="lp-key"><i class="lp-s"></i>VENDE / FUERA <i class="lp-h"></i>MANTIENE <i class="lp-b"></i>COMPRA</span></div>
+      <div class="lp-scroll">${decisiones(life.decisions, life.positions)}</div>
     </div>
     <div class="card">
       <div class="card-h">CAMPEONA</div>
@@ -150,6 +187,15 @@ export function layaHTML(L, opts = {}) {
       <div class="card-h">HISTORIAL</div>
       ${tablaGen(L.generations)}
     </div>
+    <div class="card">
+      <div class="card-h">VIDAS DE LA CAMPEONA · VALIDACIÓN · PULSA UNA</div>
+      <div class="lp-scroll">${vidasTabla(lives, opts.lifeSel)}</div>
+    </div>
+    <div class="card wide">
+      <div class="card-h">COMPRAS Y VENTAS ${vsel ? "· VIDA " + (opts.lifeSel + 1) + " · ARRANQUE " + esc(vsel.start) : ""}</div>
+      <div class="lp-scroll">${movimientos(vsel)}</div>
+      <div class="card-f">EL SERVIDOR (HETZNER) SE COBRA CADA DÍA APARTE · NOMBRES REALES: ESTO ES LA CORTINA, LA IA NO LOS VE</div>
+    </div>
   </div>`;
 }
 
@@ -161,7 +207,13 @@ export const LAYA_CSS = `
   .lp-tbl td{padding:4px 8px 4px 0}
   .lp-cell{width:55%}
   .lp-act{font-size:10px;letter-spacing:.14em}
-  .lp-act.lp-buy{color:#3fb950} .lp-act.lp-sell{color:#f85149} .lp-act.lp-hold{color:#6b7480}
+  .lp-act.lp-buy{color:#3fb950} .lp-act.lp-sell{color:#f85149} .lp-act.lp-hold{color:#c9d1d9} .lp-act.lp-out{color:#6b7480}
   .lp-scroll{max-height:320px;overflow:auto}
   .tag.lp-champ{color:#e0a340}
+  .lp-tab{background:transparent;border:1px solid #252a33;color:#6b7480;font-family:inherit;font-size:10px;
+    letter-spacing:.16em;padding:4px 10px;margin-right:6px;cursor:pointer}
+  .lp-tab[data-on="1"]{color:#e0a340;border-color:#3a2f10;background:#1a1205}
+  .lp-lives tr[data-life]{cursor:pointer} .lp-lives tr[data-life]:hover td{color:#e0a340}
+  .lp-lives tr.lp-sel td{color:#e0a340}
+  .tbl .neg{color:#f85149}
 `;

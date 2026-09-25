@@ -30,7 +30,11 @@ UNIVERSE = [
     "DIS", "NKE",                                            # consumo discrecional
     "CAT", "BA",                                             # industrial
     "SPY", "QQQ", "DIA", "IWM",                              # ETFs de índice
+    "SH", "PSQ", "DOG", "RWM",                               # ETFs INVERSOS (suben si el índice cae)
 ]
+# La forma real de apostar a la baja con poco dinero: un bróker no deja vender en corto
+# sin cuenta de margen (Alpaca: >= 2.000 $), pero un ETF inverso se compra como una acción.
+INVERSE = {"SH": "SPY", "PSQ": "QQQ", "DOG": "DIA", "RWM": "IWM"}
 START = "2004-01-01"
 
 
@@ -55,11 +59,14 @@ def fetch(symbols: list[str], start: str = START) -> dict:
         saved[sym] = {"rows": len(df), "first": df.index[0].strftime("%Y-%m-%d"),
                       "last": df.index[-1].strftime("%Y-%m-%d")}
         print(f"  {sym}: {len(df)} filas {saved[sym]['first']}..{saved[sym]['last']}")
+    # se AÑADE al manifiesto existente: descargar unos pocos no borra el registro del resto
+    mp = OUT / "manifest.json"
+    prev = json.loads(mp.read_text(encoding="utf-8")).get("symbols", {}) if mp.exists() else {}
     manifest = {
         "_source": {"provider": "Yahoo Finance vía yfinance", "auto_adjust": True,
                     "note": "precios ajustados por splits y dividendos; OHLCV diario",
                     "retrieved": end, "start": start},
-        "symbols": saved,
+        "symbols": {**prev, **saved},
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest
