@@ -1,0 +1,1536 @@
+{
+  "run": "hibrido-wf-20260925-1003",
+  "metodo": "estrategias evolutivas (OpenAI ES) sobre el scorer de Laya",
+  "config": {
+    "pop": 30,
+    "sigma": 0.05,
+    "lr": 0.01,
+    "lives": 16,
+    "val_lives": 24,
+    "sessions": 125,
+    "initial_eur": 50.0,
+    "min_invested": 0.0,
+    "min_buy_share": 0.02,
+    "risk": 0.5,
+    "ic_weight": 0.0,
+    "train_from": "",
+    "fitness": "consistencia",
+    "walk_forward": true,
+    "subset": 40,
+    "max_gens": 30,
+    "check_every": 10,
+    "seed": 7,
+    "brain": "hibrido",
+    "hidden": 64,
+    "run": "training/laya_runs/hibrido-wf-20260925-1003"
+  },
+  "generations": [
+    {
+      "gen": 1,
+      "vuelta": 1,
+      "bloque_aprende": "2021-07-26",
+      "bloque_juzga": "2015-02-10",
+      "val": {
+        "score": 14.253125,
+        "std": 0.608981924505974,
+        "ic": 0.0,
+        "fitness": 0.23499999999999988,
+        "gana_al_indice": 0.5,
+        "exceso_mediana": 0.47,
+        "exceso_p25": 0.0,
+        "survival": 1.0,
+        "trades": 6.75,
+        "fees": 0.79875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0403
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 14.258125,
+        "std": 0.6137204040725709,
+        "ic": 0.0,
+        "fitness": 0.23749999999999982,
+        "gana_al_indice": 0.5,
+        "exceso_mediana": 0.47,
+        "exceso_p25": 0.0,
+        "survival": 1.0,
+        "trades": 6.75,
+        "fees": 0.79875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0403
+        }
+      },
+      "accepted": false,
+      "secs": 6.8
+    },
+    {
+      "gen": 2,
+      "vuelta": 1,
+      "bloque_aprende": "2019-07-31",
+      "bloque_juzga": "2009-02-25",
+      "val": {
+        "score": 22.933125,
+        "std": 0.5863096318286111,
+        "ic": 0.0,
+        "fitness": -1.1150000000000002,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.93,
+        "exceso_p25": -1.3,
+        "survival": 1.0,
+        "trades": 7.125,
+        "fees": 0.830625,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.041
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 22.935000000000002,
+        "std": 0.5916291067890427,
+        "ic": 0.0,
+        "fitness": -1.120000000000001,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.94,
+        "exceso_p25": -1.3,
+        "survival": 1.0,
+        "trades": 7.125,
+        "fees": 0.826875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.041
+        }
+      },
+      "accepted": true,
+      "secs": 6.7
+    },
+    {
+      "gen": 3,
+      "vuelta": 1,
+      "bloque_aprende": "2017-08-03",
+      "bloque_juzga": "2007-08-29",
+      "val": {
+        "score": 13.501875000000002,
+        "std": 1.4732159496743855,
+        "ic": 0.0,
+        "fitness": 1.4300000000000006,
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 2.86,
+        "exceso_p25": 0.0,
+        "survival": 1.0,
+        "trades": 7.875,
+        "fees": 0.8799999999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.035
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 13.495625,
+        "std": 1.4683875882664637,
+        "ic": 0.0,
+        "fitness": 1.4250000000000007,
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 2.85,
+        "exceso_p25": 0.0,
+        "survival": 1.0,
+        "trades": 7.875,
+        "fees": 0.8799999999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.035
+        }
+      },
+      "accepted": true,
+      "secs": 6.6
+    },
+    {
+      "gen": 4,
+      "vuelta": 1,
+      "bloque_aprende": "2007-03-02",
+      "bloque_juzga": "2016-02-08",
+      "val": {
+        "score": 20.224375000000002,
+        "std": 0.9215473994185003,
+        "ic": 0.0,
+        "fitness": 0.5299999999999994,
+        "gana_al_indice": 0.688,
+        "exceso_mediana": 1.07,
+        "exceso_p25": -0.01,
+        "survival": 1.0,
+        "trades": 7.375,
+        "fees": 0.8525,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0411
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 20.229375,
+        "std": 0.9213676570050625,
+        "ic": 0.0,
+        "fitness": 0.5350000000000001,
+        "gana_al_indice": 0.688,
+        "exceso_mediana": 1.07,
+        "exceso_p25": 0.0,
+        "survival": 1.0,
+        "trades": 7.375,
+        "fees": 0.8525,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0412
+        }
+      },
+      "accepted": false,
+      "secs": 6.4
+    },
+    {
+      "gen": 5,
+      "vuelta": 1,
+      "bloque_aprende": "2018-08-01",
+      "bloque_juzga": "2014-02-12",
+      "val": {
+        "score": 15.55875,
+        "std": 0.45065057139650916,
+        "ic": 0.0,
+        "fitness": 0.04375000000000062,
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 0.05,
+        "exceso_p25": 0.04,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.775,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0417
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 15.55875,
+        "std": 0.45065057139650916,
+        "ic": 0.0,
+        "fitness": 0.04375000000000062,
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 0.05,
+        "exceso_p25": 0.04,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.775,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0417
+        }
+      },
+      "accepted": false,
+      "secs": 6.6
+    },
+    {
+      "gen": 6,
+      "vuelta": 1,
+      "bloque_aprende": "2019-07-31",
+      "bloque_juzga": "2021-01-26",
+      "val": {
+        "score": 17.292499999999997,
+        "std": 0.06495190528383198,
+        "ic": 0.0,
+        "fitness": -0.08999999999999986,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.03,
+        "exceso_p25": -0.15,
+        "survival": 1.0,
+        "trades": 7.25,
+        "fees": 0.82125,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0386
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 17.322499999999998,
+        "std": 0.04437059837324655,
+        "ic": 0.0,
+        "fitness": -0.030000000000001137,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.03,
+        "exceso_p25": -0.03,
+        "survival": 1.0,
+        "trades": 7.75,
+        "fees": 0.8587499999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0386
+        }
+      },
+      "accepted": false,
+      "secs": 6.7
+    },
+    {
+      "gen": 7,
+      "vuelta": 1,
+      "bloque_aprende": "2005-03-07",
+      "bloque_juzga": "2016-08-05",
+      "val": {
+        "score": 16.35625,
+        "std": 2.362977134358266,
+        "ic": 0.0,
+        "fitness": 2.3600000000000003,
+        "gana_al_indice": 0.562,
+        "exceso_mediana": 4.72,
+        "exceso_p25": 0.0,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.77,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0425
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 17.237500000000004,
+        "std": 2.0313280754225795,
+        "ic": 0.0,
+        "fitness": 4.085,
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 4.72,
+        "exceso_p25": 3.45,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.77,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0415
+        }
+      },
+      "accepted": false,
+      "secs": 6.6
+    },
+    {
+      "gen": 8,
+      "vuelta": 1,
+      "bloque_aprende": "2006-03-03",
+      "bloque_juzga": "2011-02-17",
+      "val": {
+        "score": 10.460624999999999,
+        "std": 0.35518426115890894,
+        "ic": 0.0,
+        "fitness": -1.4300000000000015,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -1.43,
+        "exceso_p25": -1.43,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.85,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0473
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 10.745,
+        "std": 0.45500000000000007,
+        "ic": 0.0,
+        "fitness": -1.2025000000000015,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.98,
+        "exceso_p25": -1.43,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.85,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0475
+        }
+      },
+      "accepted": false,
+      "secs": 8.8
+    },
+    {
+      "gen": 9,
+      "vuelta": 1,
+      "bloque_aprende": "2006-08-30",
+      "bloque_juzga": "2013-08-14",
+      "val": {
+        "score": 18.34375,
+        "std": 1.4515848020353477,
+        "ic": 0.0,
+        "fitness": 2.8612499999999996,
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 3.27,
+        "exceso_p25": 2.45,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.7775000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0439
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 18.3375,
+        "std": 1.4482899398946336,
+        "ic": 0.0,
+        "fitness": 2.8525000000000014,
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 3.26,
+        "exceso_p25": 2.45,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.7775000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0439
+        }
+      },
+      "accepted": true,
+      "secs": 7.2
+    },
+    {
+      "gen": 10,
+      "vuelta": 1,
+      "bloque_aprende": "2006-08-30",
+      "bloque_juzga": "2020-07-28",
+      "val": {
+        "score": 17.690000000000005,
+        "std": 0.4103352288068871,
+        "ic": 0.0,
+        "fitness": 0.30625000000000124,
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 0.35,
+        "exceso_p25": 0.26,
+        "survival": 1.0,
+        "trades": 7.25,
+        "fees": 0.8237500000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.039
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 17.690000000000005,
+        "std": 0.4103352288068871,
+        "ic": 0.0,
+        "fitness": 0.30625000000000124,
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 0.35,
+        "exceso_p25": 0.26,
+        "survival": 1.0,
+        "trades": 7.25,
+        "fees": 0.8237500000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0389
+        }
+      },
+      "accepted": false,
+      "secs": 6.7
+    },
+    {
+      "gen": 11,
+      "vuelta": 1,
+      "bloque_aprende": "2012-02-15",
+      "bloque_juzga": "2019-01-31",
+      "val": {
+        "score": 16.529375,
+        "std": 0.5213500353649173,
+        "ic": 0.0,
+        "fitness": -0.09500000000000064,
+        "gana_al_indice": 0.188,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -0.19,
+        "survival": 1.0,
+        "trades": 6.125,
+        "fees": 0.746875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0369
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 16.529375,
+        "std": 0.5213500353649173,
+        "ic": 0.0,
+        "fitness": -0.09500000000000064,
+        "gana_al_indice": 0.188,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -0.19,
+        "survival": 1.0,
+        "trades": 6.125,
+        "fees": 0.746875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0369
+        }
+      },
+      "accepted": false,
+      "secs": 6.5
+    },
+    {
+      "gen": 12,
+      "vuelta": 1,
+      "bloque_aprende": "2008-02-28",
+      "bloque_juzga": "2009-08-24",
+      "val": {
+        "score": 15.825,
+        "std": 1.230274359645034,
+        "ic": 0.0,
+        "fitness": -0.6099999999999994,
+        "gana_al_indice": 0.438,
+        "exceso_mediana": -0.61,
+        "exceso_p25": -0.61,
+        "survival": 1.0,
+        "trades": 9.0,
+        "fees": 0.940625,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0382
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 15.825,
+        "std": 1.230274359645034,
+        "ic": 0.0,
+        "fitness": -0.6099999999999994,
+        "gana_al_indice": 0.438,
+        "exceso_mediana": -0.61,
+        "exceso_p25": -0.61,
+        "survival": 1.0,
+        "trades": 9.0,
+        "fees": 0.940625,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0382
+        }
+      },
+      "accepted": false,
+      "secs": 6.5
+    },
+    {
+      "gen": 13,
+      "vuelta": 1,
+      "bloque_aprende": "2005-09-01",
+      "bloque_juzga": "2013-02-14",
+      "val": {
+        "score": 16.513749999999998,
+        "std": 0.20931062443172863,
+        "ic": 0.0,
+        "fitness": -0.2400000000000002,
+        "gana_al_indice": 0.312,
+        "exceso_mediana": -0.16,
+        "exceso_p25": -0.32,
+        "survival": 1.0,
+        "trades": 7.25,
+        "fees": 0.8324999999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0361
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 16.599999999999998,
+        "std": 0.20223748416156723,
+        "ic": 0.0,
+        "fitness": -0.125,
+        "gana_al_indice": 0.5,
+        "exceso_mediana": 0.07,
+        "exceso_p25": -0.32,
+        "survival": 1.0,
+        "trades": 7.625,
+        "fees": 0.8568749999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0361
+        }
+      },
+      "accepted": false,
+      "secs": 6.2
+    },
+    {
+      "gen": 14,
+      "vuelta": 1,
+      "bloque_aprende": "2013-08-14",
+      "bloque_juzga": "2010-08-20",
+      "val": {
+        "score": 20.10625,
+        "std": 0.24758521260366115,
+        "ic": 0.0,
+        "fitness": -0.16500000000000092,
+        "gana_al_indice": 0.375,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -0.33,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.755,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0386
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 20.10625,
+        "std": 0.24758521260366115,
+        "ic": 0.0,
+        "fitness": -0.16500000000000092,
+        "gana_al_indice": 0.375,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -0.33,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.755,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0386
+        }
+      },
+      "accepted": false,
+      "secs": 6.5
+    },
+    {
+      "gen": 15,
+      "vuelta": 1,
+      "bloque_aprende": "2016-02-08",
+      "bloque_juzga": "2014-08-12",
+      "val": {
+        "score": 15.346875,
+        "std": 1.1115120261944982,
+        "ic": 0.0,
+        "fitness": 0.11999999999999922,
+        "gana_al_indice": 1.0,
+        "exceso_mediana": 0.23,
+        "exceso_p25": 0.01,
+        "survival": 1.0,
+        "trades": 6.375,
+        "fees": 0.76875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0367
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 14.528125,
+        "std": 0.1378050593229429,
+        "ic": 0.0,
+        "fitness": -0.04499999999999993,
+        "gana_al_indice": 0.375,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -0.09,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.8125,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.037
+        }
+      },
+      "accepted": true,
+      "secs": 6.5
+    },
+    {
+      "gen": 16,
+      "vuelta": 1,
+      "bloque_aprende": "2014-08-12",
+      "bloque_juzga": "2015-08-10",
+      "val": {
+        "score": 10.225000000000001,
+        "std": 0.910460048546887,
+        "ic": 0.0,
+        "fitness": -0.9249999999999998,
+        "gana_al_indice": 0.312,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -1.85,
+        "survival": 1.0,
+        "trades": 6.375,
+        "fees": 0.77625,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0429
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 10.228750000000002,
+        "std": 0.9056204710031681,
+        "ic": 0.0,
+        "fitness": -0.9199999999999999,
+        "gana_al_indice": 0.312,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -1.84,
+        "survival": 1.0,
+        "trades": 6.375,
+        "fees": 0.77625,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.043
+        }
+      },
+      "accepted": false,
+      "secs": 6.6
+    },
+    {
+      "gen": 17,
+      "vuelta": 1,
+      "bloque_aprende": "2009-02-25",
+      "bloque_juzga": "2012-08-14",
+      "val": {
+        "score": 13.833750000000002,
+        "std": 0.3582923910718733,
+        "ic": 0.0,
+        "fitness": -0.20999999999999952,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.14,
+        "exceso_p25": -0.28,
+        "survival": 1.0,
+        "trades": 6.125,
+        "fees": 0.75875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0361
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 13.833750000000002,
+        "std": 0.3582923910718733,
+        "ic": 0.0,
+        "fitness": -0.20999999999999952,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.14,
+        "exceso_p25": -0.28,
+        "survival": 1.0,
+        "trades": 6.125,
+        "fees": 0.75875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0364
+        }
+      },
+      "accepted": false,
+      "secs": 6.5
+    },
+    {
+      "gen": 18,
+      "vuelta": 1,
+      "bloque_aprende": "2009-08-24",
+      "bloque_juzga": "2020-01-29",
+      "val": {
+        "score": 9.205,
+        "std": 0.6710439627923043,
+        "ic": 0.0,
+        "fitness": 1.1350000000000007,
+        "gana_al_indice": 1.0,
+        "exceso_mediana": 1.65,
+        "exceso_p25": 0.62,
+        "survival": 1.0,
+        "trades": 6.625,
+        "fees": 0.7762500000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0424
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 9.1975,
+        "std": 0.6693233523492215,
+        "ic": 0.0,
+        "fitness": 1.1300000000000008,
+        "gana_al_indice": 0.812,
+        "exceso_mediana": 1.64,
+        "exceso_p25": 0.62,
+        "survival": 1.0,
+        "trades": 6.625,
+        "fees": 0.7762500000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0423
+        }
+      },
+      "accepted": true,
+      "secs": 6.6
+    },
+    {
+      "gen": 19,
+      "vuelta": 1,
+      "bloque_aprende": "2014-08-12",
+      "bloque_juzga": "2017-02-03",
+      "val": {
+        "score": 15.415000000000001,
+        "std": 0.4293891009329421,
+        "ic": 0.0,
+        "fitness": -0.28000000000000025,
+        "gana_al_indice": 0.375,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -0.56,
+        "survival": 1.0,
+        "trades": 6.375,
+        "fees": 0.76,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.039
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 15.415000000000001,
+        "std": 0.4293891009329421,
+        "ic": 0.0,
+        "fitness": -0.28000000000000025,
+        "gana_al_indice": 0.375,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -0.56,
+        "survival": 1.0,
+        "trades": 6.375,
+        "fees": 0.76,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0391
+        }
+      },
+      "accepted": false,
+      "secs": 6.7
+    },
+    {
+      "gen": 20,
+      "vuelta": 1,
+      "bloque_aprende": "2010-02-23",
+      "bloque_juzga": "2018-02-01",
+      "val": {
+        "score": 13.444375,
+        "std": 0.7102813593041845,
+        "ic": 0.0,
+        "fitness": -0.2649999999999997,
+        "gana_al_indice": 0.188,
+        "exceso_mediana": -0.18,
+        "exceso_p25": -0.35,
+        "survival": 1.0,
+        "trades": 7.75,
+        "fees": 0.888125,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0398
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 13.4525,
+        "std": 0.7064656750331189,
+        "ic": 0.0,
+        "fitness": -0.2549999999999999,
+        "gana_al_indice": 0.188,
+        "exceso_mediana": -0.17,
+        "exceso_p25": -0.34,
+        "survival": 1.0,
+        "trades": 7.75,
+        "fees": 0.888125,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0398
+        }
+      },
+      "accepted": false,
+      "secs": 6.6
+    },
+    {
+      "gen": 21,
+      "vuelta": 1,
+      "bloque_aprende": "2018-02-01",
+      "bloque_juzga": "2011-08-17",
+      "val": {
+        "score": 16.6275,
+        "std": 1.5351771070466098,
+        "ic": 0.0,
+        "fitness": -0.3462499999999997,
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 0.16,
+        "exceso_p25": -0.85,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.8025,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0403
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 16.6925,
+        "std": 1.4226625566169928,
+        "ic": 0.0,
+        "fitness": -0.31374999999999975,
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 0.16,
+        "exceso_p25": -0.79,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.8025,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0403
+        }
+      },
+      "accepted": false,
+      "secs": 6.6
+    },
+    {
+      "gen": 22,
+      "vuelta": 1,
+      "bloque_aprende": "2005-09-01",
+      "bloque_juzga": "2008-08-26",
+      "val": {
+        "score": 0.909375,
+        "std": 0.5526693038110585,
+        "ic": 0.0,
+        "fitness": -0.55,
+        "gana_al_indice": 0.562,
+        "exceso_mediana": 0.03,
+        "exceso_p25": -1.13,
+        "survival": 1.0,
+        "trades": 5.875,
+        "fees": 0.6975,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0409
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 0.8875,
+        "std": 0.5432713410442337,
+        "ic": 0.0,
+        "fitness": -0.5700000000000001,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": 0.0,
+        "exceso_p25": -1.14,
+        "survival": 1.0,
+        "trades": 5.875,
+        "fees": 0.7075,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0408
+        }
+      },
+      "accepted": true,
+      "secs": 6.2
+    },
+    {
+      "gen": 23,
+      "vuelta": 2,
+      "bloque_aprende": "2010-02-23",
+      "bloque_juzga": "2013-02-14",
+      "val": {
+        "score": 16.3625,
+        "std": 0.1646777155537442,
+        "ic": 0.0,
+        "fitness": -0.3274999999999988,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.31,
+        "exceso_p25": -0.34,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.77,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.04
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 16.3275,
+        "std": 0.20873128658636678,
+        "ic": 0.0,
+        "fitness": -0.34499999999999886,
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.31,
+        "exceso_p25": -0.38,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.7725000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0399
+        }
+      },
+      "accepted": true,
+      "secs": 8.6
+    },
+    {
+      "gen": 24,
+      "vuelta": 2,
+      "bloque_aprende": "2009-08-24",
+      "bloque_juzga": "2011-08-17",
+      "val": {
+        "score": 17.259375,
+        "std": 0.8584176485691566,
+        "ic": 0.0,
+        "fitness": 0.07000000000000028,
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 0.16,
+        "exceso_p25": -0.02,
+        "survival": 1.0,
+        "trades": 7.0625,
+        "fees": 0.8,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0422
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 17.260624999999997,
+        "std": 0.8535987695486676,
+        "ic": 0.0,
+        "fitness": 0.07000000000000028,
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 0.16,
+        "exceso_p25": -0.02,
+        "survival": 1.0,
+        "trades": 7.0625,
+        "fees": 0.7993750000000002,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0424
+        }
+      },
+      "accepted": false,
+      "secs": 6.6
+    },
+    {
+      "gen": 25,
+      "vuelta": 2,
+      "bloque_aprende": "2006-03-03",
+      "bloque_juzga": "2008-08-26",
+      "val": {
+        "score": 0.88375,
+        "std": 0.47250496029142386,
+        "ic": 0.0,
+        "fitness": -0.68,
+        "gana_al_indice": 0.25,
+        "exceso_mediana": -0.23,
+        "exceso_p25": -1.13,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.741875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0394
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 0.88375,
+        "std": 0.47250496029142386,
+        "ic": 0.0,
+        "fitness": -0.68,
+        "gana_al_indice": 0.25,
+        "exceso_mediana": -0.23,
+        "exceso_p25": -1.13,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.741875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0393
+        }
+      },
+      "accepted": false,
+      "secs": 6.2
+    },
+    {
+      "gen": 26,
+      "vuelta": 2,
+      "bloque_aprende": "2019-07-31",
+      "bloque_juzga": "2015-02-10",
+      "val": {
+        "score": 13.718125,
+        "std": 0.1919381003735318,
+        "ic": 0.0,
+        "fitness": -0.11000000000000121,
+        "gana_al_indice": 0.188,
+        "exceso_mediana": -0.11,
+        "exceso_p25": -0.11,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.8162499999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0367
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 13.718125,
+        "std": 0.1919381003735318,
+        "ic": 0.0,
+        "fitness": -0.11000000000000121,
+        "gana_al_indice": 0.188,
+        "exceso_mediana": -0.11,
+        "exceso_p25": -0.11,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.8162499999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0367
+        }
+      },
+      "accepted": false,
+      "secs": 6.5
+    },
+    {
+      "gen": 27,
+      "vuelta": 2,
+      "bloque_aprende": "2021-07-26",
+      "bloque_juzga": "2012-02-15",
+      "val": {
+        "score": 13.575,
+        "std": 0.2143303524935278,
+        "ic": 0.0,
+        "fitness": -0.10999999999999943,
+        "gana_al_indice": 0.375,
+        "exceso_mediana": -0.08,
+        "exceso_p25": -0.14,
+        "survival": 1.0,
+        "trades": 7.125,
+        "fees": 0.8049999999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0394
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 13.73375,
+        "std": 0.2348370445649495,
+        "ic": 0.0,
+        "fitness": 0.125,
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 0.33,
+        "exceso_p25": -0.08,
+        "survival": 1.0,
+        "trades": 7.5,
+        "fees": 0.82875,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0392
+        }
+      },
+      "accepted": false,
+      "secs": 6.6
+    },
+    {
+      "gen": 28,
+      "vuelta": 2,
+      "bloque_aprende": "2016-02-08",
+      "bloque_juzga": "2006-08-30",
+      "val": {
+        "score": 15.984375,
+        "std": 0.13601326911371617,
+        "ic": 0.0,
+        "fitness": 0.09499999999999975,
+        "gana_al_indice": 0.812,
+        "exceso_mediana": 0.16,
+        "exceso_p25": 0.03,
+        "survival": 1.0,
+        "trades": 7.25,
+        "fees": 0.8075000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0423
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 15.984375,
+        "std": 0.13601326911371617,
+        "ic": 0.0,
+        "fitness": 0.09499999999999975,
+        "gana_al_indice": 0.812,
+        "exceso_mediana": 0.16,
+        "exceso_p25": 0.03,
+        "survival": 1.0,
+        "trades": 7.25,
+        "fees": 0.8075000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0426
+        }
+      },
+      "accepted": false,
+      "secs": 6.5
+    },
+    {
+      "gen": 29,
+      "vuelta": 2,
+      "bloque_aprende": "2021-01-26",
+      "bloque_juzga": "2013-08-14",
+      "val": {
+        "score": 18.916875,
+        "std": 1.1764869248635959,
+        "ic": 0.0,
+        "fitness": 3.3000000000000007,
+        "gana_al_indice": 1.0,
+        "exceso_mediana": 3.3,
+        "exceso_p25": 3.3,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.7975000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0407
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 18.925625,
+        "std": 1.1797455697628192,
+        "ic": 0.0,
+        "fitness": 3.3099999999999987,
+        "gana_al_indice": 1.0,
+        "exceso_mediana": 3.31,
+        "exceso_p25": 3.31,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.7975000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0415
+        }
+      },
+      "accepted": false,
+      "secs": 6.6
+    },
+    {
+      "gen": 30,
+      "vuelta": 2,
+      "bloque_aprende": "2008-08-26",
+      "bloque_juzga": "2020-01-29",
+      "val": {
+        "score": 8.795625,
+        "std": 0.5327871144979013,
+        "ic": 0.0,
+        "fitness": 0.5562500000000008,
+        "gana_al_indice": 1.0,
+        "exceso_mediana": 0.63,
+        "exceso_p25": 0.48,
+        "survival": 1.0,
+        "trades": 6.5,
+        "fees": 0.7606250000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0375
+        }
+      },
+      "campeona_en_bloque": {
+        "score": 9.16375,
+        "std": 0.47924256645252183,
+        "ic": 0.0,
+        "fitness": 0.6850000000000005,
+        "gana_al_indice": 1.0,
+        "exceso_mediana": 0.74,
+        "exceso_p25": 0.63,
+        "survival": 1.0,
+        "trades": 7.0,
+        "fees": 0.7887500000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0363
+        }
+      },
+      "accepted": false,
+      "secs": 6.4
+    }
+  ],
+  "baselines": {},
+  "champion": null,
+  "status": "terminado",
+  "walkforward": {
+    "historial": [
+      {
+        "gen": 1,
+        "vuelta": 1,
+        "bloque": "2015-02-10",
+        "gana_al_indice": 0.5,
+        "exceso_mediana": 0.47,
+        "euros": 14.258125
+      },
+      {
+        "gen": 2,
+        "vuelta": 1,
+        "bloque": "2009-02-25",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.94,
+        "euros": 22.935000000000002
+      },
+      {
+        "gen": 3,
+        "vuelta": 1,
+        "bloque": "2007-08-29",
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 2.85,
+        "euros": 13.495625
+      },
+      {
+        "gen": 4,
+        "vuelta": 1,
+        "bloque": "2016-02-08",
+        "gana_al_indice": 0.688,
+        "exceso_mediana": 1.07,
+        "euros": 20.229375
+      },
+      {
+        "gen": 5,
+        "vuelta": 1,
+        "bloque": "2014-02-12",
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 0.05,
+        "euros": 15.55875
+      },
+      {
+        "gen": 6,
+        "vuelta": 1,
+        "bloque": "2021-01-26",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.03,
+        "euros": 17.322499999999998
+      },
+      {
+        "gen": 7,
+        "vuelta": 1,
+        "bloque": "2016-08-05",
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 4.72,
+        "euros": 17.237500000000004
+      },
+      {
+        "gen": 8,
+        "vuelta": 1,
+        "bloque": "2011-02-17",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.98,
+        "euros": 10.745
+      },
+      {
+        "gen": 9,
+        "vuelta": 1,
+        "bloque": "2013-08-14",
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 3.26,
+        "euros": 18.3375
+      },
+      {
+        "gen": 10,
+        "vuelta": 1,
+        "bloque": "2020-07-28",
+        "gana_al_indice": 0.75,
+        "exceso_mediana": 0.35,
+        "euros": 17.690000000000005
+      },
+      {
+        "gen": 11,
+        "vuelta": 1,
+        "bloque": "2019-01-31",
+        "gana_al_indice": 0.188,
+        "exceso_mediana": 0.0,
+        "euros": 16.529375
+      },
+      {
+        "gen": 12,
+        "vuelta": 1,
+        "bloque": "2009-08-24",
+        "gana_al_indice": 0.438,
+        "exceso_mediana": -0.61,
+        "euros": 15.825
+      },
+      {
+        "gen": 13,
+        "vuelta": 1,
+        "bloque": "2013-02-14",
+        "gana_al_indice": 0.5,
+        "exceso_mediana": 0.07,
+        "euros": 16.599999999999998
+      },
+      {
+        "gen": 14,
+        "vuelta": 1,
+        "bloque": "2010-08-20",
+        "gana_al_indice": 0.375,
+        "exceso_mediana": 0.0,
+        "euros": 20.10625
+      },
+      {
+        "gen": 15,
+        "vuelta": 1,
+        "bloque": "2014-08-12",
+        "gana_al_indice": 0.375,
+        "exceso_mediana": 0.0,
+        "euros": 14.528125
+      },
+      {
+        "gen": 16,
+        "vuelta": 1,
+        "bloque": "2015-08-10",
+        "gana_al_indice": 0.312,
+        "exceso_mediana": 0.0,
+        "euros": 10.228750000000002
+      },
+      {
+        "gen": 17,
+        "vuelta": 1,
+        "bloque": "2012-08-14",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.14,
+        "euros": 13.833750000000002
+      },
+      {
+        "gen": 18,
+        "vuelta": 1,
+        "bloque": "2020-01-29",
+        "gana_al_indice": 0.812,
+        "exceso_mediana": 1.64,
+        "euros": 9.1975
+      },
+      {
+        "gen": 19,
+        "vuelta": 1,
+        "bloque": "2017-02-03",
+        "gana_al_indice": 0.375,
+        "exceso_mediana": 0.0,
+        "euros": 15.415000000000001
+      },
+      {
+        "gen": 20,
+        "vuelta": 1,
+        "bloque": "2018-02-01",
+        "gana_al_indice": 0.188,
+        "exceso_mediana": -0.17,
+        "euros": 13.4525
+      },
+      {
+        "gen": 21,
+        "vuelta": 1,
+        "bloque": "2011-08-17",
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 0.16,
+        "euros": 16.6925
+      },
+      {
+        "gen": 22,
+        "vuelta": 1,
+        "bloque": "2008-08-26",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": 0.0,
+        "euros": 0.8875
+      },
+      {
+        "gen": 23,
+        "vuelta": 2,
+        "bloque": "2013-02-14",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.31,
+        "euros": 16.3275
+      },
+      {
+        "gen": 24,
+        "vuelta": 2,
+        "bloque": "2011-08-17",
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 0.16,
+        "euros": 17.260624999999997
+      },
+      {
+        "gen": 25,
+        "vuelta": 2,
+        "bloque": "2008-08-26",
+        "gana_al_indice": 0.25,
+        "exceso_mediana": -0.23,
+        "euros": 0.88375
+      },
+      {
+        "gen": 26,
+        "vuelta": 2,
+        "bloque": "2015-02-10",
+        "gana_al_indice": 0.188,
+        "exceso_mediana": -0.11,
+        "euros": 13.718125
+      },
+      {
+        "gen": 27,
+        "vuelta": 2,
+        "bloque": "2012-02-15",
+        "gana_al_indice": 0.625,
+        "exceso_mediana": 0.33,
+        "euros": 13.73375
+      },
+      {
+        "gen": 28,
+        "vuelta": 2,
+        "bloque": "2006-08-30",
+        "gana_al_indice": 0.812,
+        "exceso_mediana": 0.16,
+        "euros": 15.984375
+      },
+      {
+        "gen": 29,
+        "vuelta": 2,
+        "bloque": "2013-08-14",
+        "gana_al_indice": 1.0,
+        "exceso_mediana": 3.31,
+        "euros": 18.925625
+      },
+      {
+        "gen": 30,
+        "vuelta": 2,
+        "bloque": "2020-01-29",
+        "gana_al_indice": 1.0,
+        "exceso_mediana": 0.74,
+        "euros": 9.16375
+      }
+    ],
+    "bloques_ganados_vuelta1": "10/22"
+  },
+  "examen_final": {
+    "bloques": [
+      {
+        "bloque": "2022-01-21",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.27,
+        "euros": 9.418125
+      },
+      {
+        "bloque": "2022-07-22",
+        "gana_al_indice": 0.562,
+        "exceso_mediana": 2.31,
+        "euros": 13.834375000000001
+      },
+      {
+        "bloque": "2023-01-20",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.24,
+        "euros": 14.251249999999999
+      },
+      {
+        "bloque": "2023-07-21",
+        "gana_al_indice": 0.312,
+        "exceso_mediana": 0.0,
+        "euros": 13.592500000000001
+      },
+      {
+        "bloque": "2024-01-19",
+        "gana_al_indice": 0.688,
+        "exceso_mediana": 0.52,
+        "euros": 18.341250000000002
+      },
+      {
+        "bloque": "2024-07-19",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.88,
+        "euros": 14.225000000000001
+      },
+      {
+        "bloque": "2025-01-17",
+        "gana_al_indice": 0.0,
+        "exceso_mediana": -0.04,
+        "euros": 10.375
+      },
+      {
+        "bloque": "2025-07-21",
+        "gana_al_indice": 0.812,
+        "exceso_mediana": 0.06,
+        "euros": 16.425
+      },
+      {
+        "bloque": "2026-01-16",
+        "gana_al_indice": 0.125,
+        "exceso_mediana": -0.37,
+        "euros": 14.690000000000001
+      }
+    ],
+    "ganados": "3/9"
+  }
+}
