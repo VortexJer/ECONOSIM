@@ -22,6 +22,16 @@ import torch
 
 BASE = os.environ.get("LAYA_MODEL", "convaiinnovations/laya")
 
+# La CPU de un portátil no está para esto: el tokenizador de HF y PyTorch abren por
+# defecto un hilo por núcleo y la ponen al rojo. Se limitan a 2 hilos pase lo que pase.
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+os.environ.setdefault("OMP_NUM_THREADS", "2")
+torch.set_num_threads(2)
+
+
+class SinGPU(RuntimeError):
+    """No hay CUDA: entrenar en CPU recalienta el portátil y va 20 veces más lento."""
+
 ACTIONS = ("sell", "hold", "buy")
 QUESTION = {
     "t": "choice",
@@ -38,7 +48,14 @@ QUESTION = {
 class LayaPolicy:
     def __init__(self, device: Optional[str] = None, head_path: Optional[Path] = None):
         import laya
-        self.agent = laya.load(BASE, device=device or ("cuda" if torch.cuda.is_available() else "cpu"))
+        if device is None:
+            if not torch.cuda.is_available():
+                raise SinGPU("la GPU no está disponible (driver bloqueado o en modo ahorro); no entreno en CPU. "
+                             "Comprueba nvidia-smi, reinicia si hace falta, o pasa device='cpu' a propósito.")
+            device = "cuda"
+        self.agent = laya.load(BASE, device=device)
+        if device == "cuda" and self.agent.device.type != "cuda":
+            raise SinGPU("Laya cayó a la CPU al cargarse; no entreno en CPU")
         self.model = self.agent.model
         self.tok = self.agent.tok
         self.device = self.agent.device
@@ -46,6 +63,10 @@ class LayaPolicy:
         self.head_max_len = int(self.agent.cfg.get("head_max_len", 192))
         for p in self.model.encoder.parameters():
             p.requires_grad_(False)
+        if self.device.type == "cuda":
+            # congelado = no necesita pesos fp32: en bf16 ocupa la mitad y no se reconvierte
+            # en cada pasada (la cabeza, que sí se entrena, sigue en fp32 bajo autocast)
+            self.model.encoder.to(torch.bfloat16)
         if head_path:
             self.load_head(head_path)
         self.model.eval()
@@ -96,8 +117,10 @@ class LayaPolicy:
                                batch["qtype"].to(dev), detach_encoder=True)
         return lg.float()[:, : len(ACTIONS)]
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def probs(self, states: Sequence[str], batch_size: int = 32) -> np.ndarray:
+        if self.device.type == "cuda" and not torch.cuda.is_available():
+            raise SinGPU("la GPU desapareció a mitad de entrenamiento")
         out = []
         for i in range(0, len(states), batch_size):
             b = self.encode(states[i: i + batch_size])

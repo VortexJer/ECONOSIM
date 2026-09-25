@@ -21,7 +21,8 @@
       "preload.js",
       "index.html",
       "renderer.mjs",
-      "format.mjs"
+      "format.mjs",
+      "laya.mjs"
     ],
     "directories": {
       "output": "dist"

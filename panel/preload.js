@@ -13,6 +13,10 @@ contextBridge.exposeInMainWorld("econosimTrain", {
   onDone: (cb) => { ipcRenderer.on("train:done", (_e, info) => cb(info)); },
 });
 
+contextBridge.exposeInMainWorld("econosimLaya", {
+  live: () => ipcRenderer.invoke("laya:live"),
+});
+
 contextBridge.exposeInMainWorld("econosimHistory", {
   list: () => ipcRenderer.invoke("history:list"),
 });
