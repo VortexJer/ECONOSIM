@@ -35,7 +35,13 @@ def leak(text: str) -> str:
     if host_date in text:
         return f"fecha host {host_date}"
     for sym in forbidden_syms:
-        if re.search(r"(?<![A-Za-z])" + re.escape(sym) + r"(?![A-Za-z])", text):
+        if len(sym) <= 1:
+            # tickers de una letra (T, C, V): la "T" de las horas ISO o el código de bolsa "V"
+            # de la API real no son fugas; solo lo es como valor de un campo de símbolo
+            pat = r'"(?:symbol|underlying_symbol|root_symbol|S)"\s*:\s*"' + re.escape(sym) + '"'
+        else:
+            pat = r"(?<![A-Za-z])" + re.escape(sym) + r"(?![A-Za-z])"
+        if re.search(pat, text):
             return f"símbolo {sym}"
     return ""
 

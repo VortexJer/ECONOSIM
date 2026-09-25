@@ -119,7 +119,10 @@ with LiveApp(f.app()) as api:
     check(len(sorpresas) >= 3, "pocas sorpresas para juzgar nada")
     check(any(s < 0 for s in sorpresas) or max(sorpresas) < 40,
           "sorpresas irreales: siempre gigantes y a favor")
-    check(all(abs(s) < 300 for s in sorpresas), "sorpresa desbocada")
+    # Con beneficios cerca de cero (bancos 2009-10…) una sorpresa del 1.000 % es REAL (así sale
+    # en FMP). Lo que delata un modelo roto es que la sorpresa TÍPICA sea enorme: la mediana.
+    med = sorted(abs(s) for s in sorpresas)[len(sorpresas) // 2]
+    check(med < 60, f"sorpresa desbocada: mediana {med:.0f} %")
     for e in hist:
         check(e["date"] <= hoy_mostrado, "un anuncio 'pasado' con fecha futura")
 

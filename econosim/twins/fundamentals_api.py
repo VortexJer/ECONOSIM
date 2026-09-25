@@ -31,6 +31,7 @@ from typing import Optional
 from aiohttp import web
 
 from ..market.data import MarketData
+from ..market import quant
 from ..market.fundamentals import ANUAL, TRIM, CompanyFacts, Fundamentals
 from ..market.mask import EpisodeMask
 from ..world import World
@@ -121,6 +122,7 @@ class FundamentalsTwin:
         r.add_get("/api/v3/analyst-estimates/{sym}", self.h_estimates)
         r.add_get("/api/v4/price-target-consensus", self.h_target)
         r.add_get("/api/v3/financial-statement-symbol-lists", self.h_symbols)
+        r.add_get("/api/v3/technical_indicator/{interval}/{sym}", self.h_technical)
         return app
 
     @web.middleware
@@ -413,6 +415,9 @@ class FundamentalsTwin:
             # el trimestre que se va a presentar es el siguiente al último publicado
             siguiente = ult.fin + timedelta(days=91) if ult else None
             est = self._imp(alias, self._estimacion(alias, c, siguiente, prox)) if siguiente else None
+            if est is None:
+                # sin histórico suficiente no hay estimación de modelo: no se lista vacía
+                continue
             out.append({"date": self._dia(prox), "symbol": alias, "epsEstimated": _r(est, 4),
                         "eps": None, "time": "amc", "estimateMethod": "model",
                         "estimateMedianAbsErrorPct": ERROR_MEDIANO_PCT,
@@ -475,3 +480,68 @@ class FundamentalsTwin:
 
     async def h_symbols(self, _):
         return web.json_response([a for a in self.mask.aliases if self._facts(a) is not None])
+
+    # ---- indicadores técnicos (endpoint real /api/v3/technical_indicator) -----
+    TECH_TYPES = ("sma", "ema", "wma", "rsi", "williams", "adx", "standardDeviation")
+
+    async def h_technical(self, req):
+        """Como la API real: lista del más reciente al más antiguo con la barra OHLCV y el
+        valor del indicador pedido. Solo intervalo diario (el histórico es diario) y solo
+        barras <= hoy virtual. Precios en la escala enmascarada de la IA."""
+        interval = req.match_info["interval"]
+        alias = req.match_info["sym"].upper()
+        real = self.mask.to_real(alias)
+        if real is None:
+            return web.json_response([])
+        if interval != "1day":
+            return _err(400, "Only the 1day interval is available on this plan.")
+        typ = req.query.get("type", "")
+        if typ not in self.TECH_TYPES:
+            return _err(400, "Invalid type. Valid types: " + ", ".join(self.TECH_TYPES))
+        try:
+            period = max(1, min(int(req.query.get("period", 10)), 200))
+        except ValueError:
+            return _err(400, "period must be an integer")
+        s = self.data.series[real]
+        i = s.index_of(self._hoy())
+        if i < 0:
+            return web.json_response([])
+        rows_n = 100
+        # Las medias exponenciales, el RSI y el ADX son recursivos: se calculan desde el
+        # principio del histórico para que una fecha dé SIEMPRE el mismo valor, la
+        # consulte hoy o dentro de un mes (y nunca con barras posteriores a hoy).
+        bars = s.bars[: i + 1]
+        f = self.mask.factor(real)
+        H = [b.high * f for b in bars]; L = [b.low * f for b in bars]; C = [b.close * f for b in bars]
+        if typ == "ema":
+            e = quant.ema_series(C, period)
+            serie = [None] * (len(C) - len(e)) + e
+        elif typ == "rsi":
+            serie = quant.rsi_series(C, period)
+        elif typ == "adx":
+            serie = quant.adx_series(H, L, C, period)
+        else:
+            serie = None
+        out = []
+        for j in range(len(bars) - 1, max(-1, len(bars) - 1 - rows_n), -1):
+            if serie is not None:
+                v = serie[j]
+            elif j + 1 < period:
+                v = None
+            else:
+                w = C[j + 1 - period: j + 1]
+                if typ == "sma":
+                    v = sum(w) / period
+                elif typ == "wma":
+                    v = sum((k + 1) * x for k, x in enumerate(w)) / (period * (period + 1) / 2)
+                elif typ == "williams":
+                    v = quant.williams_r(H[j + 1 - period: j + 1], L[j + 1 - period: j + 1], w, period)
+                else:
+                    m = sum(w) / period
+                    v = (sum((x - m) ** 2 for x in w) / period) ** 0.5
+            if v is None:
+                break
+            b = bars[j]
+            out.append({"date": self._dia(b.day) + " 00:00:00", "open": _r(b.open * f, 4), "high": _r(H[j], 4),
+                        "low": _r(L[j], 4), "close": _r(C[j], 4), "volume": b.volume, typ: _r(v, 4)})
+        return web.json_response(out)
