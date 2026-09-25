@@ -1,0 +1,1 @@
+[08:30:07] ES · es-20260925-0829 · device cuda · población 30 · sigma 0.05 · lr 0.01
