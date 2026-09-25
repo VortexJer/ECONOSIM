@@ -198,7 +198,14 @@ class Trainer:
                 self.progress["generations"].append(rec)
                 with open(self.run / "gens.jsonl", "a", encoding="utf-8") as f:
                     f.write(json.dumps(rec, default=str) + "\n")
-            except Exception:
+            except Exception as err:
+                if type(err).__name__ == "SinGPU" or "cuda" in str(err).lower():
+                    # sin GPU no se sigue: en CPU el portátil se recalienta y va 20 veces más lento
+                    log(self.run, f"PARADO: {err}")
+                    self.progress["status"] = "parado: sin GPU"
+                    self.save()
+                    self.live("parado: sin GPU", force=True)
+                    return
                 log(self.run, "ERROR en la generación:\n" + traceback.format_exc())
                 self.pol.set_head_state(champ_state)
                 time.sleep(5)
