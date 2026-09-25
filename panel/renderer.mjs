@@ -1,6 +1,13 @@
 // Renderer: sondea el API de control y pinta el panel. Sin lógica de negocio (va en format.mjs).
 // Además maneja el dock de ENTRENAMIENTO (fuera de #app, para que el re-pintado no lo borre).
 import { dashboardHTML, offlineHTML, viewerHTML } from "./format.mjs";
+import { layaHTML, LAYA_CSS } from "./laya.mjs";
+const LAYA = window.econosimLaya;     // entrenamiento del cerebro Laya en vivo (solo en la app)
+let laya = null;                      // ejecución que se está mirando (live.json + vidas)
+let layaRuns = [];                    // todas las ejecuciones activas
+let layaSel = "";                     // cuál se mira ("" = la más reciente con generaciones)
+let layaLife = -1;                    // vida de la campeona pulsada (-1 = la de la instantánea)
+{ const st = document.createElement("style"); st.textContent = LAYA_CSS; document.head.appendChild(st); }
 const MAQ = window.econosimMaquina;   // puente a la máquina de la IA (solo en la app)
 
 const BASE = (window.ECONOSIM_CONTROL || "http://127.0.0.1:8080").replace(/\/$/, "");
@@ -25,6 +32,8 @@ async function poll() {
     lastOk = Date.now();
     conn.textContent = "";
   } catch (e) {
+    // Sin mundo en marcha: si hay (o hubo) un entrenamiento de Laya, se enseña eso.
+    if (laya) { app.innerHTML = layaHTML(laya.data, layaOpts()); conn.textContent = ""; return; }
     // entre vida y vida del entrenamiento el mundo está apagado a propósito: el panel
     // sigue enseñando las generaciones anteriores y el estado del entrenamiento
     const note = training ? "MUNDO APAGADO ENTRE VIDAS · " + (lastStage || "entrenando") : "SIN CONEXIÓN CON EL MUNDO";
@@ -38,11 +47,37 @@ function rerender() {
   if (lastData && Date.now() - lastOk < 4000) {
     app.innerHTML = dashboardHTML({ ...lastData, history, selectedCal, selectedDay });
     wireSpeed();
+  } else if (laya) {
+    app.innerHTML = layaHTML(laya.data, layaOpts());
   } else {
     const note = training ? "MUNDO APAGADO ENTRE VIDAS · " + (lastStage || "entrenando") : "SIN CONEXIÓN CON EL MUNDO";
     app.innerHTML = offlineHTML(history, note, { selectedCal, selectedDay });
   }
 }
+
+function layaOpts() {
+  return { age: laya.age, runs: layaRuns.map((r) => r.name), sel: laya.name, lives: laya.lives || [], lifeSel: layaLife };
+}
+
+async function refreshLaya() {
+  if (!LAYA) return;
+  try {
+    const r = await LAYA.live();
+    if (r && r.ok) {
+      layaRuns = r.runs;
+      const conGen = r.runs.find((x) => (x.data.generations || []).length > 1) || r.runs[0];
+      laya = r.runs.find((x) => x.name === layaSel) || conGen;
+    }
+  } catch (e) { /* sin entrenamiento */ }
+}
+
+// pestañas de ejecución y vidas de la campeona: delegación en #app (sobrevive al re-pintado)
+app.addEventListener("click", (e) => {
+  const tab = e.target.closest && e.target.closest("[data-run]");
+  if (tab) { layaSel = tab.getAttribute("data-run"); layaLife = -1; refreshLaya().then(rerender); return; }
+  const vida = e.target.closest && e.target.closest("[data-life]");
+  if (vida) { const i = Number(vida.getAttribute("data-life")); layaLife = layaLife === i ? -1 : i; rerender(); }
+});
 
 // Delegación: un único manejador en #app capta el clic en cualquier día clicable,
 // del calendario vivo o de una generación anterior. Sobrevive a los re-pintados del poll
@@ -100,7 +135,7 @@ function addLog(line) {
   const text = m ? m[2] : line;
   if (stage === "error") div.className = "er";
   else if (stage === "fin") div.className = "ok";
-  else if (["inicio", "vidas", "dataset", "entrenar", "desplegar"].includes(stage)) div.className = "st";
+  else if (["inicio", "vidas", "dataset", "entrenar", "desplegar"].includes(stage) || /^\d\d:\d\d:\d\d$/.test(stage)) div.className = "st";
   div.textContent = (stage ? stage.toUpperCase() + " · " : "") + text;
   logBox.appendChild(div);
   while (logBox.children.length > 300) logBox.removeChild(logBox.firstChild);
@@ -117,16 +152,15 @@ if (T) {
   T.onDone(({ code }) => {
     setRunning(false);
     $("train-status").textContent = code === 0
-      ? "ITERACIÓN COMPLETA · qwen3b actualizado en sitio"
-      : "TERMINÓ CON ERROR (código " + code + ") · mira el LOG";
+      ? "ENTRENAMIENTO TERMINADO · la campeona está en training/laya_runs"
+      : "PARADO (código " + code + ") · la campeona guardada sigue en training/laya_runs";
   });
   $("train-start").addEventListener("click", async () => {
-    const iterations = Math.max(1, Number($("train-iters").value) || 1);
-    const lives = Number($("train-lives").value) || 3;
-    const duration = ($("train-duration").value || "10d").trim();
+    const lives = Number($("train-lives").value) || 12;
+    const minInvested = Number($("train-mandato").value);
+    const brain = $("train-num").checked ? "num" : "laya";
     logBox.setAttribute("data-open", "1");
-    const brain = $("train-freellm").checked ? "api" : "teacher";   // freellm/auto o el 7B local
-    const r = await T.start({ iterations, lives, duration, brain });
+    const r = await T.start({ lives, minInvested, brain });
     if (!r.ok) { addLog("[error] " + r.error); return; }
     setRunning(true);
     $("train-status").textContent = "arrancando…";
@@ -296,6 +330,7 @@ viewer.addEventListener("keydown", (e) => {
 });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && vista.abierto) { vista.abierto = false; pintaVisor(); } });
 
-refreshHistory().then(poll);
+refreshHistory().then(refreshLaya).then(poll);
 setInterval(poll, 1000);
+setInterval(refreshLaya, 1500);
 setInterval(refreshHistory, 15000);

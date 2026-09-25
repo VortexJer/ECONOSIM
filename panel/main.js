@@ -51,22 +51,22 @@ function sendLog(line) {
 }
 
 // --- entrenamiento: lanzar / parar / estado --------------------------------
+// Fase 14: el cerebro es Laya y se entrena por generaciones (training/laya_generations.py);
+// los profesores LLM (overnight.py) quedan fuera del panel. Corre hasta que se pulse PARAR.
 ipcMain.handle("train:start", (_e, opts) => {
   if (trainProc) return { ok: false, error: "ya hay un entrenamiento en marcha" };
   const root = projectRoot();
-  // overnight.py hace el bucle completo (vidas -> dataset -> QLoRA -> redespliegue -> eval) y
-  // vigila Docker/Ollama, relanzándolos si se caen. Es lo que hace falta para "entrenar" desde la app.
-  const script = path.join(root, "training", "overnight.py");
-  if (!fs.existsSync(script)) return { ok: false, error: "no encuentro training/overnight.py en " + root };
+  // la evolución (estrategias evolutivas) es el entrenamiento por generaciones de verdad
+  const script = path.join(root, "training", "laya_es.py");
+  if (!fs.existsSync(script)) return { ok: false, error: "no encuentro training/laya_es.py en " + root };
   const venvPy = path.join(root, "training", ".venv", "Scripts", "python.exe");
   const py = fs.existsSync(venvPy) ? venvPy : "python";
-  const brain = ["api", "teacher", "claude", "auto"].includes(opts.brain) ? opts.brain : "api";
-  const args = [script, "--iterations", String(opts.iterations || 1), "--lives", String(opts.lives || 3),
-                "--duration", String(opts.duration || "10d"), "--brain", brain];
+  const n = (v, d) => (Number.isFinite(Number(v)) && Number(v) >= 0 ? String(Number(v)) : String(d));
+  const args = ["-u", script, "--lives", n(opts.lives, 16), "--min-invested", n(opts.minInvested, 0.5)];
+  if (opts.brain === "num") args.push("--brain", "num");
   trainLog = [];
   trainProc = spawn(py, args, { cwd: path.join(root, "training"), windowsHide: true,
-                                env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUNBUFFERED: "1",
-                                       ECONOSIM_RESOLVE_DAYS: "3", ECONOSIM_IDLE_SPEED: "3600" } });
+                                env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUNBUFFERED: "1" } });
   sendLog(`[panel] lanzado: python ${args.map((a) => path.basename(a)).join(" ")}`);
   const onData = (buf) => buf.toString("utf-8").split(/\r?\n/).filter(Boolean).forEach(sendLog);
   trainProc.stdout.on("data", onData);
@@ -186,6 +186,38 @@ ipcMain.handle("freellm:ask", async (_e, prompt) => {
 });
 
 ipcMain.handle("train:status", () => ({ running: !!trainProc, log: trainLog.slice(-120) }));
+
+// --- cerebro Laya en vivo: el live.json de la ejecución más reciente -------------
+// Devuelve las ejecuciones con live.json (las 4 más recientes, sin las DESCARTADAS) y, de
+// cada una, las vidas de su campeona actual (lives.jsonl: curva y cada compra/venta).
+ipcMain.handle("laya:live", () => {
+  const dir = path.join(projectRoot(), "training", "laya_runs");
+  if (!fs.existsSync(dir)) return { ok: false };
+  const runs = [];
+  for (const name of fs.readdirSync(dir)) {
+    const f = path.join(dir, name, "live.json");
+    if (!fs.existsSync(f) || fs.existsSync(path.join(dir, name, "DESCARTADA.txt"))) continue;
+    runs.push({ name, f, m: fs.statSync(f).mtimeMs });
+  }
+  runs.sort((a, b) => b.m - a.m);
+  const out = [];
+  for (const r of runs.slice(0, 4)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(r.f, "utf-8"));
+      let lives = [];
+      const lf = path.join(dir, r.name, "lives.jsonl");
+      if (fs.existsSync(lf)) {
+        const rows = fs.readFileSync(lf, "utf-8").split(/\r?\n/).filter(Boolean).map((l) => {
+          try { return JSON.parse(l); } catch (e) { return null; }
+        }).filter(Boolean);
+        const g = Math.max(...rows.map((x) => x.gen ?? 0));
+        lives = rows.filter((x) => (x.gen ?? 0) === g);
+      }
+      out.push({ name: r.name, data, age: (Date.now() - r.m) / 1000, lives });
+    } catch (e) { /* leyendo mientras se escribe: vale el siguiente sondeo */ }
+  }
+  return out.length ? { ok: true, runs: out } : { ok: false };
+});
 
 // --- generaciones anteriores: vidas ya jugadas, leídas del disco ------------
 ipcMain.handle("history:list", () => {

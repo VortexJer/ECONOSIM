@@ -241,12 +241,11 @@
       <button class="train-btn" id="train-start">ENTRENAR</button>
       <button class="train-btn stop" id="train-stop" disabled>PARAR</button>
       <div class="train-opts">
-        ITERACIONES <input id="train-iters" value="1" />
-        VIDAS <input id="train-lives" value="3" />
-        DURACIÓN <input id="train-duration" value="10d" style="width:52px" />
-        <label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" id="train-freellm" checked /> FREELLM</label>
+        VIDAS/GEN <input id="train-lives" value="16" />
+        MANDATO <input id="train-mandato" value="0.5" />
+        <label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" id="train-num" /> NUMÉRICO</label>
       </div>
-      <div class="train-status" id="train-status">LISTO · profesor freellm, alumno qwen3b; cada iteración lo mejora en sitio</div>
+      <div class="train-status" id="train-status">LISTO · evolución por generaciones (Laya o numérico) hasta que pulses PARAR</div>
       <button class="train-btn" id="train-toggle">LOG</button>
     </div>
     <div id="trainlog"></div>

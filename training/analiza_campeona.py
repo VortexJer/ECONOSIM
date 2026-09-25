@@ -59,7 +59,8 @@ def main() -> int:
             if held == "0":
                 por_dia.setdefault(dk, []).append((sym, P[i, E.BUY]))
         res = {}
-        for H in (20, 60):
+        spy = md.series["SPY"]
+        for H, residual in ((20, False), (60, False), (20, True), (60, True)):
             ics = []
             for dk, lst in por_dia.items():
                 i0 = grid.idx.get(E.date.fromisoformat(dk))
@@ -70,11 +71,23 @@ def main() -> int:
                     s = md.series[sym]
                     b1, b2 = s.asof(grid.days[i0 + 1]), s.asof(grid.days[i0 + 1 + H])
                     if b1 and b2:
-                        fw.append(b2.close / b1.close - 1); pb.append(p)
+                        r = b2.close / b1.close - 1
+                        if residual:
+                            # quitar lo que explica el mercado: r - beta * r_indice (beta de 1 año, solo pasado)
+                            k = s.index_of(grid.days[i0])
+                            cs = [x.close for x in s.bars[max(0, k - 252): k + 1]]
+                            ks = spy.index_of(grid.days[i0])
+                            cm = [x.close for x in spy.bars[max(0, ks - 252): ks + 1]]
+                            bc = E.__dict__.get("quant") or __import__("econosim.market.quant", fromlist=["x"])
+                            bb = bc.beta_corr(cs, cm)
+                            m1, m2 = spy.asof(grid.days[i0 + 1]), spy.asof(grid.days[i0 + 1 + H])
+                            r -= (bb["beta"] if bb else 1.0) * (m2.close / m1.close - 1)
+                        fw.append(r); pb.append(p)
                 if len(fw) >= 8:
                     ics.append(spearman(np.array(pb), np.array(fw)))
             ics = np.array(ics)
-            res[f"IC_{H}"] = {"media": round(float(ics.mean()), 4), "t": round(float(ics.mean() / (ics.std(ddof=1) / np.sqrt(len(ics)))), 2),
+            res[f"IC_{H}{'_sin_mercado' if residual else ''}"] = {"media": round(float(ics.mean()), 4), "t": round(float(ics.mean() / (ics.std(ddof=1) / np.sqrt(len(ics)))), 2),
+                              "t_corregida_solape": round(float(ics.mean() / (ics.std(ddof=1) / np.sqrt(len(ics))) / np.sqrt(H / E.DECIDE_EVERY)), 2),
                               "fechas": len(ics), "positivas": round(float((ics > 0).mean()), 3)}
         # --- 2. prueba del azar: mismas vidas, notas barajadas entre acciones de cada fecha
         rng = np.random.default_rng(0)
