@@ -1,0 +1,22 @@
+{
+  "run": "factor-20260925-0859",
+  "campeona_gen": 71,
+  "val": {
+    "campeona_anual_sobre_lo_invertido_%": 67.1,
+    "campeona_tiempo_invertida_%": 62.0,
+    "indice_sim_anual_sobre_lo_invertido_%": 14.9,
+    "sp500_puro_anual_%": 22.3,
+    "campeona_semestre_mediana_%": 15.1,
+    "sp500_semestre_mediana_%": 10.6,
+    "vidas_campeona_gana_a_sp500": "14/24"
+  },
+  "test": {
+    "campeona_anual_sobre_lo_invertido_%": 28.7,
+    "campeona_tiempo_invertida_%": 56.0,
+    "indice_sim_anual_sobre_lo_invertido_%": 15.1,
+    "sp500_puro_anual_%": 22.3,
+    "campeona_semestre_mediana_%": 2.6,
+    "sp500_semestre_mediana_%": 10.2,
+    "vidas_campeona_gana_a_sp500": "5/24"
+  }
+}
