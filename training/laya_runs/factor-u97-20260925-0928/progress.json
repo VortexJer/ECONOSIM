@@ -1,0 +1,583 @@
+{
+  "run": "factor-u97-20260925-0928",
+  "metodo": "estrategias evolutivas (OpenAI ES) sobre el scorer de Laya",
+  "config": {
+    "pop": 30,
+    "sigma": 0.05,
+    "lr": 0.01,
+    "lives": 16,
+    "val_lives": 24,
+    "sessions": 126,
+    "initial_eur": 50.0,
+    "min_invested": 0.0,
+    "min_buy_share": 0.02,
+    "risk": 0.5,
+    "ic_weight": 0.0,
+    "train_from": "2005-03-01",
+    "max_gens": 1000000000,
+    "check_every": 10,
+    "seed": 7,
+    "brain": "factor",
+    "hidden": 64,
+    "run": "training/laya_runs/factor-u97-20260925-0928"
+  },
+  "generations": [
+    {
+      "gen": 0,
+      "val": {
+        "score": 17.175833333333333,
+        "std": 4.424720251671912,
+        "ic": -0.0031,
+        "fitness": 14.963473207497376,
+        "survival": 1.0,
+        "trades": 7.875,
+        "fees": 0.7279166666666667,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0264
+        }
+      },
+      "test": {
+        "score": 15.329583333333334,
+        "std": 4.39233468591085,
+        "ic": -0.0063,
+        "fitness": 13.133415990377909,
+        "survival": 1.0,
+        "trades": 8.333333333333334,
+        "fees": 0.7608333333333333,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0326
+        }
+      },
+      "accepted": true
+    },
+    {
+      "gen": 1,
+      "train_fitness": 12.36011244305154,
+      "train_best": 12.607543313150817,
+      "val": {
+        "score": 16.756249999999998,
+        "std": 5.685476975373306,
+        "ic": -0.003,
+        "fitness": 13.913511512313345,
+        "survival": 1.0,
+        "trades": 7.291666666666667,
+        "fees": 0.6645833333333333,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0231
+        }
+      },
+      "accepted": false,
+      "secs": 4.8
+    },
+    {
+      "gen": 2,
+      "train_fitness": 12.978687688541216,
+      "train_best": 13.335630001664029,
+      "val": {
+        "score": 16.544583333333335,
+        "std": 5.443152410113299,
+        "ic": -0.0031,
+        "fitness": 13.823007128276686,
+        "survival": 1.0,
+        "trades": 7.333333333333333,
+        "fees": 0.6679166666666667,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0225
+        }
+      },
+      "accepted": false,
+      "secs": 4.7
+    },
+    {
+      "gen": 3,
+      "train_fitness": 13.135903812662816,
+      "train_best": 13.62934050596367,
+      "val": {
+        "score": 16.544583333333335,
+        "std": 5.443152410113299,
+        "ic": -0.0032,
+        "fitness": 13.823007128276686,
+        "survival": 1.0,
+        "trades": 7.333333333333333,
+        "fees": 0.6679166666666667,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0227
+        }
+      },
+      "accepted": false,
+      "secs": 4.7
+    },
+    {
+      "gen": 4,
+      "train_fitness": 13.343531955167377,
+      "train_best": 13.806553489968094,
+      "val": {
+        "score": 16.309166666666666,
+        "std": 5.502422888045674,
+        "ic": -0.003,
+        "fitness": 13.55795522264383,
+        "survival": 1.0,
+        "trades": 7.5,
+        "fees": 0.6862499999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0243
+        }
+      },
+      "accepted": false,
+      "secs": 4.5
+    },
+    {
+      "gen": 5,
+      "train_fitness": 12.762564483617364,
+      "train_best": 13.199877278203868,
+      "val": {
+        "score": 16.02916666666667,
+        "std": 4.510123720278882,
+        "ic": -0.003,
+        "fitness": 13.774104806527227,
+        "survival": 1.0,
+        "trades": 7.708333333333333,
+        "fees": 0.7050000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0245
+        }
+      },
+      "accepted": false,
+      "secs": 4.6
+    },
+    {
+      "gen": 6,
+      "train_fitness": 13.714518242139855,
+      "train_best": 14.129544587601643,
+      "val": {
+        "score": 16.405833333333334,
+        "std": 5.41572318706273,
+        "ic": -0.0031,
+        "fitness": 13.697971739801968,
+        "survival": 1.0,
+        "trades": 7.5,
+        "fees": 0.6866666666666666,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0242
+        }
+      },
+      "accepted": false,
+      "secs": 4.6
+    },
+    {
+      "gen": 7,
+      "train_fitness": 12.988053739105146,
+      "train_best": 13.391550321968356,
+      "val": {
+        "score": 16.469166666666666,
+        "std": 5.430700474053866,
+        "ic": -0.0032,
+        "fitness": 13.753816429639734,
+        "survival": 1.0,
+        "trades": 7.5,
+        "fees": 0.6862499999999999,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0243
+        }
+      },
+      "accepted": false,
+      "secs": 4.8
+    },
+    {
+      "gen": 8,
+      "train_fitness": 12.825141828670924,
+      "train_best": 14.26788982176081,
+      "val": {
+        "score": 17.22083333333333,
+        "std": 5.346589190523452,
+        "ic": -0.0031,
+        "fitness": 14.547538738071605,
+        "survival": 1.0,
+        "trades": 7.583333333333333,
+        "fees": 0.6975000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0241
+        }
+      },
+      "accepted": false,
+      "secs": 4.5
+    },
+    {
+      "gen": 9,
+      "train_fitness": 13.716226538349641,
+      "train_best": 14.425234576798909,
+      "val": {
+        "score": 17.27875,
+        "std": 5.492728005053591,
+        "ic": -0.0032,
+        "fitness": 14.532385997473202,
+        "survival": 1.0,
+        "trades": 7.583333333333333,
+        "fees": 0.6975000000000001,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0242
+        }
+      },
+      "accepted": false,
+      "secs": 4.6
+    },
+    {
+      "gen": 10,
+      "train_fitness": 13.498021813754715,
+      "train_best": 13.799790520206141,
+      "val": {
+        "score": 17.29875,
+        "std": 5.488555754552679,
+        "ic": -0.0032,
+        "fitness": 14.55447212272366,
+        "survival": 1.0,
+        "trades": 7.541666666666667,
+        "fees": 0.6933333333333334,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0241
+        }
+      },
+      "accepted": false,
+      "secs": 4.6
+    },
+    {
+      "gen": 11,
+      "train_fitness": 13.259562785202336,
+      "train_best": 13.561350902492377,
+      "val": {
+        "score": 17.411666666666665,
+        "std": 5.484455052438868,
+        "ic": -0.0032,
+        "fitness": 14.669439140447231,
+        "survival": 1.0,
+        "trades": 7.541666666666667,
+        "fees": 0.6912499999999998,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0237
+        }
+      },
+      "accepted": false,
+      "secs": 4.5
+    },
+    {
+      "gen": 12,
+      "train_fitness": 13.423371282915024,
+      "train_best": 14.109359345867679,
+      "val": {
+        "score": 17.422083333333333,
+        "std": 5.487793256527517,
+        "ic": -0.0034,
+        "fitness": 14.678186705069574,
+        "survival": 1.0,
+        "trades": 7.541666666666667,
+        "fees": 0.6912499999999998,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0235
+        }
+      },
+      "accepted": false,
+      "secs": 4.7
+    },
+    {
+      "gen": 13,
+      "train_fitness": 12.775143414130246,
+      "train_best": 13.195397917389869,
+      "val": {
+        "score": 17.422083333333333,
+        "std": 5.487793256527517,
+        "ic": -0.0035,
+        "fitness": 14.678186705069574,
+        "survival": 1.0,
+        "trades": 7.541666666666667,
+        "fees": 0.6912499999999998,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0234
+        }
+      },
+      "accepted": false,
+      "secs": 4.6
+    },
+    {
+      "gen": 14,
+      "train_fitness": 13.971117624893562,
+      "train_best": 14.360348148273921,
+      "val": {
+        "score": 17.422083333333333,
+        "std": 5.487793256527517,
+        "ic": -0.0036,
+        "fitness": 14.678186705069574,
+        "survival": 1.0,
+        "trades": 7.541666666666667,
+        "fees": 0.6912499999999998,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0233
+        }
+      },
+      "accepted": false,
+      "secs": 4.5
+    },
+    {
+      "gen": 15,
+      "train_fitness": 12.887448525112545,
+      "train_best": 13.18549393536221,
+      "val": {
+        "score": 17.61375,
+        "std": 5.898651549648162,
+        "ic": -0.0034,
+        "fitness": 14.66442422517592,
+        "survival": 1.0,
+        "trades": 7.458333333333333,
+        "fees": 0.6870833333333334,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0225
+        }
+      },
+      "accepted": false,
+      "secs": 4.5
+    },
+    {
+      "gen": 16,
+      "train_fitness": 13.212820976204712,
+      "train_best": 13.6017299060479,
+      "val": {
+        "score": 17.61375,
+        "std": 5.898651549648162,
+        "ic": -0.0034,
+        "fitness": 14.66442422517592,
+        "survival": 1.0,
+        "trades": 7.458333333333333,
+        "fees": 0.6870833333333334,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0224
+        }
+      },
+      "accepted": false,
+      "secs": 4.5
+    },
+    {
+      "gen": 17,
+      "train_fitness": 13.730969233553894,
+      "train_best": 14.270297479108407,
+      "val": {
+        "score": 17.61375,
+        "std": 5.898651549648162,
+        "ic": -0.0035,
+        "fitness": 14.66442422517592,
+        "survival": 1.0,
+        "trades": 7.458333333333333,
+        "fees": 0.6870833333333334,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0224
+        }
+      },
+      "accepted": false,
+      "secs": 4.7
+    },
+    {
+      "gen": 18,
+      "train_fitness": 12.030777232201583,
+      "train_best": 12.544250142389856,
+      "val": {
+        "score": 17.390416666666667,
+        "std": 5.907432098048656,
+        "ic": -0.0035,
+        "fitness": 14.43670061764234,
+        "survival": 1.0,
+        "trades": 7.375,
+        "fees": 0.6754166666666667,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0218
+        }
+      },
+      "accepted": false,
+      "secs": 4.3
+    },
+    {
+      "gen": 19,
+      "train_fitness": 13.432344793484967,
+      "train_best": 13.908600804789044,
+      "val": {
+        "score": 17.390416666666667,
+        "std": 5.907432098048656,
+        "ic": -0.0033,
+        "fitness": 14.43670061764234,
+        "survival": 1.0,
+        "trades": 7.375,
+        "fees": 0.6754166666666667,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0218
+        }
+      },
+      "accepted": false,
+      "secs": 4.7
+    },
+    {
+      "gen": 20,
+      "train_fitness": 11.615190611779319,
+      "train_best": 11.745956182414302,
+      "val": {
+        "score": 17.390416666666667,
+        "std": 5.907432098048656,
+        "ic": -0.0033,
+        "fitness": 14.43670061764234,
+        "survival": 1.0,
+        "trades": 7.375,
+        "fees": 0.6754166666666667,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0217
+        }
+      },
+      "accepted": false,
+      "secs": 4.6
+    },
+    {
+      "gen": 21,
+      "train_fitness": 12.289933167608995,
+      "train_best": 12.594656915196897,
+      "val": {
+        "score": 17.009583333333335,
+        "std": 5.578361825816089,
+        "ic": -0.0033,
+        "fitness": 14.220402420425291,
+        "survival": 1.0,
+        "trades": 7.208333333333333,
+        "fees": 0.6566666666666666,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.021
+        }
+      },
+      "accepted": false,
+      "secs": 4.7
+    }
+  ],
+  "baselines": {
+    "cash": {
+      "val": {
+        "score": 13.616249999999999,
+        "std": 0.49880534362948964,
+        "ic": 0.0,
+        "fitness": 13.366847328185255,
+        "survival": 1.0,
+        "trades": 0.0,
+        "fees": 0.0,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0
+        }
+      },
+      "test": {
+        "score": 13.17125,
+        "std": 0.3791911622124124,
+        "ic": 0.0,
+        "fitness": 12.981654418893795,
+        "survival": 1.0,
+        "trades": 0.0,
+        "fees": 0.0,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0
+        }
+      }
+    },
+    "index": {
+      "val": {
+        "score": 15.587083333333334,
+        "std": 2.7193281633010424,
+        "ic": 0.0,
+        "fitness": 14.227419251682813,
+        "survival": 1.0,
+        "trades": 6.0,
+        "fees": 0.8020833333333334,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0
+        }
+      },
+      "test": {
+        "score": 15.312916666666666,
+        "std": 1.771892771319855,
+        "ic": 0.0,
+        "fitness": 14.426970281006739,
+        "survival": 1.0,
+        "trades": 6.0,
+        "fees": 0.8070833333333334,
+        "mandate_buys": 0.0,
+        "actions": {
+          "buy": 0.0
+        }
+      }
+    }
+  },
+  "champion": {
+    "gen": 0,
+    "val": {
+      "score": 17.175833333333333,
+      "std": 4.424720251671912,
+      "ic": -0.0031,
+      "fitness": 14.963473207497376,
+      "survival": 1.0,
+      "trades": 7.875,
+      "fees": 0.7279166666666667,
+      "mandate_buys": 0.0,
+      "actions": {
+        "buy": 0.0264
+      }
+    },
+    "test": {
+      "score": 15.329583333333334,
+      "std": 4.39233468591085,
+      "ic": -0.0063,
+      "fitness": 13.133415990377909,
+      "survival": 1.0,
+      "trades": 8.333333333333334,
+      "fees": 0.7608333333333333,
+      "mandate_buys": 0.0,
+      "actions": {
+        "buy": 0.0326
+      }
+    }
+  },
+  "status": "terminado",
+  "fidelity": [
+    [
+      {
+        "start": "2019-04-22",
+        "mundo_real": 17.02,
+        "rapido": 17.02,
+        "ops_real": 7,
+        "ops_rapido": 7
+      },
+      {
+        "start": "2019-05-06",
+        "mundo_real": 17.38,
+        "rapido": 17.38,
+        "ops_real": 7,
+        "ops_rapido": 7
+      }
+    ]
+  ],
+  "updated": "2026-09-25T09:33:01"
+}
