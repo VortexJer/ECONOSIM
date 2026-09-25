@@ -1,0 +1,2 @@
+[08:32:41] ES · cerebro num · num-20260925-0832 · device cpu · población 30 · sigma 0.05 · lr 0.01
+[08:34:30] caché train: 105584 estados (110s)
