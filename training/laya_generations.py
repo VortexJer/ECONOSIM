@@ -44,7 +44,9 @@ from laya_life import Fundamentals, LayaLife, MarketData              # noqa: E4
 
 RUNS = HERE / "laya_runs"
 SPLITS = {
-    "train": (date(2010, 1, 4), date(2018, 6, 29)),
+    # arranque máx. fin de 2017: vida de 6 meses + etiqueta a 120 sesiones acaba ~ene-2019,
+    # antes de que empiece la validación (mar-2019). Si no, las etiquetas verían su futuro.
+    "train": (date(2010, 1, 4), date(2017, 12, 29)),
     "val": (date(2019, 3, 1), date(2021, 12, 31)),
     "test": (date(2022, 8, 1), date(2025, 12, 31)),
 }
@@ -74,26 +76,104 @@ class Trainer:
         self.buffer: list[list[tuple[str, np.ndarray]]] = []
         self.val_days = start_days(self.md, "val", a.val_lives, "val-fixed")
         self.test_days = start_days(self.md, "test", a.val_lives, "test-fixed")
+        self._live_t = 0.0
+        # currículo: "gens_desde:nivel:horizonte,..." (por defecto 1->nivel 1 a 120 sesiones,
+        # 6->nivel 2 a 60, 12->nivel 3 a 20)
+        self.stages = []
+        for part in a.curriculum.split(","):
+            g0, lv, h = (int(x) for x in part.split(":"))
+            self.stages.append({"from": g0, "level": lv, "h": h})
+        self.stages.sort(key=lambda s: s["from"])
+        self.stage = self.stages[0]
+        self.phase, self.gen, self.last_lote, self.life_mode, self.last_life = "arrancando", 0, [], "", None
         self.progress = {"run": self.run.name, "started": datetime.now().isoformat(timespec="seconds"),
                          "config": vars(a), "generations": [], "baselines": {}, "champion": None,
                          "status": "arrancando"}
 
+    # ---- lo que ve el panel (training/laya_runs/<run>/live.json) ------------------
+    def live(self, phase: str, L=None, n: int = 0, lote=None, force: bool = False) -> None:
+        now = time.time()
+        if not force and now - self._live_t < 0.7 and lote is None:
+            return
+        self._live_t = now
+        if phase:
+            self.phase = phase
+        snap = {"t": now, "run": self.run.name, "phase": self.phase, "gen": self.gen,
+                "config": {k: v for k, v in vars(self.a).items() if k in ("min_invested", "idle_penalty", "sessions",
+                                                                         "initial_eur", "train_lives", "val_lives")},
+                "stage": self.stage,
+                "baselines": {k: {"val": v["val"]["score"], "test": v["test"]["score"]}
+                              for k, v in self.progress["baselines"].items()},
+                "champion": self.progress.get("champion"),
+                "generations": [{"gen": g["gen"], "val": g["val"]["score"], "test": (g.get("test") or {}).get("score"),
+                                 "buy": g["val"]["actions"].get("buy", 0), "trades": g["val"]["trades"],
+                                 "accepted": g["accepted"], "train": g.get("train_score")}
+                                for g in self.progress["generations"]]}
+        if L is not None:
+            life = L.snapshot(n)
+            life["curve"] = list(getattr(L, "curve", []))
+            life["mode"] = self.life_mode
+            if lote is not None:
+                self.last_lote = lote
+            life["decisions"] = self.last_lote
+            snap["life"] = life
+            self.last_life = life
+        elif self.last_life is not None:
+            snap["life"] = self.last_life
+        tmp = self.run / "live.json.tmp"
+        try:
+            tmp.write_text(json.dumps(snap, default=str), encoding="utf-8")
+            tmp.replace(self.run / "live.json")
+        except OSError:
+            pass                                  # el panel leyendo a la vez en Windows: vale el siguiente
+
     # ---- vidas -------------------------------------------------------------------
     def life(self, seed: str, start: date, fixed=None, explore=0.0, rng=None):
         L = LayaLife(self.md, self.fund, seed, start, sessions=self.a.sessions,
-                     initial_eur=self.a.initial_eur, decide_every=self.a.decide_every)
-        return L.run(self.pol.probs, explore=explore, rng=rng, fixed=fixed)
+                     initial_eur=self.a.initial_eur, decide_every=self.a.decide_every,
+                     min_invested=0.0 if fixed else self.a.min_invested, idle_penalty=self.a.idle_penalty,
+                     level=self.stage["level"], label_h=self.stage["h"])
+        self.last_lote = []
+        self.life_mode = fixed or ("explorando" if explore > 0 else "sin explorar")
+        step = None if fixed else (lambda L_, n, lote: self.live("", L_, n, lote, force=lote is None))
+        r = L.run(self.pol.probs, explore=explore, rng=rng, fixed=fixed, on_step=step)
+        self.record_life(L, r, fixed, explore)
+        return r
+
+    def record_life(self, L, r, fixed, explore) -> None:
+        """Cada vida queda en lives.jsonl: poder mirar la mejor y la peor y QUÉ hizo en ellas."""
+        movs = []
+        for e in L.w.ledger.entries():
+            if e.counterparty == "Alpaca Securities LLC" or e.concept.startswith("Hetzner"):
+                movs.append({"t": e.real_ts[:10], "concepto": e.concept, "eur": e.amount_cents / 100})
+        rec = {"gen": self.gen, "fase": self.phase, "seed": r.seed, "modo": fixed or ("explorando" if explore else "sin explorar"),
+               "start": str(r.start), "sesiones": r.days, "viva": r.alive, "final": round(r.final_equity, 2),
+               "score": round(r.score, 2), "inicial": r.initial, "operaciones": r.trades, "comisiones": round(r.fees, 2),
+               "mandato_compras": r.mandate_buys, "mandato_conserva": getattr(L, "mandate_keeps", 0),
+               "curva": r.curve, "cartera_final": L.snapshot(max(0, r.days - 1))["positions"],
+               "movimientos": [m for m in movs if not m["concepto"].startswith("Hetzner")],
+               "hosting": round(-sum(m["eur"] for m in movs if m["concepto"].startswith("Hetzner")), 2)}
+        try:
+            with open(self.run / "lives.jsonl", "a", encoding="utf-8") as f:
+                f.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
+        except OSError:
+            pass
 
     def evaluate(self, split: str, fixed=None) -> dict:
         days = self.val_days if split == "val" else self.test_days
-        res = [self.life(f"{split}-{i}", d, fixed=fixed) for i, d in enumerate(days)]
+        res = []
+        for i, d in enumerate(days):
+            etiqueta = ("validando" if split == "val" else "test") + (" · " + fixed if fixed else "")
+            self.live(f"{etiqueta} · vida {i + 1}/{len(days)}", force=True)
+            res.append(self.life(f"{split}-{i}", d, fixed=fixed))
         acts = np.bincount([x.action for r in res for x in r.decisions], minlength=3) if fixed is None else np.zeros(3)
         tot = max(1, int(acts.sum()))
         return {"score": float(np.mean([r.score for r in res])),
                 "survival": float(np.mean([r.alive for r in res])),
                 "trades": float(np.mean([r.trades for r in res])),
                 "fees": float(np.mean([r.fees for r in res])),
-                "actions": {ACTIONS[i]: round(acts[i] / tot, 3) for i in range(3)}}
+                "mandate_buys": float(np.mean([r.mandate_buys for r in res])),
+                "actions": {ACTIONS[i]: round(float(acts[i]) / tot, 3) for i in range(3)}}
 
     # ---- aprendizaje ---------------------------------------------------------------
     def targets(self, utils: np.ndarray) -> np.ndarray:
@@ -163,11 +243,27 @@ class Trainer:
             g += 1
             t0 = time.time()
             try:
+                nueva = [s for s in self.stages if s["from"] <= g][-1]
+                if nueva is not self.stage:
+                    # cambia lo que ve o el plazo: la campeona se vuelve a medir con las reglas
+                    # nuevas, si no la comparación con las candidatas no sería justa
+                    self.stage = nueva
+                    self.buffer = []
+                    self.pol.set_head_state(champ_state)
+                    self.gen = g
+                    champ = {"gen": champ["gen"], "val": self.evaluate("val"), "test": self.evaluate("test")}
+                    self.progress["champion"] = champ
+                    log(self.run, f"ETAPA nivel {nueva['level']} · etiquetas a {nueva['h']} sesiones · campeona "
+                                  f"re-medida: val {champ['val']['score']:.2f} € · test {champ['test']['score']:.2f} €")
                 # 1. vivir con la campeona, explorando
                 self.pol.set_head_state(champ_state)
                 rng = np.random.default_rng(1000 + g)
+                self.gen = g
                 days = start_days(self.md, "train", a.train_lives, f"train-{g}")
-                lives = [self.life(f"g{g}-{i}", d, explore=a.explore, rng=rng) for i, d in enumerate(days)]
+                lives = []
+                for i, d in enumerate(days):
+                    self.live(f"viviendo · vida {i + 1}/{len(days)}", force=True)
+                    lives.append(self.life(f"g{g}-{i}", d, explore=a.explore, rng=rng))
                 samples = [(x.state, self.targets(x.utils)) for r in lives for x in r.decisions if x.utils is not None]
                 self.buffer.append(samples)
                 self.buffer = self.buffer[-a.keep_gens:]
@@ -177,12 +273,15 @@ class Trainer:
                 pool = [s for gen in self.buffer for s in gen]
                 if len(pool) > a.max_samples:
                     pool = random.sample(pool, a.max_samples)
+                self.live(f"aprendiendo de {len(pool)} decisiones", force=True)
                 loss = self.train_head(pool)
                 t2 = time.time()
                 # 3. competir en validación
                 cand = self.evaluate("val")
-                accepted = cand["score"] > champ["val"]["score"]
-                rec = {"gen": g, "train_score": train_score, "samples": len(pool), "loss": loss, "val": cand,
+                # solo puede ganar una candidata que opere POR SÍ MISMA (sin contar el mandato)
+                opera = cand["actions"].get("buy", 0) >= a.min_buy_share
+                accepted = opera and cand["score"] > champ["val"]["score"]
+                rec = {"gen": g, "stage": dict(self.stage), "train_score": train_score, "samples": len(pool), "loss": loss, "val": cand,
                        "accepted": accepted, "secs": {"vivir": round(t1 - t0), "aprender": round(t2 - t1),
                                                        "validar": round(time.time() - t2)}}
                 if accepted:
@@ -211,6 +310,8 @@ class Trainer:
                 time.sleep(5)
             self.progress["updated"] = datetime.now().isoformat(timespec="seconds")
             self.save()
+            self.live("", force=True)
+        self.live("terminado", force=True)
         self.progress["status"] = "terminado"
         self.progress["finished"] = datetime.now().isoformat(timespec="seconds")
         self.save()
@@ -237,6 +338,14 @@ def main() -> int:
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--keep-gens", type=int, default=3)
     ap.add_argument("--max-samples", type=int, default=24000)
+    ap.add_argument("--curriculum", default="1:1:120,6:2:60,12:3:20",
+                    help="etapas 'desde_gen:nivel:horizonte' (nivel 1 tendencia, 2 +osciladores/riesgo, 3 todo)")
+    ap.add_argument("--min-invested", type=float, default=0.5,
+                    help="mandato: fracción mínima del patrimonio invertida (0 = libre)")
+    ap.add_argument("--idle-penalty", type=float, default=0.01,
+                    help="coste de oportunidad del efectivo en la etiqueta, por horizonte de 20 sesiones")
+    ap.add_argument("--min-buy-share", type=float, default=0.03,
+                    help="una candidata que compre en menos de esta fracción de decisiones no puede ser campeona")
     ap.add_argument("--run", default="", help="carpeta de la ejecución (por defecto laya_runs/<fecha>)")
     ap.add_argument("--resume", default="", help="cabeza .safetensors desde la que seguir")
     a = ap.parse_args()
