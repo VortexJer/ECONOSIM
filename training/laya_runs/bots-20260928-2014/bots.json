@@ -1,0 +1,2202 @@
+{
+  "metodo": "reglas fijas publicadas, sin aprendizaje: todos los bloques son prueba limpia",
+  "capital_€": 5000.0,
+  "bloques": 43,
+  "vidas_por_bloque": 16,
+  "empresas_por_vida": 40,
+  "bots": {
+    "tendencia_indice": {
+      "bloques_gana_al_indice": "5/43",
+      "examen_2022_2026": "1/9",
+      "exceso_medio_por_bloque_€": -89.95,
+      "peor_bloque_€": -1426.87,
+      "mejor_bloque_€": 1964.58,
+      "rentabilidad_anual_sobre_lo_invertido_%": 10.7,
+      "tiempo_invertido_%": 79.0,
+      "operaciones_por_vida": 6.2,
+      "por_bloque": [
+        {
+          "bloque": "2005-03-07",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5005.96,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2005-09-01",
+          "exceso_mediana": -52.47,
+          "gana_vidas": 0.0,
+          "euros": 5221.17,
+          "ops": 7.0
+        },
+        {
+          "bloque": "2006-03-03",
+          "exceso_mediana": -186.67,
+          "gana_vidas": 0.0,
+          "euros": 4912.6,
+          "ops": 7.0
+        },
+        {
+          "bloque": "2006-08-30",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5319.33,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2007-03-02",
+          "exceso_mediana": -168.24,
+          "gana_vidas": 0.0,
+          "euros": 5170.5,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2007-08-29",
+          "exceso_mediana": 12.97,
+          "gana_vidas": 1.0,
+          "euros": 4704.45,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2008-02-28",
+          "exceso_mediana": 35.33,
+          "gana_vidas": 1.0,
+          "euros": 4804.31,
+          "ops": 2.0
+        },
+        {
+          "bloque": "2008-08-26",
+          "exceso_mediana": 1964.58,
+          "gana_vidas": 1.0,
+          "euros": 4963.32,
+          "ops": 0.0
+        },
+        {
+          "bloque": "2009-02-25",
+          "exceso_mediana": -1426.87,
+          "gana_vidas": 0.0,
+          "euros": 5419.16,
+          "ops": 3.0
+        },
+        {
+          "bloque": "2009-08-24",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5334.78,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2010-02-23",
+          "exceso_mediana": -151.29,
+          "gana_vidas": 0.0,
+          "euros": 4705.64,
+          "ops": 11.0
+        },
+        {
+          "bloque": "2010-08-20",
+          "exceso_mediana": -309.87,
+          "gana_vidas": 0.0,
+          "euros": 5976.46,
+          "ops": 5.0
+        },
+        {
+          "bloque": "2011-02-17",
+          "exceso_mediana": 18.56,
+          "gana_vidas": 1.0,
+          "euros": 4471.51,
+          "ops": 7.0
+        },
+        {
+          "bloque": "2011-08-17",
+          "exceso_mediana": -895.38,
+          "gana_vidas": 0.0,
+          "euros": 5002.5,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2012-02-15",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5181.66,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2012-08-14",
+          "exceso_mediana": -54.28,
+          "gana_vidas": 0.0,
+          "euros": 5371.27,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2013-02-14",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5557.99,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2013-08-14",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5485.05,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2014-02-12",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5294.82,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2014-08-12",
+          "exceso_mediana": -244.13,
+          "gana_vidas": 0.0,
+          "euros": 5074.95,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2015-02-10",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5094.94,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2015-08-10",
+          "exceso_mediana": -145.62,
+          "gana_vidas": 0.0,
+          "euros": 4309.76,
+          "ops": 7.0
+        },
+        {
+          "bloque": "2016-02-08",
+          "exceso_mediana": -522.3,
+          "gana_vidas": 0.0,
+          "euros": 5378.19,
+          "ops": 5.0
+        },
+        {
+          "bloque": "2016-08-05",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5273.89,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2017-02-03",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5401.52,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2017-08-03",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5703.46,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2018-02-01",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5100.12,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2018-08-01",
+          "exceso_mediana": -454.4,
+          "gana_vidas": 0.0,
+          "euros": 4335.34,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2019-01-31",
+          "exceso_mediana": -146.03,
+          "gana_vidas": 0.0,
+          "euros": 5369.34,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2019-07-31",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5548.31,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2020-01-29",
+          "exceso_mediana": -220.55,
+          "gana_vidas": 0.0,
+          "euros": 4686.3,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2020-07-28",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5905.38,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2021-01-26",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5882.83,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2021-07-26",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 4983.11,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2022-01-21",
+          "exceso_mediana": 219.67,
+          "gana_vidas": 1.0,
+          "euros": 4706.22,
+          "ops": 4.0
+        },
+        {
+          "bloque": "2022-07-22",
+          "exceso_mediana": -226.9,
+          "gana_vidas": 0.0,
+          "euros": 4779.94,
+          "ops": 3.0
+        },
+        {
+          "bloque": "2023-01-20",
+          "exceso_mediana": -130.97,
+          "gana_vidas": 0.0,
+          "euros": 5509.34,
+          "ops": 7.0
+        },
+        {
+          "bloque": "2023-07-21",
+          "exceso_mediana": -235.4,
+          "gana_vidas": 0.0,
+          "euros": 5071.67,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2024-01-19",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5669.4,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2024-07-19",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5378.8,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2025-01-17",
+          "exceso_mediana": -342.38,
+          "gana_vidas": 0.0,
+          "euros": 4856.46,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2025-07-21",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5488.68,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2026-01-16",
+          "exceso_mediana": -205.32,
+          "gana_vidas": 0.0,
+          "euros": 5255.33,
+          "ops": 8.0
+        }
+      ]
+    },
+    "tendencia_inverso": {
+      "bloques_gana_al_indice": "4/43",
+      "examen_2022_2026": "1/9",
+      "exceso_medio_por_bloque_€": -181.09,
+      "peor_bloque_€": -2719.64,
+      "mejor_bloque_€": 4029.11,
+      "rentabilidad_anual_sobre_lo_invertido_%": 3.8,
+      "tiempo_invertido_%": 99.0,
+      "operaciones_por_vida": 8.7,
+      "por_bloque": [
+        {
+          "bloque": "2005-03-07",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5005.96,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2005-09-01",
+          "exceso_mediana": -52.47,
+          "gana_vidas": 0.0,
+          "euros": 5221.17,
+          "ops": 7.0
+        },
+        {
+          "bloque": "2006-03-03",
+          "exceso_mediana": -186.67,
+          "gana_vidas": 0.0,
+          "euros": 4912.6,
+          "ops": 7.0
+        },
+        {
+          "bloque": "2006-08-30",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5319.33,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2007-03-02",
+          "exceso_mediana": -338.18,
+          "gana_vidas": 0.0,
+          "euros": 5000.56,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2007-08-29",
+          "exceso_mediana": 64.95,
+          "gana_vidas": 1.0,
+          "euros": 4756.43,
+          "ops": 15.0
+        },
+        {
+          "bloque": "2008-02-28",
+          "exceso_mediana": 51.68,
+          "gana_vidas": 1.0,
+          "euros": 4820.66,
+          "ops": 9.0
+        },
+        {
+          "bloque": "2008-08-26",
+          "exceso_mediana": 4029.11,
+          "gana_vidas": 1.0,
+          "euros": 7027.85,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2009-02-25",
+          "exceso_mediana": -2719.64,
+          "gana_vidas": 0.0,
+          "euros": 4126.39,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2009-08-24",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5334.78,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2010-02-23",
+          "exceso_mediana": -338.12,
+          "gana_vidas": 0.0,
+          "euros": 4518.81,
+          "ops": 19.0
+        },
+        {
+          "bloque": "2010-08-20",
+          "exceso_mediana": -630.35,
+          "gana_vidas": 0.0,
+          "euros": 5655.98,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2011-02-17",
+          "exceso_mediana": -14.67,
+          "gana_vidas": 0.0,
+          "euros": 4438.28,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2011-08-17",
+          "exceso_mediana": -1779.29,
+          "gana_vidas": 0.0,
+          "euros": 4118.59,
+          "ops": 15.0
+        },
+        {
+          "bloque": "2012-02-15",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5181.66,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2012-08-14",
+          "exceso_mediana": -107.92,
+          "gana_vidas": 0.0,
+          "euros": 5317.63,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2013-02-14",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5557.99,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2013-08-14",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5485.05,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2014-02-12",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5294.82,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2014-08-12",
+          "exceso_mediana": -483.76,
+          "gana_vidas": 0.0,
+          "euros": 4835.32,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2015-02-10",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5094.94,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2015-08-10",
+          "exceso_mediana": -344.05,
+          "gana_vidas": 0.0,
+          "euros": 4111.33,
+          "ops": 15.0
+        },
+        {
+          "bloque": "2016-02-08",
+          "exceso_mediana": -1024.1,
+          "gana_vidas": 0.0,
+          "euros": 4876.39,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2016-08-05",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5273.89,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2017-02-03",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5401.52,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2017-08-03",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5703.46,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2018-02-01",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5100.12,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2018-08-01",
+          "exceso_mediana": -871.65,
+          "gana_vidas": 0.0,
+          "euros": 3918.09,
+          "ops": 18.0
+        },
+        {
+          "bloque": "2019-01-31",
+          "exceso_mediana": -291.19,
+          "gana_vidas": 0.0,
+          "euros": 5224.18,
+          "ops": 8.0
+        },
+        {
+          "bloque": "2019-07-31",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5548.31,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2020-01-29",
+          "exceso_mediana": -839.3,
+          "gana_vidas": 0.0,
+          "euros": 4067.55,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2020-07-28",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5905.38,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2021-01-26",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5882.83,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2021-07-26",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 4983.11,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2022-01-21",
+          "exceso_mediana": 309.26,
+          "gana_vidas": 1.0,
+          "euros": 4795.81,
+          "ops": 13.0
+        },
+        {
+          "bloque": "2022-07-22",
+          "exceso_mediana": -424.14,
+          "gana_vidas": 0.0,
+          "euros": 4582.7,
+          "ops": 11.0
+        },
+        {
+          "bloque": "2023-01-20",
+          "exceso_mediana": -250.85,
+          "gana_vidas": 0.0,
+          "euros": 5389.46,
+          "ops": 9.0
+        },
+        {
+          "bloque": "2023-07-21",
+          "exceso_mediana": -454.41,
+          "gana_vidas": 0.0,
+          "euros": 4852.66,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2024-01-19",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5669.4,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2024-07-19",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5378.8,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2025-01-17",
+          "exceso_mediana": -707.09,
+          "gana_vidas": 0.0,
+          "euros": 4491.75,
+          "ops": 13.0
+        },
+        {
+          "bloque": "2025-07-21",
+          "exceso_mediana": 0.0,
+          "gana_vidas": 0.0,
+          "euros": 5488.68,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2026-01-16",
+          "exceso_mediana": -384.11,
+          "gana_vidas": 0.0,
+          "euros": 5076.54,
+          "ops": 11.0
+        }
+      ]
+    },
+    "momentum_top3": {
+      "bloques_gana_al_indice": "30/43",
+      "examen_2022_2026": "6/9",
+      "exceso_medio_por_bloque_€": 381.97,
+      "peor_bloque_€": -1039.05,
+      "mejor_bloque_€": 4065.82,
+      "rentabilidad_anual_sobre_lo_invertido_%": 24.2,
+      "tiempo_invertido_%": 99.0,
+      "operaciones_por_vida": 12.0,
+      "por_bloque": [
+        {
+          "bloque": "2005-03-07",
+          "exceso_mediana": 712.28,
+          "gana_vidas": 0.81,
+          "euros": 5514.07,
+          "ops": 11.4
+        },
+        {
+          "bloque": "2005-09-01",
+          "exceso_mediana": 1345.04,
+          "gana_vidas": 1.0,
+          "euros": 6639.74,
+          "ops": 11.6
+        },
+        {
+          "bloque": "2006-03-03",
+          "exceso_mediana": -751.33,
+          "gana_vidas": 0.19,
+          "euros": 4318.01,
+          "ops": 12.6
+        },
+        {
+          "bloque": "2006-08-30",
+          "exceso_mediana": 351.62,
+          "gana_vidas": 0.75,
+          "euros": 5792.97,
+          "ops": 13.5
+        },
+        {
+          "bloque": "2007-03-02",
+          "exceso_mediana": 691.51,
+          "gana_vidas": 0.94,
+          "euros": 6150.39,
+          "ops": 13.4
+        },
+        {
+          "bloque": "2007-08-29",
+          "exceso_mediana": 1252.42,
+          "gana_vidas": 1.0,
+          "euros": 5870.85,
+          "ops": 10.6
+        },
+        {
+          "bloque": "2008-02-28",
+          "exceso_mediana": 371.53,
+          "gana_vidas": 0.81,
+          "euros": 5290.28,
+          "ops": 10.2
+        },
+        {
+          "bloque": "2008-08-26",
+          "exceso_mediana": 30.26,
+          "gana_vidas": 0.5,
+          "euros": 2999.02,
+          "ops": 16.8
+        },
+        {
+          "bloque": "2009-02-25",
+          "exceso_mediana": -1039.05,
+          "gana_vidas": 0.0,
+          "euros": 5858.47,
+          "ops": 13.4
+        },
+        {
+          "bloque": "2009-08-24",
+          "exceso_mediana": 1012.51,
+          "gana_vidas": 0.88,
+          "euros": 6187.87,
+          "ops": 11.1
+        },
+        {
+          "bloque": "2010-02-23",
+          "exceso_mediana": -382.45,
+          "gana_vidas": 0.25,
+          "euros": 4664.41,
+          "ops": 10.1
+        },
+        {
+          "bloque": "2010-08-20",
+          "exceso_mediana": 800.96,
+          "gana_vidas": 0.88,
+          "euros": 7018.29,
+          "ops": 9.8
+        },
+        {
+          "bloque": "2011-02-17",
+          "exceso_mediana": 105.27,
+          "gana_vidas": 0.62,
+          "euros": 4545.18,
+          "ops": 10.2
+        },
+        {
+          "bloque": "2011-08-17",
+          "exceso_mediana": -740.33,
+          "gana_vidas": 0.31,
+          "euros": 5366.55,
+          "ops": 18.0
+        },
+        {
+          "bloque": "2012-02-15",
+          "exceso_mediana": -20.36,
+          "gana_vidas": 0.5,
+          "euros": 5154.01,
+          "ops": 12.8
+        },
+        {
+          "bloque": "2012-08-14",
+          "exceso_mediana": -64.07,
+          "gana_vidas": 0.5,
+          "euros": 5254.42,
+          "ops": 10.3
+        },
+        {
+          "bloque": "2013-02-14",
+          "exceso_mediana": -16.82,
+          "gana_vidas": 0.5,
+          "euros": 5559.55,
+          "ops": 14.5
+        },
+        {
+          "bloque": "2013-08-14",
+          "exceso_mediana": 1664.56,
+          "gana_vidas": 1.0,
+          "euros": 6953.51,
+          "ops": 11.1
+        },
+        {
+          "bloque": "2014-02-12",
+          "exceso_mediana": 105.1,
+          "gana_vidas": 0.75,
+          "euros": 5384.01,
+          "ops": 10.4
+        },
+        {
+          "bloque": "2014-08-12",
+          "exceso_mediana": 446.43,
+          "gana_vidas": 0.75,
+          "euros": 5659.16,
+          "ops": 11.8
+        },
+        {
+          "bloque": "2015-02-10",
+          "exceso_mediana": 71.1,
+          "gana_vidas": 0.69,
+          "euros": 5114.15,
+          "ops": 12.7
+        },
+        {
+          "bloque": "2015-08-10",
+          "exceso_mediana": 11.52,
+          "gana_vidas": 0.5,
+          "euros": 4363.54,
+          "ops": 11.5
+        },
+        {
+          "bloque": "2016-02-08",
+          "exceso_mediana": 1111.43,
+          "gana_vidas": 0.94,
+          "euros": 7147.21,
+          "ops": 11.6
+        },
+        {
+          "bloque": "2016-08-05",
+          "exceso_mediana": 1543.77,
+          "gana_vidas": 0.81,
+          "euros": 6561.33,
+          "ops": 10.8
+        },
+        {
+          "bloque": "2017-02-03",
+          "exceso_mediana": 131.71,
+          "gana_vidas": 0.69,
+          "euros": 5571.66,
+          "ops": 9.1
+        },
+        {
+          "bloque": "2017-08-03",
+          "exceso_mediana": 390.48,
+          "gana_vidas": 0.81,
+          "euros": 6155.75,
+          "ops": 11.9
+        },
+        {
+          "bloque": "2018-02-01",
+          "exceso_mediana": 454.51,
+          "gana_vidas": 0.94,
+          "euros": 5561.14,
+          "ops": 9.9
+        },
+        {
+          "bloque": "2018-08-01",
+          "exceso_mediana": 122.95,
+          "gana_vidas": 0.62,
+          "euros": 4887.53,
+          "ops": 13.6
+        },
+        {
+          "bloque": "2019-01-31",
+          "exceso_mediana": -87.25,
+          "gana_vidas": 0.44,
+          "euros": 5492.33,
+          "ops": 12.8
+        },
+        {
+          "bloque": "2019-07-31",
+          "exceso_mediana": -108.57,
+          "gana_vidas": 0.44,
+          "euros": 5477.65,
+          "ops": 15.7
+        },
+        {
+          "bloque": "2020-01-29",
+          "exceso_mediana": 885.8,
+          "gana_vidas": 0.88,
+          "euros": 5686.05,
+          "ops": 11.9
+        },
+        {
+          "bloque": "2020-07-28",
+          "exceso_mediana": 542.09,
+          "gana_vidas": 0.75,
+          "euros": 6184.45,
+          "ops": 9.4
+        },
+        {
+          "bloque": "2021-01-26",
+          "exceso_mediana": -281.14,
+          "gana_vidas": 0.25,
+          "euros": 5604.37,
+          "ops": 12.5
+        },
+        {
+          "bloque": "2021-07-26",
+          "exceso_mediana": 158.42,
+          "gana_vidas": 0.69,
+          "euros": 5119.3,
+          "ops": 12.5
+        },
+        {
+          "bloque": "2022-01-21",
+          "exceso_mediana": 23.47,
+          "gana_vidas": 0.56,
+          "euros": 4483.04,
+          "ops": 12.4
+        },
+        {
+          "bloque": "2022-07-22",
+          "exceso_mediana": 880.64,
+          "gana_vidas": 1.0,
+          "euros": 5842.98,
+          "ops": 8.8
+        },
+        {
+          "bloque": "2023-01-20",
+          "exceso_mediana": -568.56,
+          "gana_vidas": 0.12,
+          "euros": 5199.05,
+          "ops": 15.6
+        },
+        {
+          "bloque": "2023-07-21",
+          "exceso_mediana": 707.47,
+          "gana_vidas": 0.88,
+          "euros": 5942.86,
+          "ops": 9.6
+        },
+        {
+          "bloque": "2024-01-19",
+          "exceso_mediana": 303.33,
+          "gana_vidas": 0.56,
+          "euros": 5853.0,
+          "ops": 11.8
+        },
+        {
+          "bloque": "2024-07-19",
+          "exceso_mediana": 452.99,
+          "gana_vidas": 0.69,
+          "euros": 5758.98,
+          "ops": 12.1
+        },
+        {
+          "bloque": "2025-01-17",
+          "exceso_mediana": -35.84,
+          "gana_vidas": 0.5,
+          "euros": 5154.29,
+          "ops": 13.8
+        },
+        {
+          "bloque": "2025-07-21",
+          "exceso_mediana": -226.69,
+          "gana_vidas": 0.44,
+          "euros": 5310.3,
+          "ops": 12.0
+        },
+        {
+          "bloque": "2026-01-16",
+          "exceso_mediana": 4065.82,
+          "gana_vidas": 0.94,
+          "euros": 9823.59,
+          "ops": 12.4
+        }
+      ]
+    },
+    "momentum_filtro": {
+      "bloques_gana_al_indice": "27/43",
+      "examen_2022_2026": "5/9",
+      "exceso_medio_por_bloque_€": 233.56,
+      "peor_bloque_€": -1240.91,
+      "mejor_bloque_€": 2691.74,
+      "rentabilidad_anual_sobre_lo_invertido_%": 24.6,
+      "tiempo_invertido_%": 79.0,
+      "operaciones_por_vida": 13.5,
+      "por_bloque": [
+        {
+          "bloque": "2005-03-07",
+          "exceso_mediana": 712.28,
+          "gana_vidas": 0.81,
+          "euros": 5514.07,
+          "ops": 11.4
+        },
+        {
+          "bloque": "2005-09-01",
+          "exceso_mediana": 473.84,
+          "gana_vidas": 0.69,
+          "euros": 5734.9,
+          "ops": 15.4
+        },
+        {
+          "bloque": "2006-03-03",
+          "exceso_mediana": -650.38,
+          "gana_vidas": 0.12,
+          "euros": 4488.52,
+          "ops": 15.7
+        },
+        {
+          "bloque": "2006-08-30",
+          "exceso_mediana": 351.62,
+          "gana_vidas": 0.75,
+          "euros": 5792.97,
+          "ops": 13.5
+        },
+        {
+          "bloque": "2007-03-02",
+          "exceso_mediana": 214.98,
+          "gana_vidas": 0.62,
+          "euros": 5599.23,
+          "ops": 17.2
+        },
+        {
+          "bloque": "2007-08-29",
+          "exceso_mediana": 1212.5,
+          "gana_vidas": 1.0,
+          "euros": 5839.57,
+          "ops": 20.7
+        },
+        {
+          "bloque": "2008-02-28",
+          "exceso_mediana": 163.57,
+          "gana_vidas": 1.0,
+          "euros": 4940.92,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2008-08-26",
+          "exceso_mediana": 1964.58,
+          "gana_vidas": 1.0,
+          "euros": 4963.32,
+          "ops": 0.0
+        },
+        {
+          "bloque": "2009-02-25",
+          "exceso_mediana": -1240.91,
+          "gana_vidas": 0.0,
+          "euros": 5516.0,
+          "ops": 8.8
+        },
+        {
+          "bloque": "2009-08-24",
+          "exceso_mediana": 1012.51,
+          "gana_vidas": 0.88,
+          "euros": 6187.87,
+          "ops": 11.1
+        },
+        {
+          "bloque": "2010-02-23",
+          "exceso_mediana": 138.24,
+          "gana_vidas": 0.62,
+          "euros": 4978.06,
+          "ops": 27.8
+        },
+        {
+          "bloque": "2010-08-20",
+          "exceso_mediana": 343.62,
+          "gana_vidas": 0.88,
+          "euros": 6550.48,
+          "ops": 8.7
+        },
+        {
+          "bloque": "2011-02-17",
+          "exceso_mediana": 104.01,
+          "gana_vidas": 0.62,
+          "euros": 4550.19,
+          "ops": 12.1
+        },
+        {
+          "bloque": "2011-08-17",
+          "exceso_mediana": -738.28,
+          "gana_vidas": 0.0,
+          "euros": 5058.91,
+          "ops": 16.9
+        },
+        {
+          "bloque": "2012-02-15",
+          "exceso_mediana": -20.36,
+          "gana_vidas": 0.5,
+          "euros": 5154.01,
+          "ops": 12.8
+        },
+        {
+          "bloque": "2012-08-14",
+          "exceso_mediana": 198.04,
+          "gana_vidas": 0.56,
+          "euros": 5410.56,
+          "ops": 15.4
+        },
+        {
+          "bloque": "2013-02-14",
+          "exceso_mediana": -16.82,
+          "gana_vidas": 0.5,
+          "euros": 5559.55,
+          "ops": 14.5
+        },
+        {
+          "bloque": "2013-08-14",
+          "exceso_mediana": 1664.56,
+          "gana_vidas": 1.0,
+          "euros": 6953.51,
+          "ops": 11.1
+        },
+        {
+          "bloque": "2014-02-12",
+          "exceso_mediana": 105.1,
+          "gana_vidas": 0.75,
+          "euros": 5384.01,
+          "ops": 10.4
+        },
+        {
+          "bloque": "2014-08-12",
+          "exceso_mediana": -153.08,
+          "gana_vidas": 0.31,
+          "euros": 5156.21,
+          "ops": 16.1
+        },
+        {
+          "bloque": "2015-02-10",
+          "exceso_mediana": 71.1,
+          "gana_vidas": 0.69,
+          "euros": 5114.15,
+          "ops": 12.7
+        },
+        {
+          "bloque": "2015-08-10",
+          "exceso_mediana": -33.18,
+          "gana_vidas": 0.31,
+          "euros": 4419.27,
+          "ops": 19.2
+        },
+        {
+          "bloque": "2016-02-08",
+          "exceso_mediana": -441.38,
+          "gana_vidas": 0.19,
+          "euros": 5556.94,
+          "ops": 9.5
+        },
+        {
+          "bloque": "2016-08-05",
+          "exceso_mediana": 1543.77,
+          "gana_vidas": 0.81,
+          "euros": 6561.33,
+          "ops": 10.8
+        },
+        {
+          "bloque": "2017-02-03",
+          "exceso_mediana": 131.71,
+          "gana_vidas": 0.69,
+          "euros": 5571.66,
+          "ops": 9.1
+        },
+        {
+          "bloque": "2017-08-03",
+          "exceso_mediana": 390.48,
+          "gana_vidas": 0.81,
+          "euros": 6155.75,
+          "ops": 11.9
+        },
+        {
+          "bloque": "2018-02-01",
+          "exceso_mediana": 454.51,
+          "gana_vidas": 0.94,
+          "euros": 5561.14,
+          "ops": 9.9
+        },
+        {
+          "bloque": "2018-08-01",
+          "exceso_mediana": -860.63,
+          "gana_vidas": 0.0,
+          "euros": 3913.77,
+          "ops": 26.5
+        },
+        {
+          "bloque": "2019-01-31",
+          "exceso_mediana": -97.56,
+          "gana_vidas": 0.44,
+          "euros": 5443.68,
+          "ops": 11.7
+        },
+        {
+          "bloque": "2019-07-31",
+          "exceso_mediana": -108.57,
+          "gana_vidas": 0.44,
+          "euros": 5477.65,
+          "ops": 15.7
+        },
+        {
+          "bloque": "2020-01-29",
+          "exceso_mediana": 339.02,
+          "gana_vidas": 0.88,
+          "euros": 5245.06,
+          "ops": 12.3
+        },
+        {
+          "bloque": "2020-07-28",
+          "exceso_mediana": 542.09,
+          "gana_vidas": 0.75,
+          "euros": 6184.45,
+          "ops": 9.4
+        },
+        {
+          "bloque": "2021-01-26",
+          "exceso_mediana": -281.14,
+          "gana_vidas": 0.25,
+          "euros": 5604.37,
+          "ops": 12.5
+        },
+        {
+          "bloque": "2021-07-26",
+          "exceso_mediana": 158.42,
+          "gana_vidas": 0.69,
+          "euros": 5119.3,
+          "ops": 12.5
+        },
+        {
+          "bloque": "2022-01-21",
+          "exceso_mediana": 72.79,
+          "gana_vidas": 0.69,
+          "euros": 4589.75,
+          "ops": 12.8
+        },
+        {
+          "bloque": "2022-07-22",
+          "exceso_mediana": -55.95,
+          "gana_vidas": 0.31,
+          "euros": 4916.15,
+          "ops": 9.0
+        },
+        {
+          "bloque": "2023-01-20",
+          "exceso_mediana": -604.18,
+          "gana_vidas": 0.0,
+          "euros": 5101.8,
+          "ops": 21.3
+        },
+        {
+          "bloque": "2023-07-21",
+          "exceso_mediana": 360.91,
+          "gana_vidas": 0.94,
+          "euros": 5686.53,
+          "ops": 14.1
+        },
+        {
+          "bloque": "2024-01-19",
+          "exceso_mediana": 303.33,
+          "gana_vidas": 0.56,
+          "euros": 5853.0,
+          "ops": 11.8
+        },
+        {
+          "bloque": "2024-07-19",
+          "exceso_mediana": 452.99,
+          "gana_vidas": 0.69,
+          "euros": 5758.98,
+          "ops": 12.1
+        },
+        {
+          "bloque": "2025-01-17",
+          "exceso_mediana": -600.31,
+          "gana_vidas": 0.0,
+          "euros": 4571.27,
+          "ops": 20.5
+        },
+        {
+          "bloque": "2025-07-21",
+          "exceso_mediana": -226.69,
+          "gana_vidas": 0.44,
+          "euros": 5310.3,
+          "ops": 12.0
+        },
+        {
+          "bloque": "2026-01-16",
+          "exceso_mediana": 2691.74,
+          "gana_vidas": 1.0,
+          "euros": 8453.99,
+          "ops": 16.6
+        }
+      ]
+    },
+    "rsi_reversion": {
+      "bloques_gana_al_indice": "10/43",
+      "examen_2022_2026": "1/9",
+      "exceso_medio_por_bloque_€": -262.66,
+      "peor_bloque_€": -1882.02,
+      "mejor_bloque_€": 1964.58,
+      "rentabilidad_anual_sobre_lo_invertido_%": 8.3,
+      "tiempo_invertido_%": 22.0,
+      "operaciones_por_vida": 4.2,
+      "por_bloque": [
+        {
+          "bloque": "2005-03-07",
+          "exceso_mediana": 33.61,
+          "gana_vidas": 0.81,
+          "euros": 5042.34,
+          "ops": 3.4
+        },
+        {
+          "bloque": "2005-09-01",
+          "exceso_mediana": -240.78,
+          "gana_vidas": 0.0,
+          "euros": 5021.4,
+          "ops": 1.1
+        },
+        {
+          "bloque": "2006-03-03",
+          "exceso_mediana": -141.4,
+          "gana_vidas": 0.19,
+          "euros": 4956.66,
+          "ops": 4.1
+        },
+        {
+          "bloque": "2006-08-30",
+          "exceso_mediana": -355.78,
+          "gana_vidas": 0.0,
+          "euros": 4984.57,
+          "ops": 0.9
+        },
+        {
+          "bloque": "2007-03-02",
+          "exceso_mediana": -202.28,
+          "gana_vidas": 0.25,
+          "euros": 5149.64,
+          "ops": 7.1
+        },
+        {
+          "bloque": "2007-08-29",
+          "exceso_mediana": 379.94,
+          "gana_vidas": 1.0,
+          "euros": 5068.46,
+          "ops": 5.9
+        },
+        {
+          "bloque": "2008-02-28",
+          "exceso_mediana": 195.03,
+          "gana_vidas": 1.0,
+          "euros": 4964.01,
+          "ops": 0.0
+        },
+        {
+          "bloque": "2008-08-26",
+          "exceso_mediana": 1964.58,
+          "gana_vidas": 1.0,
+          "euros": 4963.32,
+          "ops": 0.0
+        },
+        {
+          "bloque": "2009-02-25",
+          "exceso_mediana": -1882.02,
+          "gana_vidas": 0.0,
+          "euros": 4964.01,
+          "ops": 0.0
+        },
+        {
+          "bloque": "2009-08-24",
+          "exceso_mediana": -368.64,
+          "gana_vidas": 0.0,
+          "euros": 4959.73,
+          "ops": 4.8
+        },
+        {
+          "bloque": "2010-02-23",
+          "exceso_mediana": 107.54,
+          "gana_vidas": 1.0,
+          "euros": 4956.24,
+          "ops": 0.6
+        },
+        {
+          "bloque": "2010-08-20",
+          "exceso_mediana": -1247.27,
+          "gana_vidas": 0.0,
+          "euros": 5045.3,
+          "ops": 2.0
+        },
+        {
+          "bloque": "2011-02-17",
+          "exceso_mediana": 469.1,
+          "gana_vidas": 1.0,
+          "euros": 4909.19,
+          "ops": 3.5
+        },
+        {
+          "bloque": "2011-08-17",
+          "exceso_mediana": -934.33,
+          "gana_vidas": 0.0,
+          "euros": 4963.55,
+          "ops": 0.0
+        },
+        {
+          "bloque": "2012-02-15",
+          "exceso_mediana": -283.24,
+          "gana_vidas": 0.06,
+          "euros": 4902.42,
+          "ops": 8.3
+        },
+        {
+          "bloque": "2012-08-14",
+          "exceso_mediana": -311.24,
+          "gana_vidas": 0.0,
+          "euros": 5101.1,
+          "ops": 3.4
+        },
+        {
+          "bloque": "2013-02-14",
+          "exceso_mediana": -586.57,
+          "gana_vidas": 0.0,
+          "euros": 4982.3,
+          "ops": 3.2
+        },
+        {
+          "bloque": "2013-08-14",
+          "exceso_mediana": -359.26,
+          "gana_vidas": 0.0,
+          "euros": 5141.46,
+          "ops": 13.9
+        },
+        {
+          "bloque": "2014-02-12",
+          "exceso_mediana": -331.04,
+          "gana_vidas": 0.0,
+          "euros": 4928.23,
+          "ops": 1.2
+        },
+        {
+          "bloque": "2014-08-12",
+          "exceso_mediana": -355.53,
+          "gana_vidas": 0.0,
+          "euros": 4929.77,
+          "ops": 2.1
+        },
+        {
+          "bloque": "2015-02-10",
+          "exceso_mediana": -111.51,
+          "gana_vidas": 0.0,
+          "euros": 4989.62,
+          "ops": 3.6
+        },
+        {
+          "bloque": "2015-08-10",
+          "exceso_mediana": 652.91,
+          "gana_vidas": 1.0,
+          "euros": 5112.95,
+          "ops": 6.9
+        },
+        {
+          "bloque": "2016-02-08",
+          "exceso_mediana": -526.76,
+          "gana_vidas": 0.0,
+          "euros": 5220.17,
+          "ops": 1.2
+        },
+        {
+          "bloque": "2016-08-05",
+          "exceso_mediana": -196.35,
+          "gana_vidas": 0.0,
+          "euros": 5058.86,
+          "ops": 3.8
+        },
+        {
+          "bloque": "2017-02-03",
+          "exceso_mediana": -421.04,
+          "gana_vidas": 0.0,
+          "euros": 4966.72,
+          "ops": 7.8
+        },
+        {
+          "bloque": "2017-08-03",
+          "exceso_mediana": -677.79,
+          "gana_vidas": 0.0,
+          "euros": 5041.97,
+          "ops": 1.9
+        },
+        {
+          "bloque": "2018-02-01",
+          "exceso_mediana": 37.62,
+          "gana_vidas": 0.69,
+          "euros": 5142.49,
+          "ops": 6.3
+        },
+        {
+          "bloque": "2018-08-01",
+          "exceso_mediana": 112.55,
+          "gana_vidas": 0.75,
+          "euros": 4908.55,
+          "ops": 7.9
+        },
+        {
+          "bloque": "2019-01-31",
+          "exceso_mediana": -474.22,
+          "gana_vidas": 0.0,
+          "euros": 5047.15,
+          "ops": 3.9
+        },
+        {
+          "bloque": "2019-07-31",
+          "exceso_mediana": -707.23,
+          "gana_vidas": 0.0,
+          "euros": 4850.43,
+          "ops": 4.3
+        },
+        {
+          "bloque": "2020-01-29",
+          "exceso_mediana": -236.61,
+          "gana_vidas": 0.06,
+          "euros": 4636.0,
+          "ops": 6.0
+        },
+        {
+          "bloque": "2020-07-28",
+          "exceso_mediana": -828.96,
+          "gana_vidas": 0.0,
+          "euros": 5136.77,
+          "ops": 2.9
+        },
+        {
+          "bloque": "2021-01-26",
+          "exceso_mediana": -766.68,
+          "gana_vidas": 0.0,
+          "euros": 5127.91,
+          "ops": 6.1
+        },
+        {
+          "bloque": "2021-07-26",
+          "exceso_mediana": -3.81,
+          "gana_vidas": 0.5,
+          "euros": 4977.6,
+          "ops": 11.0
+        },
+        {
+          "bloque": "2022-01-21",
+          "exceso_mediana": 579.01,
+          "gana_vidas": 1.0,
+          "euros": 5076.7,
+          "ops": 6.2
+        },
+        {
+          "bloque": "2022-07-22",
+          "exceso_mediana": -43.29,
+          "gana_vidas": 0.0,
+          "euros": 4963.55,
+          "ops": 0.0
+        },
+        {
+          "bloque": "2023-01-20",
+          "exceso_mediana": -747.09,
+          "gana_vidas": 0.0,
+          "euros": 4917.04,
+          "ops": 3.2
+        },
+        {
+          "bloque": "2023-07-21",
+          "exceso_mediana": -285.52,
+          "gana_vidas": 0.0,
+          "euros": 5003.42,
+          "ops": 3.1
+        },
+        {
+          "bloque": "2024-01-19",
+          "exceso_mediana": -581.95,
+          "gana_vidas": 0.0,
+          "euros": 5090.49,
+          "ops": 6.2
+        },
+        {
+          "bloque": "2024-07-19",
+          "exceso_mediana": -273.04,
+          "gana_vidas": 0.0,
+          "euros": 5067.15,
+          "ops": 3.2
+        },
+        {
+          "bloque": "2025-01-17",
+          "exceso_mediana": -305.22,
+          "gana_vidas": 0.0,
+          "euros": 4906.97,
+          "ops": 7.9
+        },
+        {
+          "bloque": "2025-07-21",
+          "exceso_mediana": -680.41,
+          "gana_vidas": 0.0,
+          "euros": 4817.16,
+          "ops": 4.1
+        },
+        {
+          "bloque": "2026-01-16",
+          "exceso_mediana": -359.39,
+          "gana_vidas": 0.0,
+          "euros": 5083.77,
+          "ops": 5.5
+        }
+      ]
+    },
+    "cruce_medias": {
+      "bloques_gana_al_indice": "23/43",
+      "examen_2022_2026": "4/9",
+      "exceso_medio_por_bloque_€": 72.3,
+      "peor_bloque_€": -1348.29,
+      "mejor_bloque_€": 1310.15,
+      "rentabilidad_anual_sobre_lo_invertido_%": 14.3,
+      "tiempo_invertido_%": 98.0,
+      "operaciones_por_vida": 22.3,
+      "por_bloque": [
+        {
+          "bloque": "2005-03-07",
+          "exceso_mediana": -162.7,
+          "gana_vidas": 0.38,
+          "euros": 4986.76,
+          "ops": 23.6
+        },
+        {
+          "bloque": "2005-09-01",
+          "exceso_mediana": 1008.72,
+          "gana_vidas": 1.0,
+          "euros": 6250.25,
+          "ops": 19.9
+        },
+        {
+          "bloque": "2006-03-03",
+          "exceso_mediana": -95.37,
+          "gana_vidas": 0.25,
+          "euros": 5012.26,
+          "ops": 23.6
+        },
+        {
+          "bloque": "2006-08-30",
+          "exceso_mediana": -100.26,
+          "gana_vidas": 0.44,
+          "euros": 5238.97,
+          "ops": 20.6
+        },
+        {
+          "bloque": "2007-03-02",
+          "exceso_mediana": 998.22,
+          "gana_vidas": 0.94,
+          "euros": 6297.48,
+          "ops": 20.4
+        },
+        {
+          "bloque": "2007-08-29",
+          "exceso_mediana": 90.58,
+          "gana_vidas": 0.75,
+          "euros": 4872.45,
+          "ops": 28.9
+        },
+        {
+          "bloque": "2008-02-28",
+          "exceso_mediana": 170.34,
+          "gana_vidas": 0.75,
+          "euros": 5058.79,
+          "ops": 26.5
+        },
+        {
+          "bloque": "2008-08-26",
+          "exceso_mediana": 145.76,
+          "gana_vidas": 0.81,
+          "euros": 3192.4,
+          "ops": 23.8
+        },
+        {
+          "bloque": "2009-02-25",
+          "exceso_mediana": -1348.29,
+          "gana_vidas": 0.0,
+          "euros": 5583.29,
+          "ops": 20.1
+        },
+        {
+          "bloque": "2009-08-24",
+          "exceso_mediana": -37.38,
+          "gana_vidas": 0.5,
+          "euros": 5429.93,
+          "ops": 23.0
+        },
+        {
+          "bloque": "2010-02-23",
+          "exceso_mediana": 512.75,
+          "gana_vidas": 0.75,
+          "euros": 5641.33,
+          "ops": 25.3
+        },
+        {
+          "bloque": "2010-08-20",
+          "exceso_mediana": 495.28,
+          "gana_vidas": 0.75,
+          "euros": 6640.47,
+          "ops": 14.8
+        },
+        {
+          "bloque": "2011-02-17",
+          "exceso_mediana": -195.06,
+          "gana_vidas": 0.19,
+          "euros": 4203.89,
+          "ops": 29.9
+        },
+        {
+          "bloque": "2011-08-17",
+          "exceso_mediana": -432.76,
+          "gana_vidas": 0.19,
+          "euros": 5490.82,
+          "ops": 21.2
+        },
+        {
+          "bloque": "2012-02-15",
+          "exceso_mediana": -56.22,
+          "gana_vidas": 0.5,
+          "euros": 5113.69,
+          "ops": 22.8
+        },
+        {
+          "bloque": "2012-08-14",
+          "exceso_mediana": 225.65,
+          "gana_vidas": 0.81,
+          "euros": 6266.02,
+          "ops": 23.8
+        },
+        {
+          "bloque": "2013-02-14",
+          "exceso_mediana": -453.25,
+          "gana_vidas": 0.0,
+          "euros": 5081.22,
+          "ops": 22.6
+        },
+        {
+          "bloque": "2013-08-14",
+          "exceso_mediana": 349.61,
+          "gana_vidas": 0.88,
+          "euros": 5814.14,
+          "ops": 18.7
+        },
+        {
+          "bloque": "2014-02-12",
+          "exceso_mediana": -514.1,
+          "gana_vidas": 0.0,
+          "euros": 4743.57,
+          "ops": 23.6
+        },
+        {
+          "bloque": "2014-08-12",
+          "exceso_mediana": -165.08,
+          "gana_vidas": 0.31,
+          "euros": 5227.31,
+          "ops": 22.9
+        },
+        {
+          "bloque": "2015-02-10",
+          "exceso_mediana": 402.37,
+          "gana_vidas": 0.81,
+          "euros": 5470.05,
+          "ops": 16.9
+        },
+        {
+          "bloque": "2015-08-10",
+          "exceso_mediana": 301.64,
+          "gana_vidas": 0.75,
+          "euros": 4758.51,
+          "ops": 26.5
+        },
+        {
+          "bloque": "2016-02-08",
+          "exceso_mediana": 659.38,
+          "gana_vidas": 0.56,
+          "euros": 6516.25,
+          "ops": 15.1
+        },
+        {
+          "bloque": "2016-08-05",
+          "exceso_mediana": 1310.15,
+          "gana_vidas": 1.0,
+          "euros": 6680.63,
+          "ops": 13.7
+        },
+        {
+          "bloque": "2017-02-03",
+          "exceso_mediana": 415.72,
+          "gana_vidas": 0.69,
+          "euros": 5733.72,
+          "ops": 16.6
+        },
+        {
+          "bloque": "2017-08-03",
+          "exceso_mediana": -99.04,
+          "gana_vidas": 0.44,
+          "euros": 5671.23,
+          "ops": 17.3
+        },
+        {
+          "bloque": "2018-02-01",
+          "exceso_mediana": 85.55,
+          "gana_vidas": 0.62,
+          "euros": 5184.25,
+          "ops": 25.2
+        },
+        {
+          "bloque": "2018-08-01",
+          "exceso_mediana": 379.48,
+          "gana_vidas": 0.94,
+          "euros": 5270.8,
+          "ops": 25.6
+        },
+        {
+          "bloque": "2019-01-31",
+          "exceso_mediana": 50.47,
+          "gana_vidas": 0.56,
+          "euros": 5406.54,
+          "ops": 17.7
+        },
+        {
+          "bloque": "2019-07-31",
+          "exceso_mediana": 305.68,
+          "gana_vidas": 0.69,
+          "euros": 5870.71,
+          "ops": 16.9
+        },
+        {
+          "bloque": "2020-01-29",
+          "exceso_mediana": 20.42,
+          "gana_vidas": 0.5,
+          "euros": 4887.49,
+          "ops": 23.4
+        },
+        {
+          "bloque": "2020-07-28",
+          "exceso_mediana": -52.06,
+          "gana_vidas": 0.5,
+          "euros": 5743.08,
+          "ops": 20.5
+        },
+        {
+          "bloque": "2021-01-26",
+          "exceso_mediana": -557.99,
+          "gana_vidas": 0.0,
+          "euros": 5316.32,
+          "ops": 25.5
+        },
+        {
+          "bloque": "2021-07-26",
+          "exceso_mediana": -386.61,
+          "gana_vidas": 0.12,
+          "euros": 4609.1,
+          "ops": 25.8
+        },
+        {
+          "bloque": "2022-01-21",
+          "exceso_mediana": 93.65,
+          "gana_vidas": 0.62,
+          "euros": 4525.52,
+          "ops": 30.4
+        },
+        {
+          "bloque": "2022-07-22",
+          "exceso_mediana": -192.17,
+          "gana_vidas": 0.19,
+          "euros": 4764.88,
+          "ops": 27.4
+        },
+        {
+          "bloque": "2023-01-20",
+          "exceso_mediana": 148.56,
+          "gana_vidas": 0.62,
+          "euros": 5983.43,
+          "ops": 16.9
+        },
+        {
+          "bloque": "2023-07-21",
+          "exceso_mediana": -521.98,
+          "gana_vidas": 0.06,
+          "euros": 4825.35,
+          "ops": 29.0
+        },
+        {
+          "bloque": "2024-01-19",
+          "exceso_mediana": 42.75,
+          "gana_vidas": 0.56,
+          "euros": 5603.01,
+          "ops": 20.9
+        },
+        {
+          "bloque": "2024-07-19",
+          "exceso_mediana": -170.92,
+          "gana_vidas": 0.38,
+          "euros": 5256.16,
+          "ops": 24.7
+        },
+        {
+          "bloque": "2025-01-17",
+          "exceso_mediana": -42.21,
+          "gana_vidas": 0.44,
+          "euros": 5188.75,
+          "ops": 24.9
+        },
+        {
+          "bloque": "2025-07-21",
+          "exceso_mediana": 654.89,
+          "gana_vidas": 0.75,
+          "euros": 6019.51,
+          "ops": 19.5
+        },
+        {
+          "bloque": "2026-01-16",
+          "exceso_mediana": -175.48,
+          "gana_vidas": 0.44,
+          "euros": 5502.6,
+          "ops": 22.6
+        }
+      ]
+    },
+    "nucleo75_momentum2": {
+      "bloques_gana_al_indice": "26/43",
+      "examen_2022_2026": "5/9",
+      "exceso_medio_por_bloque_€": 108.52,
+      "peor_bloque_€": -251.48,
+      "mejor_bloque_€": 1463.9,
+      "rentabilidad_anual_sobre_lo_invertido_%": 15.2,
+      "tiempo_invertido_%": 99.0,
+      "operaciones_por_vida": 10.1,
+      "por_bloque": [
+        {
+          "bloque": "2005-03-07",
+          "exceso_mediana": 79.36,
+          "gana_vidas": 0.69,
+          "euros": 5144.62,
+          "ops": 9.8
+        },
+        {
+          "bloque": "2005-09-01",
+          "exceso_mediana": 376.93,
+          "gana_vidas": 1.0,
+          "euros": 5653.75,
+          "ops": 8.9
+        },
+        {
+          "bloque": "2006-03-03",
+          "exceso_mediana": -251.48,
+          "gana_vidas": 0.12,
+          "euros": 4877.33,
+          "ops": 10.6
+        },
+        {
+          "bloque": "2006-08-30",
+          "exceso_mediana": 12.58,
+          "gana_vidas": 0.62,
+          "euros": 5328.3,
+          "ops": 11.1
+        },
+        {
+          "bloque": "2007-03-02",
+          "exceso_mediana": 137.54,
+          "gana_vidas": 0.75,
+          "euros": 5466.1,
+          "ops": 10.9
+        },
+        {
+          "bloque": "2007-08-29",
+          "exceso_mediana": 322.95,
+          "gana_vidas": 1.0,
+          "euros": 5006.17,
+          "ops": 8.6
+        },
+        {
+          "bloque": "2008-02-28",
+          "exceso_mediana": 111.55,
+          "gana_vidas": 0.75,
+          "euros": 4896.12,
+          "ops": 9.4
+        },
+        {
+          "bloque": "2008-08-26",
+          "exceso_mediana": -62.52,
+          "gana_vidas": 0.12,
+          "euros": 2945.62,
+          "ops": 11.8
+        },
+        {
+          "bloque": "2009-02-25",
+          "exceso_mediana": -199.82,
+          "gana_vidas": 0.0,
+          "euros": 6629.5,
+          "ops": 10.7
+        },
+        {
+          "bloque": "2009-08-24",
+          "exceso_mediana": 160.82,
+          "gana_vidas": 0.94,
+          "euros": 5502.48,
+          "ops": 9.8
+        },
+        {
+          "bloque": "2010-02-23",
+          "exceso_mediana": -84.89,
+          "gana_vidas": 0.19,
+          "euros": 4770.97,
+          "ops": 9.5
+        },
+        {
+          "bloque": "2010-08-20",
+          "exceso_mediana": 109.55,
+          "gana_vidas": 0.69,
+          "euros": 6447.68,
+          "ops": 8.9
+        },
+        {
+          "bloque": "2011-02-17",
+          "exceso_mediana": 52.01,
+          "gana_vidas": 0.69,
+          "euros": 4500.55,
+          "ops": 9.1
+        },
+        {
+          "bloque": "2011-08-17",
+          "exceso_mediana": -11.03,
+          "gana_vidas": 0.5,
+          "euros": 5788.07,
+          "ops": 11.0
+        },
+        {
+          "bloque": "2012-02-15",
+          "exceso_mediana": -0.11,
+          "gana_vidas": 0.5,
+          "euros": 5177.19,
+          "ops": 10.6
+        },
+        {
+          "bloque": "2012-08-14",
+          "exceso_mediana": -20.71,
+          "gana_vidas": 0.5,
+          "euros": 5403.85,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2013-02-14",
+          "exceso_mediana": -40.65,
+          "gana_vidas": 0.31,
+          "euros": 5559.78,
+          "ops": 11.2
+        },
+        {
+          "bloque": "2013-08-14",
+          "exceso_mediana": 569.93,
+          "gana_vidas": 0.94,
+          "euros": 5979.05,
+          "ops": 9.1
+        },
+        {
+          "bloque": "2014-02-12",
+          "exceso_mediana": 72.41,
+          "gana_vidas": 0.69,
+          "euros": 5343.38,
+          "ops": 9.4
+        },
+        {
+          "bloque": "2014-08-12",
+          "exceso_mediana": 195.14,
+          "gana_vidas": 0.62,
+          "euros": 5422.26,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2015-02-10",
+          "exceso_mediana": 10.62,
+          "gana_vidas": 0.62,
+          "euros": 5084.41,
+          "ops": 10.5
+        },
+        {
+          "bloque": "2015-08-10",
+          "exceso_mediana": 49.57,
+          "gana_vidas": 0.75,
+          "euros": 4461.63,
+          "ops": 10.2
+        },
+        {
+          "bloque": "2016-02-08",
+          "exceso_mediana": 199.53,
+          "gana_vidas": 0.94,
+          "euros": 6196.24,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2016-08-05",
+          "exceso_mediana": 529.29,
+          "gana_vidas": 0.81,
+          "euros": 5698.27,
+          "ops": 8.6
+        },
+        {
+          "bloque": "2017-02-03",
+          "exceso_mediana": 113.38,
+          "gana_vidas": 0.88,
+          "euros": 5486.03,
+          "ops": 8.2
+        },
+        {
+          "bloque": "2017-08-03",
+          "exceso_mediana": 135.11,
+          "gana_vidas": 0.88,
+          "euros": 5834.53,
+          "ops": 10.1
+        },
+        {
+          "bloque": "2018-02-01",
+          "exceso_mediana": 66.66,
+          "gana_vidas": 0.81,
+          "euros": 5183.81,
+          "ops": 9.4
+        },
+        {
+          "bloque": "2018-08-01",
+          "exceso_mediana": -44.96,
+          "gana_vidas": 0.25,
+          "euros": 4744.09,
+          "ops": 11.8
+        },
+        {
+          "bloque": "2019-01-31",
+          "exceso_mediana": -32.21,
+          "gana_vidas": 0.44,
+          "euros": 5509.44,
+          "ops": 10.1
+        },
+        {
+          "bloque": "2019-07-31",
+          "exceso_mediana": -64.24,
+          "gana_vidas": 0.25,
+          "euros": 5477.59,
+          "ops": 11.9
+        },
+        {
+          "bloque": "2020-01-29",
+          "exceso_mediana": 233.68,
+          "gana_vidas": 0.88,
+          "euros": 5118.41,
+          "ops": 10.0
+        },
+        {
+          "bloque": "2020-07-28",
+          "exceso_mediana": 199.98,
+          "gana_vidas": 0.75,
+          "euros": 6039.82,
+          "ops": 8.9
+        },
+        {
+          "bloque": "2021-01-26",
+          "exceso_mediana": -75.93,
+          "gana_vidas": 0.31,
+          "euros": 5840.47,
+          "ops": 11.2
+        },
+        {
+          "bloque": "2021-07-26",
+          "exceso_mediana": -18.51,
+          "gana_vidas": 0.38,
+          "euros": 4964.12,
+          "ops": 11.7
+        },
+        {
+          "bloque": "2022-01-21",
+          "exceso_mediana": 15.99,
+          "gana_vidas": 0.5,
+          "euros": 4510.2,
+          "ops": 9.8
+        },
+        {
+          "bloque": "2022-07-22",
+          "exceso_mediana": 309.51,
+          "gana_vidas": 1.0,
+          "euros": 5287.62,
+          "ops": 8.2
+        },
+        {
+          "bloque": "2023-01-20",
+          "exceso_mediana": -75.4,
+          "gana_vidas": 0.12,
+          "euros": 5575.37,
+          "ops": 11.6
+        },
+        {
+          "bloque": "2023-07-21",
+          "exceso_mediana": 211.77,
+          "gana_vidas": 0.94,
+          "euros": 5486.92,
+          "ops": 9.2
+        },
+        {
+          "bloque": "2024-01-19",
+          "exceso_mediana": 132.83,
+          "gana_vidas": 0.69,
+          "euros": 5858.36,
+          "ops": 9.8
+        },
+        {
+          "bloque": "2024-07-19",
+          "exceso_mediana": -120.8,
+          "gana_vidas": 0.44,
+          "euros": 5337.76,
+          "ops": 10.9
+        },
+        {
+          "bloque": "2025-01-17",
+          "exceso_mediana": -42.31,
+          "gana_vidas": 0.25,
+          "euros": 5161.21,
+          "ops": 11.3
+        },
+        {
+          "bloque": "2025-07-21",
+          "exceso_mediana": -60.84,
+          "gana_vidas": 0.12,
+          "euros": 5419.26,
+          "ops": 10.9
+        },
+        {
+          "bloque": "2026-01-16",
+          "exceso_mediana": 1463.9,
+          "gana_vidas": 0.88,
+          "euros": 6671.07,
+          "ops": 11.3
+        }
+      ]
+    }
+  },
+  "sp500_puro_anual_%": 10.8,
+  "indice_sim_anual_invertido_%": 11.3
+}

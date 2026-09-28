@@ -331,7 +331,8 @@ def main() -> int:
     ap.add_argument("--val-lives", type=int, default=16)
     ap.add_argument("--sessions", type=int, default=126, help="sesiones de bolsa por vida (126 ≈ 6 meses)")
     ap.add_argument("--decide-every", type=int, default=5, help="decide cada N sesiones (5 = semanal)")
-    ap.add_argument("--initial-eur", type=float, default=50.0)
+    ap.add_argument("--initial-eur", type=float, default=5000.0,
+                    help="capital de cada vida (con 50 € el servidor, ~72 €/año, lo mata todo)")
     ap.add_argument("--explore", type=float, default=0.15)
     ap.add_argument("--tau", type=float, default=0.004, help="temperatura de la etiqueta (fracción del patrimonio)")
     ap.add_argument("--lr", type=float, default=2e-5)

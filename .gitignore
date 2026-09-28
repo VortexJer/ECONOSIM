@@ -27,3 +27,6 @@ training/laya_runs/**/stdout.txt
 training/laya_runs/**/stderr.txt
 training/laya_runs/**/STOP
 *.safetensors
+
+# Universo sin sesgo: se regenera con scripts/fetch_pit.py (~150 MB)
+data/pit/prices.parquet

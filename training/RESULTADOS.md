@@ -76,9 +76,52 @@ S&P 500 puro sin gastos: +10,8 %/año.
 
 Con 50 € el servidor (~72 €/año) hace imposible sobrevivir, se invierta como se invierta.
 
+## 6. Sesgo de supervivencia medido (`sesgo.py`, 28/09/2026)
+
+Composición histórica del S&P 500 (fja05680/sp500) + precios de miembros actuales y retirados
+(Johnbrick123/sp500-data: Yahoo + Tiingo), bajados con `scripts/fetch_pit.py`. Mismo bot de momentum
+12-1 sobre las 100 más negociadas de: HOY = las que están hoy en el índice; ENTONCES = las que
+estaban ese día. Gastos 0,10 %/operación; SPY sin gastos.
+
+| Periodo · bot | HOY | ENTONCES | SPY | Sesgo |
+|---|---|---|---|---|
+| 2005-2026 · top 3 | +26,3 %/año (27/43) | +16,5 %/año (25/43) | +10,9 % | 9,9 pts |
+| 2005-2026 · top 5 | +24,2 % (27/43) | +13,7 % (25/43) | +10,9 % | 10,5 pts |
+| 2005-2026 · top 10 | +21,2 % (27/43) | +12,9 % (25/43) | +10,9 % | 8,3 pts |
+| 2013-2026 · top 3 | +45,1 % (17/27) | +25,7 % (16/27) | +15,0 % | 19,4 pts |
+| 2013-2026 · top 10 | +32,2 % (17/27) | +20,7 % (15/27) | +15,0 % | 11,5 pts |
+
+**Cobertura:** en 2005 solo 288 de 495 miembros tienen precios (faltan Lehman, Bear Stearns,
+Countrywide, Wachovia…); desde 2013 pasa del 78 % y en 2024 es del 98 %. Por eso las cifras
+ENTONCES antes de 2013 siguen infladas (lo que falta son sobre todo empresas muertas) y el sesgo
+medido es una COTA INFERIOR. El tramo fiable es 2013-2026.
+
+Lectura: la mitad de la "ventaja" del momentum era sesgo. Lo que queda (+5 a +10 pts/año sobre el SPY
+en 2013-2026) es real pero gana solo ~6 de cada 10 semestres, con semestres de −17 a −35 pts frente
+al índice, y coincide con la era de las megatecnológicas: no hay garantía de que se repita.
+
+## 7. Bots con capital realista (5.000 €, `bots-20260928-2014`)
+
+Desde el 28/09 las vidas de entrenamiento y los bots arrancan con 5.000 € (`--initial-eur`,
+`--capital`; 50 € sigue disponible). Universo aún con sesgo (97 empresas de hoy):
+
+| Bot | Gana al índice | Examen 2022-26 | Peor bloque | %/año invertido |
+|---|---|---|---|---|
+| Momentum top 3 | 30/43 | 6/9 | −1.039 € | 24,2 % |
+| Momentum con filtro | 27/43 | 5/9 | −1.241 € | 24,6 % |
+| Núcleo 75 % + momentum 2 | 26/43 | 5/9 | **−251 €** | 15,2 % |
+| Cruce de medias | 23/43 | 4/9 | −1.348 € | 14,3 % |
+| Reversión RSI | 10/43 | 1/9 | −1.882 € | 8,3 % |
+| Tendencia del índice | 5/43 | 1/9 | −1.427 € | 10,7 % |
+
+Índice en el simulador: 11,3 %/año; S&P 500 puro: 10,8 %/año. Con 5.000 € las comisiones ya no se
+comen a los bots de pocas operaciones, pero el orden no cambia.
+
 ## Conclusiones
 
 1. Ninguna IA bate al índice de forma fiable fuera de muestra; lo que parecía ventaja era beta o suerte.
 2. El momentum clásico es lo único con ventaja histórica, irregular y en parte por sesgo de supervivencia.
 3. Núcleo + satélite da la constancia pedida a cambio de quedarse cerca del índice.
-4. Pendiente: composición HISTÓRICA del índice (quitar el sesgo), capital realista, otros datos.
+4. Sesgo medido (28/09): con la composición histórica el momentum pierde ~10 pts/año; en 2013-2026,
+   con datos fiables, le queda ventaja sobre el SPY pero irregular. Capital realista (5.000 €) aplicado.
+5. Pendiente: datos que faltan (precios de empresas muertas antes de 2013; más fuentes de datos).

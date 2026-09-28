@@ -1277,7 +1277,8 @@ def main() -> int:
     ap.add_argument("--lives", type=int, default=16, help="vidas de entrenamiento por generación (las mismas para todos)")
     ap.add_argument("--val-lives", type=int, default=24)
     ap.add_argument("--sessions", type=int, default=126)
-    ap.add_argument("--initial-eur", type=float, default=50.0)
+    ap.add_argument("--initial-eur", type=float, default=5000.0,
+                    help="capital de cada vida (con 50 € el servidor, ~72 €/año, lo mata todo)")
     ap.add_argument("--min-invested", type=float, default=0.5)
     ap.add_argument("--min-buy-share", type=float, default=0.02,
                     help="una campeona tiene que comprar por sí misma en al menos esta fracción de decisiones")

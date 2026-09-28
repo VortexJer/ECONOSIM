@@ -16,10 +16,11 @@ Mismo mundo que el resto: simulador rápido idéntico al de ECONOSIM (comisión 
 factura diaria de Hetzner, tesorería), mismas vidas (16 por bloque, 40 empresas al azar por vida),
 mismo índice de referencia.
 
-Uso: training/.venv/Scripts/python.exe training/bots.py
+Uso: training/.venv/Scripts/python.exe training/bots.py [--capital 5000]
 """
 from __future__ import annotations
 
+import argparse
 import json
 import random
 import sys
@@ -40,6 +41,9 @@ SELL, HOLD, BUY = [1.0, 0, 0], [0, 1.0, 0], [0, 0, 1.0]
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--capital", type=float, default=5000.0, help="capital de cada vida (el contrato del agente son 50 €)")
+    capital = ap.parse_args().capital
     md, fu = E.MarketData(), E.Fundamentals()
     grid = E.Grid(md)
     cache = E.build_num_cache(md, fu, grid, "all", SESSIONS)
@@ -164,14 +168,14 @@ def main() -> int:
     bloques = list(range(i0, len(grid.days) - SESSIONS - 1, SESSIONS))
     rng = random.Random(SEED)
     subs_por_bloque = {b: [set(rng.sample(empresas, SUBSET)) for _ in range(LIVES)] for b in bloques}
-    base = E.FastSim(md, grid, pricing, 50.0, 0.0)
+    base = E.FastSim(md, grid, pricing, capital, 0.0)
     indice = {b: base.run(b, SESSIONS, lambda *_: None, fixed="index")["final"] for b in bloques}
     efectivo = {b: base.run(b, SESSIONS, lambda *_: None, fixed="cash")["final"] for b in bloques}
 
     out = {"metodo": "reglas fijas publicadas, sin aprendizaje: todos los bloques son prueba limpia",
-           "bloques": len(bloques), "vidas_por_bloque": LIVES, "empresas_por_vida": SUBSET, "bots": {}}
+           "capital_€": capital, "bloques": len(bloques), "vidas_por_bloque": LIVES, "empresas_por_vida": SUBSET, "bots": {}}
     for nombre, (mk, frac) in bots.items():
-        sim = E.FastSim(md, grid, pricing, 50.0, 0.0, buy_frac=frac,
+        sim = E.FastSim(md, grid, pricing, capital, 0.0, buy_frac=frac,
                         frac_by={"SPY": 0.75} if nombre.startswith("nucleo") else None)
         filas = []
         for b in bloques:
@@ -206,11 +210,11 @@ def main() -> int:
     sp = [(spy.asof(grid.days[min(b + SESSIONS, len(grid.days) - 1)]).close / spy.asof(grid.days[b]).close) for b in bloques]
     out["sp500_puro_anual_%"] = round(float((np.prod(sp) ** (252 / (SESSIONS * len(bloques))) - 1) * 100), 1)
     print(f"S&P 500 puro (comprar y mantener): {out['sp500_puro_anual_%']}%/año en esos bloques")
-    # la MISMA medida para el índice del simulador (con 50 €: comisiones y ventas para pagar el servidor)
+    # la MISMA medida para el índice del simulador (con el capital elegido: comisiones y ventas para pagar el servidor)
     ix = [base.run(b, SESSIONS, lambda *_: None, fixed="index", track=True) for b in bloques]
     tw = np.array([r["twr"] for r in ix]); dd = np.array([r["dias_invertido"] for r in ix]); m = dd > 0
     out["indice_sim_anual_invertido_%"] = round(float((np.exp(np.log1p(tw[m]).sum() * 252 / dd[m].sum()) - 1) * 100), 1)
-    print(f"Índice en el simulador (misma medida, con costes de 50 €): {out['indice_sim_anual_invertido_%']}%/año")
+    print(f"Índice en el simulador (misma medida, con costes de {capital:,.0f} €): {out['indice_sim_anual_invertido_%']}%/año")
     run = HERE / "laya_runs" / ("bots-" + datetime.now().strftime("%Y%m%d-%H%M"))
     run.mkdir(parents=True, exist_ok=True)
     (run / "bots.json").write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
