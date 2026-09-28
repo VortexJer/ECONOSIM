@@ -34,6 +34,35 @@ En el portátil (RTX 4050, 6 GB) iba a ~12 s por sesión: se mueve aquí. Lee `t
    GPU, sesiones, s/sesión, pérdida de entrenamiento y la de validación (vidas apartadas). Commit y
    push. El adaptador (`training/adapters/`) NO va a git (está en .gitignore): déjalo en disco.
 
+## Reglas de los ejemplos simulados (NO negociables: no "mejores" demos.py sin preguntar)
+
+Las demostraciones enseñan a la IA a imitar. Si una regla se rompe, la IA aprende algo falso.
+
+1. **Nada del futuro.** El robot decide SOLO con lo que se sabía ese día (precios hasta hoy,
+   noticias ya publicadas). Nunca se elige qué comprar mirando lo que pasó después, ni se filtran
+   las vidas por si ganaron o perdieron (eso enseña a fingir que adivina). Una vida que pierde
+   por mala suerte sigue siendo una buena demostración. El único filtro es de PROCESO: vidas sin
+   órdenes rechazadas, sin scripts rotos y vivas (`errores 0`).
+2. **Fechas reales al azar entre 2005-03 y 2021-06.** 2022-2026 es el examen final: no se usa ni
+   para generar ejemplos ni para ajustar nada.
+3. **La receta es la medida, no otra**: 75 % en el fondo del índice amplio, 2 × 12,5 % en las
+   empresas con mejor momentum 12-1, vender si salen del top 6, reequilibrar el núcleo si se
+   desvía más de 10 puntos, revisión mensual, reserva de efectivo para el servidor. Es la única
+   con ventaja medida (`RESULTADOS.md` §4-7). Las noticias se CONSULTAN pero no deciden
+   (`--noticias no`, por defecto): medido, su tono no anticipa el mes siguiente (§8).
+4. **Todo pasa de verdad contra el mundo.** Cada comando de la grabación se ejecuta contra los
+   gemelos (Alpaca, FMP, Qonto, Hetzner) y la salida es la respuesta real. No inventes salidas ni
+   escribas conversaciones a mano.
+5. **Lo que la IA ve es lo que verá en el mundo**: activos con alias (la época y las empresas
+   ocultas), fondos con su descripción ("Broad Market 500 Index ETF"), noticias sin titular, el
+   mismo `agent/SYSTEM.md`, el mismo formato de sesión que `agent/agent.py` (una sesión = un
+   ejemplo; herramientas `bash` y `end_session`).
+6. **Capital 5.000 €** por vida (el realista acordado), 126 sesiones de bolsa (~6 meses).
+7. El entrenamiento aprende SOLO de lo que escribe el asistente (pensamiento + comandos), no de
+   las respuestas de los servicios. No lo cambies.
+
+Si algo de esto parece mal o mejorable, PREGUNTA al usuario antes de tocarlo.
+
 ## Cosas que ya se aprendieron (no las deshagas)
 
 - En `train_qlora.py`: sin `prepare_model_for_kbit_training` (subía a fp32 la tabla de palabras,
