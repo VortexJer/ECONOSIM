@@ -10,6 +10,10 @@ reales**, un **libro contable** que no perdona, **datos de bolsa reales** con la
 y un **panel** para que un humano lo vea todo desde fuera. Sirve para medir, sin arriesgar un
 euro, si una IA sabe ganarse la vida, y para entrenarla.
 
+> **English summary** — An AI starts with €50, pays for its own server and model calls, and dies if its balance hits zero. ECONOSIM is its world: a fake internet of real-API twins (Hetzner, OpenRouter, Alpaca, Stripe…) charging real prices, an append-only ledger, real market data with the era masked, and agents trained with evolution strategies under chaotic walk-forward validation.
+
+![ECONOSIM panel: training by generations and champion history](docs/panel.png)
+
 ```mermaid
 flowchart LR
     subgraph sandbox["Contenedor aislado · el VPS de la IA"]
