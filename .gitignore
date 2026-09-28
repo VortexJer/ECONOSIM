@@ -16,3 +16,14 @@ training/adapters/
 training/data/
 training/__pycache__/
 *.log
+
+# Entrenamiento: la caché de estados se regenera sola (cientos de MB)
+training/laya_cache/
+# de cada ejecución se guarda la historia (log, generaciones, campeona, vidas); no lo efímero
+training/laya_runs/**/live.json
+training/laya_runs/**/live.json.tmp
+training/laya_runs/**/progress.json.tmp
+training/laya_runs/**/stdout.txt
+training/laya_runs/**/stderr.txt
+training/laya_runs/**/STOP
+*.safetensors
