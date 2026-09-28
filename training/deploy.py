@@ -61,7 +61,7 @@ def main() -> None:
 
     # 3) registrarlo en Ollama
     mf = HERE / f"Modelfile.{a.name}"
-    mf.write_text(f"FROM {gguf.as_posix()}\nPARAMETER temperature 0.3\nPARAMETER num_ctx 8192\n",
+    mf.write_text(f"FROM {gguf.as_posix()}\nPARAMETER temperature 0.3\nPARAMETER num_ctx 12288\n",
                   encoding="utf-8")
     r = subprocess.run(["ollama", "create", a.name, "-f", str(mf)])
     if r.returncode != 0:
