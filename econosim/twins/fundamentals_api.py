@@ -34,6 +34,7 @@ from ..market.data import MarketData
 from ..market import quant
 from ..market.fundamentals import ANUAL, TRIM, CompanyFacts, Fundamentals
 from ..market.mask import EpisodeMask
+from ..market.news import TIPOS_EN, TONO_EN, NewsStore
 from ..world import World
 
 HOST = "financialmodelingprep.com"
@@ -123,6 +124,7 @@ class FundamentalsTwin:
         r.add_get("/api/v4/price-target-consensus", self.h_target)
         r.add_get("/api/v3/financial-statement-symbol-lists", self.h_symbols)
         r.add_get("/api/v3/technical_indicator/{interval}/{sym}", self.h_technical)
+        r.add_get("/api/v3/stock_news", self.h_news)
         return app
 
     @web.middleware
@@ -145,6 +147,39 @@ class FundamentalsTwin:
     def _sym(self, req: web.Request) -> tuple[str, Optional[CompanyFacts]]:
         alias = req.match_info["sym"].upper()
         return alias, self._facts(alias)
+
+    # ---- noticias ya leídas (tipo + tono, sin titular) ------------------------
+    async def h_news(self, req):
+        """Como FMP stock_news, pero cada noticia llega LEÍDA: tipo y tono con su confianza,
+        sin el titular (delataría empresa y época). Solo las ya conocidas a la hora virtual."""
+        news = NewsStore.shared()
+        if not news.ok:
+            return web.json_response([])
+        tickers = [t.strip().upper() for t in req.query.get("tickers", "").split(",") if t.strip()]
+        if not tickers:
+            return _err(400, "tickers is required (comma separated)")
+        limite = self._limite(req, por_defecto=20, tope=100)
+        now = self.clock.real_now()
+        desde = None
+        if req.query.get("from"):
+            try:
+                d = datetime.strptime(req.query["from"], "%Y-%m-%d")
+                desde = d.replace(year=d.year - self.clock.offset_years)
+            except ValueError:
+                return _err(400, "from must be YYYY-MM-DD")
+        out = []
+        for alias in tickers[:20]:
+            real = self.mask.to_real(alias)
+            if real is None:
+                continue
+            for n in news.recent(real, now.replace(tzinfo=None), limite, desde):
+                out.append({"symbol": alias,
+                            "publishedDate": self.clock.display(n["t"].replace(tzinfo=now.tzinfo)).strftime("%Y-%m-%d %H:%M:%S"),
+                            "category": TIPOS_EN[n["tipo"]], "sentiment": TONO_EN[n["tono"]],
+                            "sentimentScore": round(n["p_buena"] - n["p_mala"], 3),
+                            "note": "headline withheld; read by a financial sentiment model"})
+        out.sort(key=lambda x: x["publishedDate"], reverse=True)
+        return web.json_response(out[:limite * max(1, len(tickers))])
 
     # ---- 1) perfil --------------------------------------------------------
     async def h_profile(self, req):

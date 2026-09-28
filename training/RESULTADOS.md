@@ -117,6 +117,23 @@ Desde el 28/09 las vidas de entrenamiento y los bots arrancan con 5.000 € (`--
 Índice en el simulador: 11,3 %/año; S&P 500 puro: 10,8 %/año. Con 5.000 € las comisiones ya no se
 comen a los bots de pocas operaciones, pero el orden no cambia.
 
+## 8. Noticias leídas por FinBERT (`estudio_noticias.py`, 28/09/2026)
+
+1.018.181 titulares de 735 empresas del S&P 500 (FNSPID, `scripts/fetch_news.py`; cubre
+2009-02 → 2020-06), leídos una vez por FinBERT (`training/noticias.py`: tono + tipo; las de
+"solo día" cuentan desde el día siguiente). 135 meses, 55.676 empresa-mes, 70 % con alguna noticia.
+
+| Prueba | Resultado |
+|---|---|
+| IC mensual tono neto (30 d) → exceso del mes siguiente | **−0,001 (t = −0,15)**, positivo el 50 % de los meses |
+| Netas buenas / empate / netas malas → mes siguiente vs SPY | −0,10 / −0,05 / −0,02 pts |
+| Veto del robot: top 8 momentum con noticias netas malas vs resto | +0,11 vs −0,01 pts/mes (t = 0,14) |
+
+Lectura: a un mes vista el tono de las noticias no anticipa nada; cuando sale el titular el
+precio ya lo ha descontado. El robot de las demostraciones las CONSULTA pero no decide con ellas
+(`--noticias no`). La IA tiene la herramienta en el mundo (`/api/v3/stock_news`: tipo y tono,
+sin titular, que delataría empresa y época).
+
 ## Conclusiones
 
 1. Ninguna IA bate al índice de forma fiable fuera de muestra; lo que parecía ventaja era beta o suerte.

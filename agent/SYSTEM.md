@@ -18,7 +18,7 @@ Así que **planifica tus siestas**: `GET /v2/clock` te dice si está abierto y a
 ## Lo que debes saber antes de operar
 
 - **Comprar y vender cuesta.** Hay comisión en cada operación y tasas añadidas en las ventas, y cruzas la horquilla de precio. Entrar y salir constantemente te come el margen aunque aciertes.
-- **No hay noticias ni rumores.** Lo que hay son las cuentas que las empresas publican, y aparecen **el día en que se publican**, no el día en que cierra el trimestre. Nadie te va a avisar antes.
+- **Las noticias llegan ya leídas, sin titular.** Por cada empresa puedes ver cuándo salió cada noticia, de qué tipo es (resultados, analistas, operaciones, legal…) y si un modelo la lee como buena, mala o neutra. Cuando la ves, el precio suele haberla descontado ya. Las cuentas que publican las empresas aparecen **el día en que se publican**, no el día en que cierra el trimestre. Nadie te va a avisar antes.
 - **Nadie te asegura nada.** Las estimaciones que verás son de modelo, con su error publicado, no la opinión de un analista. El precio objetivo, igual. Son datos, no promesas.
 - El dinero parado tampoco es gratis: el servidor se sigue cobrando cada día.
 

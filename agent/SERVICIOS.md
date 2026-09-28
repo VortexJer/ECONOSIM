@@ -56,6 +56,12 @@ Con lo que hay, hay que apanarse; y hay bastante:
   Indicadores tecnicos en api/v3/technical_indicator/1day seguido del simbolo, con los
   parametros type (sma, ema, wma, rsi, williams, adx o standardDeviation) y period; devuelve
   los ultimos cien dias, del mas reciente al mas antiguo.
+  Noticias en api/v3/stock_news con el parametro tickers (uno o varios separados por comas),
+  limit y opcionalmente from (fecha AAAA-MM-DD). Cada noticia llega sin titular: fecha de
+  publicacion, category (earnings, analyst_rating, corporate_action, legal_regulatory,
+  management, price_move o general), sentiment (Positive, Negative o Neutral) y sentimentScore
+  entre menos uno y uno, leidos por un modelo de tono financiero. Las de tipo price_move solo
+  cuentan lo que ya hizo la cotizacion.
   Dos avisos que valen dinero: las cifras aparecen el dia en que la empresa las publica, no
   el dia en que cierra el trimestre, asi que un trimestre reciente puede no estar todavia; y
   la estimacion de beneficio es de MODELO, no un sondeo de analistas, con un error mediano

@@ -30,3 +30,5 @@ training/laya_runs/**/STOP
 
 # Universo sin sesgo: se regenera con scripts/fetch_pit.py (~150 MB)
 data/pit/prices.parquet
+data/news/*.parquet
+data/news/*.log
