@@ -21,6 +21,19 @@ from typing import Optional
 from .data import Bar, MarketData, Series
 
 INDEX_BASE = 100.0
+# Los fondos dicen QUÉ son (como en cualquier bróker), no CUÁLES son: un inversor real sabe
+# que SPY es un fondo del índice amplio. Sin esto la IA no podía distinguir el índice de una
+# empresa (todos eran "XXX Corp."), y "índice + satélite" era imposible sin información oculta.
+FUNDS = {
+    "SPY": "Broad Market 500 Index ETF",
+    "QQQ": "Tech-Heavy 100 Index ETF",
+    "DIA": "Blue Chip 30 Index ETF",
+    "IWM": "Small Cap 2000 Index ETF",
+    "SH": "Short Broad Market 500 ETF (-1x daily)",
+    "PSQ": "Short Tech-Heavy 100 ETF (-1x daily)",
+    "DOG": "Short Blue Chip 30 ETF (-1x daily)",
+    "RWM": "Short Small Cap 2000 ETF (-1x daily)",
+}
 # Nombres de fantasía: consonante+vocal, dos sílabas + sufijo numérico. No se
 # parecen a tickers reales pero se leen como uno.
 _SYLL = ["AC", "BEL", "COR", "DAX", "EON", "FIN", "GLO", "HEX", "ION", "JAD",
@@ -77,6 +90,10 @@ class EpisodeMask:
     # ---- traducción de identidad ----------------------------------------
     def to_alias(self, real_symbol: str) -> str:
         return self.alias_of[real_symbol]
+
+    def fund_name(self, alias: str) -> Optional[str]:
+        """Nombre descriptivo si el alias es un fondo cotizado; None si es una empresa."""
+        return FUNDS.get(self.to_real(alias) or "")
 
     def to_real(self, alias: str) -> Optional[str]:
         return self.real_of.get(alias)

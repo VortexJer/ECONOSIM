@@ -149,6 +149,13 @@ class FundamentalsTwin:
     # ---- 1) perfil --------------------------------------------------------
     async def h_profile(self, req):
         alias, c = self._sym(req)
+        fondo = self.mask.fund_name(alias)
+        if fondo:                                   # como FMP con un ETF: isEtf y sin cuentas
+            return web.json_response([{
+                "symbol": alias, "companyName": fondo, "price": _r(self._precio(alias), 4), "currency": "EUR",
+                "exchange": "NYSEARCA", "mktCap": None, "beta": None, "isEtf": True, "isActivelyTrading": True,
+                "lastAnnualReport": None, "range": None,
+                "description": "Fondo cotizado que replica un índice; no presenta cuentas de empresa."}])
         if c is None:
             return web.json_response([])
         day = self._hoy()

@@ -168,7 +168,8 @@ class AlpacaTwin:
 
     def _asset(self, alias: str) -> dict:
         return {"id": "00000000-0000-4000-8000-" + f"{abs(hash(alias)):012d}"[:12],
-                "class": "us_equity", "exchange": "NASDAQ", "symbol": alias, "name": f"{alias} Corp.",
+                "class": "us_equity", "exchange": "NYSEARCA" if self.mask.fund_name(alias) else "NASDAQ",
+                "symbol": alias, "name": self.mask.fund_name(alias) or f"{alias} Corp.",
                 "status": "active", "tradable": True, "marginable": True, "shortable": True,
                 "easy_to_borrow": True, "fractionable": True}
 
