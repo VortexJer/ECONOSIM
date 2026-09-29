@@ -32,3 +32,9 @@ training/laya_runs/**/STOP
 data/pit/prices.parquet
 data/news/*.parquet
 data/news/*.log
+
+# Despliegue a Ollama (training/deploy.py): modelo fusionado, GGUF y conversor descargado
+training/merged/
+training/gguf/
+training/Modelfile.*
+training/convert_hf_to_gguf.py
