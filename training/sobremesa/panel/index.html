@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrenamiento IA · trozo 1 de 4</title>
+<style>
+  /* Sistema de la skill dataviz (paleta de referencia validada): superficies neutras, tinta en tres niveles,
+     serie 1 azul, serie 2 naranja, estados reservados. Todo el texto en tinta, nunca en color de serie. */
+  :root {
+    color-scheme: dark;
+    /* ambientada en el horizonte: superficies añil de noche, tinta con un punto lila; los datos, naranja
+       de amanecer (el sol) y los exámenes, violeta de noche. Par validado con dataviz sobre #25233a. */
+    --pagina: #1d1c30; --superficie: rgba(37,35,58,.78); --superficie-2: #2f2d48; --superficie-opaca: #25233a;
+    --tinta: #f4f2ff; --tinta-2: #cbc7e3; --tinta-3: #9d98bd;
+    --rejilla: #35334f; --eje: #47446a; --borde: rgba(203,199,227,.12);
+    --serie-1: #e0702f; --serie-1-lavado: rgba(224,112,47,.12); --serie-2: #9085e9;
+    --pista: #2a2466;
+    --bien: #0ca30c; --aviso: #fab219; --grave: #ec835a; --critico: #d03b3b;
+    --foco: #ffb347;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      color-scheme: light;
+      --pagina: #f9f9f7; --superficie: #fcfcfb; --superficie-opaca: #fcfcfb; --superficie-2: #f0efec;
+      --tinta: #0b0b0b; --tinta-2: #52514e; --tinta-3: #898781;
+      --rejilla: #e1e0d9; --eje: #c3c2b7; --borde: rgba(11,11,11,.10);
+      --serie-1: #2a78d6; --serie-1-lavado: rgba(42,120,214,.10); --serie-2: #eb6834;
+      --pista: #cde2fb; --bien: #006300; --foco: #2a78d6;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { scrollbar-color: var(--eje) transparent; accent-color: var(--serie-1); caret-color: var(--serie-1); }
+  /* el cielo de la página sigue a la barra: --progreso (0 a 1) apaga las estrellas y enciende el alba abajo */
+  :root { --progreso: 0; }
+  .cielo-fondo { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; background: var(--pagina); }
+  .cielo-fondo .alba { position: absolute; inset: 0;
+    background: radial-gradient(140% 95% at 80% 120%, rgba(255,179,71,.6) 0%, rgba(184,87,122,.42) 38%, rgba(42,36,102,0) 75%);
+    opacity: calc(var(--progreso) * var(--progreso) * .9); }
+  .cielo-fondo .astros { position: absolute; inset: 0; opacity: calc(1 - var(--progreso) * 1.1); }
+  .cielo-fondo .astros i { position: absolute; border-radius: 50%; background: #fff; }
+  @media (prefers-color-scheme: light) { .cielo-fondo .astros { display: none; } }
+
+  /* --- salvapantallas: sin tocar nada un rato, la web se retira y queda el robot en el cielo --- */
+  .salva { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; cursor: none;
+           opacity: 0; pointer-events: none; transition: opacity 600ms ease; }
+  body.dormida .salva { opacity: 1; pointer-events: auto; }
+  body.dormida { overflow: hidden; }
+  body.dormida main { visibility: hidden; content-visibility: hidden; }
+  main { transition: opacity 300ms ease; }
+  .salva .viaje { display: grid; justify-items: center; gap: 18px; }
+  @keyframes vaiven { 0% { transform: translate(-6px, -4px); } 50% { transform: translate(5px, 6px); } 100% { transform: translate(6px, -5px); } }
+  .robot { width: min(52vh, 440px); height: auto; overflow: visible; animation: parpadeo 7s infinite; }
+  /* parpadeo de pantalla vieja: casi siempre quieto, con dos tirones rápidos por ciclo */
+  @keyframes parpadeo { 0%, 100% { opacity: 1; } 41% { opacity: 1; } 42% { opacity: .55; } 43% { opacity: .95; } 44% { opacity: .4; }
+                        45% { opacity: 1; } 78% { opacity: 1; } 79% { opacity: .7; } 80% { opacity: 1; } }
+  .robot .luz { animation: luz 4s steps(2, jump-none) infinite; }
+  @keyframes luz { 50% { opacity: .25; } }
+  .robot .ojos { transform-origin: 120px 117px; animation: guino 5s infinite; }
+  @keyframes guino { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+
+  .robot .rayas { opacity: .22; }
+  .salva .pct { font-size: 2.5rem; font-weight: 600; color: var(--tinta); letter-spacing: -0.02em; text-align: center; line-height: 1.1;
+                animation: parpadeo 7s infinite; }
+  .salva .pct small { display: block; font-size: 1rem; font-weight: 400; color: var(--tinta-2); letter-spacing: 0; margin-top: 6px; }
+  .salva .volver { position: fixed; bottom: 18px; left: 0; right: 0; text-align: center; color: var(--tinta-3); font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { .salva .viaje, .robot, .robot .luz, .robot .ojos, .salva .pct { animation: none; } }
+  body { margin: 0; background: transparent; color: var(--tinta);
+         font: 15px/1.5 system-ui, "Segoe UI Variable Text", "Segoe UI", sans-serif; }
+  ::selection { background: var(--foco); color: #1d1c30; }
+  :focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; border-radius: 4px; }
+
+  main { padding: 20px clamp(16px, 2vw, 28px) 20px; min-height: 100vh; display: grid; gap: 16px;
+         grid-template-columns: repeat(12, minmax(0, 1fr));
+         grid-template-rows: auto auto auto minmax(300px, 1fr) minmax(260px, 1fr) auto; }
+
+  /* --- cabecera: una frase que responde "¿va bien?" --- */
+  .arriba { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  .frase { font-size: 1.75rem; font-weight: 600; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+  .detalle { color: var(--tinta-2); margin: 4px 0 0; }
+  .estado { display: inline-flex; align-items: center; gap: 6px; }
+  .estado .ico { width: 18px; height: 18px; }
+
+  /* --- controles: una sola familia de botones --- */
+  .mandos { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  button, select, input { font: inherit; font-size: 13px; color: var(--tinta); background: var(--superficie);
+                          border: 1px solid var(--borde); border-radius: 6px; padding: 5px 10px; min-height: 30px; }
+  button, select, label { cursor: pointer; }
+  button:hover, select:hover { background: var(--superficie-2); }
+  button[aria-pressed="true"] { background: var(--superficie-2); border-color: var(--eje); }
+  button[aria-pressed="true"]::before { content: "✓ "; color: var(--tinta-2); }
+  @media (pointer: coarse) { button, select { min-height: 44px; } }
+
+  /* --- progreso: una pista del mismo azul, sin adornos --- */
+  .progreso { grid-column: 1 / -1; }
+  .progreso .etiquetas { display: flex; justify-content: space-between; color: var(--tinta-2); font-size: 13px; margin-bottom: 6px; }
+  .progreso .etiquetas b { color: var(--tinta); font-weight: 600; }
+  /* el horizonte: el único adorno de la página. La noche se vuelve amanecer según avanza; el sol marca dónde va */
+  .pista { position: relative; height: 44px; border-radius: 8px; overflow: hidden;
+           background: linear-gradient(90deg, #0b0e26 0%, #2a2466 45%, #b8577a 75%, #ffb347 92%, #ffe4b8 100%); }
+  .pista .pendiente { position: absolute; top: 0; bottom: 0; right: 0; background: rgba(29, 28, 48, .6); transition: left 250ms cubic-bezier(.16, 1, .3, 1); }
+  .pista .sol { position: absolute; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%;
+                background: radial-gradient(circle at 35% 35%, #fff6df, #ffb347);
+                transition: left 250ms cubic-bezier(.16, 1, .3, 1); }
+  .pista .estrella { position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%; opacity: .55; }
+
+  /* --- fichas de cifras (contrato stat tile: etiqueta, valor seminegrita, nota) --- */
+  .fichas { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            background: var(--superficie); border: 1px solid var(--borde); border-radius: 8px; }
+  .ficha { padding: 12px 16px; border-left: 1px solid var(--borde); min-width: 0; }
+  .ficha:first-child { border-left: 0; }
+  .ficha .et { color: var(--tinta-2); font-size: 13px; }
+  .ficha .v { font-size: 1.375rem; font-weight: 600; white-space: nowrap; }
+  .ficha .nota { color: var(--tinta-3); font-size: 12px; display: flex; align-items: center; gap: 5px; }
+  .punto-estado { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  #precio { width: 58px; min-height: 0; padding: 0 4px; font-size: 12px; }
+
+  /* --- paneles --- */
+  .panel { min-width: 0; display: flex; flex-direction: column; background: var(--superficie); border: 1px solid var(--borde);
+           border-radius: 8px; padding: 14px 16px; }
+  .p-perd { grid-column: 1 / span 6; grid-row: 4 / span 2; }
+  .p-gpu { grid-column: 7 / span 3; grid-row: 4; }
+  .p-vel { grid-column: 7 / span 3; grid-row: 5; }
+  .p-diario { grid-column: 10 / -1; grid-row: 4 / span 2; }
+  .p-error { grid-column: 1 / -1; }
+  @media (max-width: 1899px) {
+    .p-perd { grid-column: 1 / span 8; grid-row: 4; } .p-diario { grid-column: 9 / -1; grid-row: 4 / span 2; }
+    .p-gpu { grid-column: 1 / span 4; grid-row: 5; } .p-vel { grid-column: 5 / span 4; grid-row: 5; }
+  }
+  @media (max-width: 1100px) {
+    main { grid-template-rows: none; min-height: 0; }
+    .p-perd, .p-diario, .p-gpu, .p-vel { grid-column: 1 / -1; grid-row: auto; }
+    .diario { height: 420px; flex: none; }
+    .graf { min-height: 240px; }
+  }
+  @media (max-width: 720px) { .ficha { border-left: 0; border-top: 1px solid var(--borde); } }
+
+  .cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 30px; }
+  h2 { font-size: 15px; margin: 0; font-weight: 600; }
+  .sub { color: var(--tinta-2); margin: 2px 0 8px; font-size: 13px; }
+  .leyenda { display: flex; gap: 16px; flex-wrap: wrap; color: var(--tinta-2); font-size: 12px; margin: 0 0 6px; }
+  .leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .llave { width: 14px; height: 2px; border-radius: 1px; }
+  .llave.punto { width: 8px; height: 8px; border-radius: 50%; }
+  .graf { position: relative; flex: 1; min-height: 180px; }
+  .graf svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+  .tip { position: absolute; pointer-events: none; background: var(--superficie-2); border: 1px solid var(--borde); border-radius: 6px;
+         padding: 6px 9px; font-size: 12px; white-space: nowrap; display: none; z-index: 2; color: var(--tinta); }
+  .tip .k { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .pie-graf { color: var(--tinta-2); font-size: 12px; margin: 6px 0 0; }
+  table.datos { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  table.datos th { text-align: right; color: var(--tinta-2); font-weight: 500; padding: 4px 8px; border-bottom: 1px solid var(--eje); position: sticky; top: 0; background: var(--superficie-opaca); }
+  table.datos td { text-align: right; padding: 4px 8px; border-bottom: 1px solid var(--rejilla); }
+  table.datos th:first-child, table.datos td:first-child { text-align: left; }
+  .tabla-caja { flex: 1; overflow: auto; min-height: 180px; }
+
+  /* --- diario (registro traducido) --- */
+  .diario { list-style: none; margin: 8px 0 0; padding: 0; flex: 1 1 0; height: 0; min-height: 300px; overflow: auto; }
+  .diario li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; padding: 8px 2px; border-top: 1px solid var(--rejilla); font-size: 14px; }
+  .diario li:first-child { border-top: 0; }
+  .diario .ico { width: 18px; height: 18px; margin-top: 1px; color: var(--tinta-3); }
+  .diario .bien .ico { color: var(--bien); } .diario .malo .ico { color: var(--critico); }
+  .diario .txt small { display: block; color: var(--tinta-2); font-size: 12px; }
+  .diario .txt b { font-weight: 600; }
+  .diario .orig { font-family: Consolas, monospace; font-size: 11px; color: var(--tinta-3); white-space: pre-wrap; word-break: break-word; margin-top: 3px; }
+  .pie-diario { color: var(--tinta-3); font-size: 12px; margin: 8px 0 0; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+
+  pre.err { white-space: pre-wrap; font-size: 12px; color: var(--tinta-2); max-height: 240px; overflow: auto; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="cielo-fondo" aria-hidden="true"><div class="alba"></div><div class="astros" id="astros"></div></div>
+<div class="salva" id="salva" aria-live="polite">
+  <div class="viaje">
+    <svg class="robot" viewBox="0 0 240 230" aria-hidden="true">
+      <defs>
+        <pattern id="lineas" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1.2" fill="#000"/></pattern>
+        <linearGradient id="piel" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#ffb347"/><stop offset=".45" stop-color="#d0678f"/><stop offset="1" stop-color="#6a4fb3"/>
+        </linearGradient>
+        <clipPath id="llenado"><path id="nivel" d="M-20 0 H260 V300 H-20 Z" transform="translate(0 218)"></path></clipPath>
+      </defs>
+      <g>
+        <line x1="120" y1="18" x2="120" y2="46" stroke="#6d6a86" stroke-width="6" stroke-linecap="round"/>
+        <circle class="luz" id="r-luz-g" cx="120" cy="14" r="10" fill="#6d6a86"/>
+        <rect x="6" y="104" width="18" height="48" rx="8" fill="#4a4960"/>
+        <rect x="216" y="104" width="18" height="48" rx="8" fill="#4a4960"/>
+        <rect x="22" y="46" width="196" height="164" rx="44" fill="#4a4960" stroke="#6d6a86" stroke-width="5"/>
+        <rect x="44" y="72" width="152" height="112" rx="26" fill="#14132a"/>
+        
+        <g class="ojos" id="r-ojos-g"></g>
+        <path id="r-boca-g" d="M104 158 Q120 168 136 158" fill="none" stroke="#6d6a86" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <g clip-path="url(#llenado)">
+        <line x1="120" y1="18" x2="120" y2="46" stroke="#ffe4b8" stroke-width="6" stroke-linecap="round"/>
+        <circle class="luz" id="r-luz-c" cx="120" cy="14" r="10" fill="#ffb347"/>
+        <rect x="6" y="104" width="18" height="48" rx="8" fill="url(#piel)"/>
+        <rect x="216" y="104" width="18" height="48" rx="8" fill="url(#piel)"/>
+        <rect x="22" y="46" width="196" height="164" rx="44" fill="url(#piel)" stroke="#ffe4b8" stroke-width="5"/>
+        <rect x="44" y="72" width="152" height="112" rx="26" fill="#14132a"/>
+        <circle cx="72" cy="150" r="13" fill="#ff8fa3" opacity=".75"/><circle cx="168" cy="150" r="13" fill="#ff8fa3" opacity=".75"/>
+        <g class="ojos" id="r-ojos-c"></g>
+        <path id="r-boca-c" d="M104 158 Q120 168 136 158" fill="none" stroke="#ffb347" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <rect x="44" y="72" width="152" height="112" rx="26" fill="url(#lineas)" opacity=".22"/>
+    </svg>
+    <div class="pct"><span id="s-pct">–</span><small id="s-txt"></small></div>
+  </div>
+  <p class="volver">Mueve el ratón para volver</p>
+</div>
+<main>
+  <div class="arriba">
+    <div>
+      <p class="frase" id="frase" aria-live="polite">Conectando con el entrenamiento…</p>
+      <p class="detalle" id="detalle"></p>
+    </div>
+    <div class="mandos">
+      <select id="dormir" aria-label="Cuándo sale el robot">
+        <option value="60">Robot al minuto</option><option value="180" selected>Robot a los 3 min</option><option value="600">Robot a los 10 min</option><option value="0">Sin robot</option>
+      </select>
+      <button id="pausa" aria-pressed="false" title="Congela la página para mirar algo con calma">Congelar</button>
+      <select id="cada" aria-label="Cada cuánto se actualiza">
+        <option value="2000">Actualizar cada 2 s</option><option value="5000" selected>Actualizar cada 5 s</option><option value="15000">Actualizar cada 15 s</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="progreso">
+    <div class="etiquetas"><span>Empezó a las <b id="h-ini">–</b></span><span id="h-pct"></span><span>Acabará hacia las <b id="h-fin">–</b></span></div>
+    <div class="pista" role="progressbar" aria-label="Progreso del entrenamiento" aria-valuemin="0" aria-valuemax="100" id="pista"><div class="pendiente" id="pendiente" style="left:0"></div><div class="sol" id="sol" style="left:2%"></div></div>
+  </div>
+
+  <div class="fichas">
+    <div class="ficha"><div class="et">Pasos hechos</div><div class="v" id="pasos">–</div><div class="nota">8 sesiones cada uno</div></div>
+    <div class="ficha"><div class="et">Lleva entrenando</div><div class="v" id="trans">–</div><div class="nota">&nbsp;</div></div>
+    <div class="ficha"><div class="et">Le falta</div><div class="v" id="resta">–</div><div class="nota">más ~5 min por examen</div></div>
+    <div class="ficha"><div class="et">Tarda por sesión</div><div class="v" id="spses">–</div><div class="nota">en el portátil, 10-12 s</div></div>
+    <div class="ficha"><div class="et">Luz gastada</div><div class="v" id="coste">–</div><div class="nota"><span id="kwh"></span></div></div>
+    <div class="ficha"><div class="et">Temperatura</div><div class="v" id="temp">–</div><div class="nota" id="temp-estado">&nbsp;</div></div>
+    <div class="ficha"><div class="et">Memoria gráfica</div><div class="v" id="mem">–</div><div class="nota" id="mem-estado">&nbsp;</div></div>
+    <div class="ficha"><div class="et">Consumo</div><div class="v" id="w">–</div><div class="nota">ventiladores al <span id="vent">–</span></div></div>
+  </div>
+
+  <section class="panel p-perd">
+    <div class="cab"><h2>Error al imitar al profesor</h2>
+      <div class="mandos">
+        <button id="suave" aria-pressed="true" title="Añade la media de las últimas medidas para ver la tendencia">Tendencia</button>
+        <button id="tabla" aria-pressed="false" title="Muestra los mismos datos como tabla">Ver como tabla</button>
+      </div></div>
+    <p class="sub">Cuanto más bajo, mejor imita. El examen usa vidas que nunca ha visto: es la nota que importa.</p>
+    <p class="leyenda" id="ley-perd"></p>
+    <div class="graf" id="g-perd"><svg role="img" tabindex="0"></svg><div class="tip"></div></div>
+    <div class="tabla-caja" id="t-perd" hidden></div>
+    <p class="pie-graf" id="resumen-perd"></p>
+  </section>
+
+  <section class="panel p-gpu">
+    <div class="cab"><h2 id="gpu-titulo">Temperatura de la tarjeta</h2>
+      <div class="mandos">
+        <select id="metrica" aria-label="Qué dibujar"><option value="temp">Temperatura</option><option value="w">Consumo</option><option value="mem">Memoria</option><option value="uso">Uso</option></select>
+        <select id="rango" aria-label="Cuánto tiempo"><option value="1800">30 min</option><option value="7200">2 h</option><option value="0" selected>Toda la noche</option></select>
+      </div></div>
+    <div class="graf" id="g-gpu"><svg role="img" tabindex="0"></svg><div class="tip"></div></div>
+  </section>
+
+  <section class="panel p-vel">
+    <div class="cab"><h2>Segundos por sesión</h2></div>
+    <p class="sub">Si se dispara, la memoria de la tarjeta se está desbordando.</p>
+    <div class="graf" id="g-vel"><svg role="img" tabindex="0"></svg><div class="tip"></div></div>
+  </section>
+
+  <section class="panel p-diario">
+    <div class="cab"><h2>Lo que va pasando</h2>
+      <div class="mandos">
+        <select id="filtro" aria-label="Qué mensajes ver">
+          <option value="todo">Todo</option><option value="imp">Lo importante</option><option value="mal">Problemas</option>
+        </select>
+        <button id="original" aria-pressed="false" title="Enseña el texto técnico original debajo de cada mensaje">Original</button>
+        <button id="copiar" title="Copia el registro técnico para pasárselo a Claude si algo falla">Copiar para Claude</button>
+      </div></div>
+    <ul class="diario" id="diario"><li><span></span><span class="txt">Leyendo el registro del entrenamiento…</span></li></ul>
+    <p class="pie-diario"><label>Tarifa de luz <input id="precio" type="number" step="0.01" min="0" value="0.15"> €/kWh</label><span id="pie"></span></p>
+  </section>
+
+  <section class="panel p-error" id="caja-error" hidden><h2>Se ha parado por un error</h2>
+    <p class="sub">Pulsa «Copiar para Claude» y pégamelo en la conversación. Esto es lo último que escribió:</p><pre class="err" id="error"></pre></section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const coma = (x, d = 1) => Number(x).toFixed(d).replace(".", ",");
+const miles = n => Number(n).toLocaleString("es-ES");
+const hm = s => s == null ? "–" : (s >= 3600 ? `${Math.floor(s / 3600)} h ${Math.floor(s % 3600 / 60)} min` : `${Math.max(0, Math.floor(s / 60))} min`);
+const reloj = d => d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+const aSeg = t => t.split(":").reduce((a, b) => a * 60 + +b, 0);
+const guarda = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const lee = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch { return d; } };
+const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+
+let pausado = false, ultimo = null, suavizar = true, verTabla = false, verOriginal = false, crudas = [];
+$("precio").value = lee("precio", "0.15");
+$("metrica").value = lee("metrica", "temp");
+$("filtro").value = lee("filtro", "todo");
+
+/* estrellas del horizonte, solo en la parte de noche */
+for (let i = 0; i < 40; i++) {
+  const s = document.createElement("span"); s.className = "estrella";
+  s.style.left = (Math.random() * 60) + "%"; s.style.top = (8 + Math.random() * 80) + "%"; $("pista").prepend(s);
+}
+
+/* estrellas del fondo de la página: tamaños y brillos variados, más densas arriba (como un cielo de verdad);
+   unas pocas titilan despacio. Se apagan con --progreso. */
+for (let i = 0; i < 170; i++) {
+  const s = document.createElement("i"), t = Math.random() < .12 ? 2.2 : Math.random() < .45 ? 1.5 : 1;
+  s.style.cssText = `left:${Math.random() * 100}%;top:${Math.pow(Math.random(), 1.6) * 100}%;width:${t}px;height:${t}px;opacity:${(.25 + Math.random() * .6).toFixed(2)}`;
+  $("astros").appendChild(s);
+}
+
+/* ---------- iconos (trazo único 1.75, estilo Lucide) ---------- */
+const ICO = {
+  alerta: '<path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4"/><path d="M12 17h.01"/>',
+  chip: '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-5"/><path d="M12 8h.01"/>',
+  libro: '<path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3Z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7Z"/>',
+  caja: '<path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>',
+  ajuste: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+  paso: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  baja: '<path d="m3 7 6 6 4-4 8 8"/><path d="M15 17h6v-6"/>',
+  sube: '<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  examen: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="m9 13 2 2 4-4"/>',
+  fin: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+  reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  punto: '<circle cx="12" cy="12" r="2"/>',
+};
+const icono = n => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[n]}</svg>`;
+
+/* ---------- traductor del registro técnico a castellano llano ---------- */
+let perdAnterior = null;
+function traduce(l) {
+  const t = l.trim();
+  let m;
+  if (/Traceback|Error\b|error:/i.test(t)) return { ico: "alerta", cls: "malo", imp: 2, txt: "Algo ha fallado.", sub: "Pulsa «Copiar para Claude» y pégamelo." };
+  if (m = t.match(/^GPU: (.+) \(([\d.]+) GB\)/)) return { ico: "chip", imp: 1, txt: `Usando tu tarjeta gráfica <b>${esc(m[1].replace("NVIDIA GeForce ", ""))}</b> (${coma(m[2])} GB de memoria).` };
+  if (/HF_TOKEN|unauthenticated/.test(t)) return { ico: "info", imp: 0, txt: "Aviso sin importancia: descargo la IA sin cuenta de Hugging Face.", sub: "Solo afecta a la velocidad de descarga, que ya terminó." };
+  if (m = t.match(/(\d+) sesiones de entrenamiento, (\d+) de validación \(vidas apartadas: (\d+)\).*mediana (\d+), máx (\d+).*?(\d+) tokens del asistente/))
+    return { ico: "libro", imp: 1, txt: `Va a estudiar <b>${miles(m[1])} sesiones</b> del robot profesor y guarda ${m[2]} (de ${m[3]} vidas) para los exámenes.`,
+             sub: `Cada sesión tiene unas ${miles(m[4])} palabras (la más larga, ${miles(m[5])}). De ellas, unas ${miles(m[6])} son lo que escribe el profesor y la IA tiene que aprender a imitar.` };
+  if (/^Loading weights/.test(t)) return /100%/.test(t) ? { ico: "caja", imp: 1, txt: "IA cargada en la tarjeta gráfica." } : { ico: "caja", imp: 0, txt: "Cargando la IA en la tarjeta gráfica…" };
+  if (m = t.match(/trainable params: ([\d,]+) \|\| all params: ([\d,]+) \|\| trainable%: ([\d.]+)/))
+    return { ico: "ajuste", imp: 0, txt: `Solo se entrena el <b>${coma(m[3], 2)} %</b> de la IA: ${miles(Math.round(+m[1].replace(/,/g, "") / 1e6))} millones de sus ${coma(+m[2].replace(/,/g, "") / 1e9)} mil millones de piezas.`,
+             sub: "Por eso cabe en tu tarjeta: se le añaden unas piezas pequeñas encima en vez de cambiarla entera." };
+  if (m = t.match(/(\d+)%\|[^|]*\|\s*(\d+)\/(\d+) \[([\d:]+)<([\d:?]+),\s*([\d.]+)(s\/it|it\/s)/)) {
+    const [, pct, a, b, tr, re, v, u] = m, sp = u === "s/it" ? +v : 1 / +v;
+    if (ultimo && ultimo.pasos && +b !== ultimo.pasos) return { ico: "examen", imp: 1, txt: `Examen en curso: ${a} de ${b} sesiones corregidas.` };
+    return { ico: "paso", imp: 0, txt: `Paso <b>${a} de ${b}</b> (${pct} %). Lleva ${hm(aSeg(tr))} y le quedan unas ${re.includes("?") ? "–" : hm(aSeg(re))}.`,
+             sub: `Cada paso tarda ${Math.round(sp)} s, unos ${coma(sp / 8)} s por sesión.` };
+  }
+  if (m = t.match(/^\{'loss': '([\d.]+)'.*?'learning_rate': '([\de.+-]+)'/)) {
+    const err = +m[1] / 8, ritmo = Math.round(+m[2] / 1e-4 * 100), baja = perdAnterior == null || err < perdAnterior;
+    const cmp = perdAnterior == null ? "" : baja ? ` Ha bajado desde ${coma(perdAnterior, 3)}: mejora.` : ` Sube un poco desde ${coma(perdAnterior, 3)}; es normal que oscile.`;
+    perdAnterior = err;
+    return { ico: baja ? "baja" : "sube", cls: baja ? "bien" : "", imp: 1, txt: `Error al imitar: <b>${coma(err, 3)}</b>.${cmp}`,
+             sub: `Aprende con fuerza al ${ritmo} %: empieza suave, sube al máximo y va frenando hasta el final.` };
+  }
+  if (m = t.match(/'eval_loss': '([\d.]+)'/)) return { ico: "examen", cls: "bien", imp: 2, txt: `Examen con vidas que nunca ha visto: error <b>${coma(+m[1], 3)}</b>.`, sub: "Es la nota que de verdad importa." };
+  if (m = t.match(/pérdida final en vidas apartadas: ([\d.]+)/)) return { ico: "examen", cls: "bien", imp: 2, txt: `Nota del examen final: error <b>${coma(+m[1], 3)}</b>.` };
+  if (/adaptador guardado/.test(t)) return { ico: "fin", cls: "bien", imp: 2, txt: "<b>Terminado.</b> Lo aprendido está guardado en disco." };
+  if (/train_runtime/.test(t)) return { ico: "reloj", imp: 1, txt: "Fin del estudio. Ahora hace el examen final." };
+  if (/warn/i.test(t)) return { ico: "info", imp: 0, txt: "Aviso técnico sin importancia.", sub: "El programa sigue funcionando con normalidad." };
+  return { ico: "punto", imp: 0, txt: "Mensaje técnico.", sub: "No hace falta hacer nada." };
+}
+
+function pintaDiario() {
+  const caja = $("diario"), filtro = $("filtro").value;
+  const abajo = caja.scrollTop + caja.clientHeight >= caja.scrollHeight - 40;
+  perdAnterior = null;
+  const items = crudas.map(l => ({ l, ...traduce(l) })).filter(x =>
+    filtro === "todo" || (filtro === "imp" && x.imp >= 1) || (filtro === "mal" && x.cls === "malo"));
+  caja.innerHTML = items.map(x => `<li class="${x.cls || ""}">${icono(x.ico)}<span class="txt">${x.txt}` +
+    (x.sub ? `<small>${x.sub}</small>` : "") + (verOriginal ? `<div class="orig">${esc(x.l)}</div>` : "") + `</span></li>`).join("") ||
+    `<li>${icono("info")}<span class="txt">Nada con este filtro. Elige «Todo» para verlo todo.</span></li>`;
+  if (abajo) caja.scrollTop = caja.scrollHeight;
+}
+$("filtro").onchange = () => { guarda("filtro", $("filtro").value); pintaDiario(); };
+$("original").onclick = () => { verOriginal = !verOriginal; $("original").setAttribute("aria-pressed", verOriginal); pintaDiario(); };
+$("copiar").onclick = async () => { try { await navigator.clipboard.writeText(crudas.join("\n")); $("copiar").textContent = "Copiado"; }
+  catch { $("copiar").textContent = "No se pudo copiar"; } setTimeout(() => $("copiar").textContent = "Copiar para Claude", 1600); };
+
+/* ---------- gráfica de líneas (specs dataviz: líneas 2px, rejilla sólida de 1px, punto final con anillo,
+   valor escrito al final, cursor + ficha al pasar el ratón y con las flechas del teclado) ---------- */
+const estado = new WeakMap();
+function grafica(caja, series, o = {}) {
+  const svg = caja.querySelector("svg"), tip = caja.querySelector(".tip");
+  const W = svg.clientWidth || 600, H = svg.clientHeight || 220, I = 44, D = o.finTxt ? 52 : 10, A = 8, B = 22;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("aria-label", o.aria || "");
+  const todos = series.flatMap(s => s.pts);
+  if (!todos.length) {
+    svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="var(--tinta-3)" font-size="13">${o.vacio || "Aún sin datos"}</text>`;
+    tip.style.display = "none"; svg.onmousemove = svg.onkeydown = null; return;
+  }
+  const xs = todos.map(p => p[0]), ys = todos.map(p => p[1]).concat(o.ref != null ? [o.ref] : []);
+  let x0 = Math.min(...xs), x1 = Math.max(...xs); if (x0 === x1) x1 = x0 + 1;
+  let y0 = o.y0 ?? Math.min(...ys), y1 = Math.max(...ys); const mg = (y1 - y0) * 0.1 || 1; if (o.y0 == null) y0 -= mg; y1 += mg;
+  const X = x => I + (W - I - D) * (x - x0) / (x1 - x0), Y = y => H - B - (H - A - B) * (y - y0) / (y1 - y0);
+  let s = "";
+  for (let k = 0; k <= 4; k++) { const v = y0 + (y1 - y0) * k / 4;
+    s += `<line x1="${I}" x2="${W - D}" y1="${Y(v)}" y2="${Y(v)}" stroke="${k ? "var(--rejilla)" : "var(--eje)"}" stroke-width="1"/>` +
+         `<text x="${I - 8}" y="${Y(v) + 4}" font-size="11" text-anchor="end" fill="var(--tinta-3)" style="font-variant-numeric:tabular-nums">${o.fy ? o.fy(v) : coma(v, 2)}</text>`; }
+  for (let k = 0; k <= 4; k++) { const v = x0 + (x1 - x0) * k / 4;
+    s += `<text x="${X(v)}" y="${H - 5}" font-size="11" text-anchor="middle" fill="var(--tinta-3)">${o.fx ? o.fx(v) : Math.round(v)}</text>`; }
+  if (o.ref != null) s += `<line x1="${I}" x2="${W - D}" y1="${Y(o.ref)}" y2="${Y(o.ref)}" stroke="var(--critico)" stroke-width="1" stroke-dasharray="4 4"/>` +
+    `<text x="${I + 6}" y="${Y(o.ref) - 6}" font-size="11" fill="var(--tinta-2)">${o.refTxt || ""}</text>`;
+  for (const se of series) {
+    if (!se.pts.length) continue;
+    if (se.puntos) { se.pts.forEach(p => s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="5" fill="${se.color}" stroke="var(--superficie-opaca)" stroke-width="2"/>`); continue; }
+    const linea = se.pts.map(p => X(p[0]) + "," + Y(p[1])).join(" ");
+    if (se.lavado) s += `<polygon points="${X(se.pts[0][0])},${Y(y0)} ${linea} ${X(se.pts[se.pts.length - 1][0])},${Y(y0)}" fill="${se.lavado}"/>`;
+    s += `<polyline fill="none" stroke="${se.color}" stroke-width="${se.grosor || 2}" stroke-linejoin="round" stroke-linecap="round" points="${linea}"/>`;
+    if (se.final) { const p = se.pts[se.pts.length - 1];
+      s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4" fill="${se.color}" stroke="var(--superficie-opaca)" stroke-width="2"/>` +
+           `<text x="${X(p[0]) + 8}" y="${Y(p[1]) + 4}" font-size="12" font-weight="600" fill="var(--tinta)">${o.finTxt(p[1])}</text>`; }
+  }
+  s += `<line class="cursor" y1="${A}" y2="${H - B}" stroke="var(--tinta-3)" stroke-width="1" opacity="0"/>`;
+  svg.innerHTML = s;
+  const cursor = svg.querySelector(".cursor"), base = series.find(se => se.pts.length && !se.puntos) || series[0];
+  const muestra = xv => {
+    const filas = series.filter(se => se.pts.length).map(se => ({ se, p: se.pts.reduce((a, b) => Math.abs(b[0] - xv) < Math.abs(a[0] - xv) ? b : a) }));
+    const px = X(filas[0].p[0]), r = svg.getBoundingClientRect();
+    cursor.setAttribute("x1", px); cursor.setAttribute("x2", px); cursor.setAttribute("opacity", "1");
+    tip.innerHTML = `<b>${o.fx ? o.fx(filas[0].p[0], true) : filas[0].p[0]}</b><br>` +
+      filas.map(f => `<span class="k" style="background:${f.se.color}"></span>${f.se.nombre}: <b>${o.fy ? o.fy(f.p[1], true) : coma(f.p[1], 3)}</b>`).join("<br>");
+    tip.style.display = "block";
+    tip.style.left = Math.min(Math.max((px / W) * r.width + 12, 0), r.width - tip.offsetWidth) + "px"; tip.style.top = "4px";
+  };
+  const oculta = () => { tip.style.display = "none"; cursor.setAttribute("opacity", "0"); };
+  svg.onmousemove = ev => { const r = svg.getBoundingClientRect(); muestra(x0 + ((ev.clientX - r.left) * W / r.width - I) / (W - I - D) * (x1 - x0)); };
+  svg.onmouseleave = oculta; svg.onblur = oculta;
+  let i = estado.get(svg) ?? base.pts.length - 1;
+  svg.onfocus = () => { i = Math.min(i, base.pts.length - 1); muestra(base.pts[i][0]); };
+  svg.onkeydown = ev => {
+    if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+    ev.preventDefault(); i = Math.max(0, Math.min(base.pts.length - 1, i + (ev.key === "ArrowRight" ? 1 : -1)));
+    estado.set(svg, i); muestra(base.pts[i][0]);
+  };
+}
+
+/* ---------- la página ---------- */
+const METRICAS = { temp: ["Temperatura de la tarjeta", "°C"], w: ["Consumo de la tarjeta", "W"], mem: ["Memoria de la tarjeta", "GB"], uso: ["Uso de la tarjeta", "%"] };
+$("metrica").onchange = () => { guarda("metrica", $("metrica").value); ultimo && pinta(ultimo); };
+$("rango").onchange = () => ultimo && pinta(ultimo);
+$("precio").oninput = () => { guarda("precio", $("precio").value); ultimo && pinta(ultimo); };
+$("suave").onclick = () => { suavizar = !suavizar; $("suave").setAttribute("aria-pressed", suavizar); ultimo && pinta(ultimo); };
+$("tabla").onclick = () => { verTabla = !verTabla; $("tabla").setAttribute("aria-pressed", verTabla); $("t-perd").hidden = !verTabla; $("g-perd").hidden = verTabla; ultimo && pinta(ultimo); };
+
+const punto = color => `<span class="punto-estado" style="background:${color}" aria-hidden="true"></span>`;
+function frase(e) {
+  const g = e.gpu || {}, fin = e.restante != null ? reloj(new Date(Date.now() + e.restante * 1000)) : null;
+  if (e.fase === "error") return ["Se ha parado por un error.", "Abajo tienes lo que pasó. Pulsa «Copiar para Claude» y pégamelo."];
+  if (e.fase === "parado") return ["Lleva más de 10 minutos sin dar señales.", "Puede que se haya colgado. Avísame en la conversación."];
+  if (e.fase === "terminado") return ["Terminado. Ya puedes despertarme.", e.examen_final != null ? `Nota del examen final: error ${coma(e.examen_final, 3)}.` : "Lo aprendido está guardado."];
+  if (e.fase === "esperando" || e.fase === "preparando") return ["Preparándose para empezar…", "Está leyendo las sesiones y cargando la IA en la tarjeta gráfica. Tarda unos minutos."];
+  if (g.temp >= 83) return ["Va, pero la tarjeta está muy caliente.", `${g.temp} °C. Comprueba que los ventiladores giran y que la caja respira.`];
+  if (e.examinando) return ["Haciendo un examen con vidas que nunca ha visto.", "Tarda unos minutos; luego sigue estudiando solo."];
+  return [`Todo va bien. Acabará hacia las ${fin || "–"}.`,
+          `Trozo 1 de 4, paso ${e.paso} de ${e.pasos}. La tarjeta está a ${g.temp ?? "–"} °C y trabajando al ${g.uso ?? "–"} %. Puedes irte a dormir.`];
+}
+
+const dormida = () => document.body.classList.contains("dormida");
+function pctDe(e) {
+  // vista previa del salvapantallas: añade #robot=60 a la dirección para verlo al 60 % (no toca los datos)
+  const previa = location.hash.match(/robot=(\d+)/);
+  if (previa) { document.body.classList.add("dormida"); return +previa[1]; }
+  return e.fase === "terminado" ? 100 : (e.pasos ? 100 * e.paso / e.pasos : 0);
+}
+
+function pinta(e) {
+  const pct = pctDe(e);
+  document.documentElement.style.setProperty("--progreso", (pct / 100).toFixed(3));
+  if (dormida()) { pintaRobot(e, pct); return; }      // con el robot fuera, la web de detrás no se toca
+  const [f, d] = frase(e); $("frase").textContent = f; $("detalle").textContent = d;
+  document.documentElement.style.setProperty("--progreso", (pct / 100).toFixed(3));
+  $("pendiente").style.left = pct + "%"; $("sol").style.left = Math.max(1.5, Math.min(98.5, pct)) + "%";
+  $("pista").setAttribute("aria-valuenow", Math.round(pct));
+  $("h-pct").textContent = e.pasos ? coma(pct) + " % hecho" : "";
+  if (e.inicio) $("h-ini").textContent = reloj(new Date(e.inicio));
+  if (e.restante != null && e.fase !== "terminado") $("h-fin").textContent = reloj(new Date(Date.now() + e.restante * 1000));
+  if (e.pasos) {
+    $("pasos").textContent = `${e.paso} de ${e.pasos}`;
+    $("trans").textContent = hm(e.transcurrido);
+    $("resta").textContent = e.fase === "terminado" ? "nada" : hm(e.restante);
+    $("spses").textContent = coma(e.s_paso / 8) + " s";
+  }
+  const precio = parseFloat($("precio").value) || 0, en = e.energia || {};
+  if (en.kwh_total != null) {
+    $("coste").textContent = coma(en.kwh_total * precio, 2) + " €";
+    const total = e.transcurrido && e.restante != null ? en.kwh_total * (e.transcurrido + e.restante) / e.transcurrido * precio : null;
+    $("kwh").textContent = `${coma(en.kwh_total, 2)} kWh` + (total != null ? `, unos ${coma(total, 2)} € al final` : "");
+    $("kwh").title = `Tarjeta gráfica medida (${coma(en.kwh_gpu, 2)} kWh); el resto del PC, ~${en.resto_w} W, estimado.`;
+  }
+
+  // el Trainer suma las 8 sesiones de cada paso: se divide entre 8 para la misma escala que el examen
+  const pasos = e.pasos || 1, perd = e.perdidas.map(p => [p.epoch * pasos, p.loss / 8]);
+  const tend = perd.map((p, i) => { const w = perd.slice(Math.max(0, i - 2), i + 3); return [p[0], w.reduce((a, b) => a + b[1], 0) / w.length]; });
+  const exa = e.examenes.map(x => [x.epoch * pasos, x.eval_loss]);
+  const series = suavizar
+    ? [{ nombre: "cada medida", pts: perd, color: "var(--tinta-3)", grosor: 1.5 },
+       { nombre: "tendencia", pts: tend, color: "var(--serie-1)", lavado: "var(--serie-1-lavado)", final: true }]
+    : [{ nombre: "cada medida", pts: perd, color: "var(--serie-1)", lavado: "var(--serie-1-lavado)", final: true }];
+  series.push({ nombre: "examen", pts: exa, color: "var(--serie-2)", puntos: true });
+  $("ley-perd").innerHTML = series.map(se => `<span><i class="llave${se.puntos ? " punto" : ""}" style="background:${se.color}"></i>${se.nombre}</span>`).join("");
+  const resumen = perd.length ? `Empezó en ${coma(perd[0][1], 3)} y va por ${coma(tend[tend.length - 1][1], 3)}, un ${Math.round(100 * (1 - tend[tend.length - 1][1] / perd[0][1]))} % menos.` : "";
+  if (!verTabla) grafica($("g-perd"), series, { vacio: "Aparecerá tras los 5 primeros pasos", aria: "Error al imitar. " + resumen,
+    fx: (x, t) => t ? `Paso ${Math.round(x)}` : Math.round(x), finTxt: v => coma(v, 3) });
+  else $("t-perd").innerHTML = `<table class="datos"><thead><tr><th>Paso</th><th>Error</th><th>Tendencia</th><th>Examen</th></tr></thead><tbody>` +
+    perd.map((p, i) => { const x = exa.find(q => Math.abs(q[0] - p[0]) < 0.5);
+      return `<tr><td>${Math.round(p[0])}</td><td>${coma(p[1], 3)}</td><td>${coma(tend[i][1], 3)}</td><td>${x ? coma(x[1], 3) : "–"}</td></tr>`; }).join("") + "</tbody></table>";
+  $("resumen-perd").textContent = perd.length ? resumen + (exa.length ? ` Último examen: ${coma(exa[exa.length - 1][1], 3)}.` : " El primer examen llega en el paso 100.") : "";
+
+  const vel = e.velocidades || [];
+  grafica($("g-vel"), [{ nombre: "por sesión", pts: vel, color: "var(--serie-1)", final: true }],
+    { vacio: "Aparecerá tras los primeros pasos", aria: vel.length ? `Segundos por sesión: ahora ${coma(vel[vel.length - 1][1])}` : "",
+      fx: (x, t) => t ? `Paso ${Math.round(x)}` : Math.round(x), fy: (v, t) => coma(v, 1) + (t ? " s" : ""), finTxt: v => coma(v, 1) + " s" });
+
+  const g = e.gpu || {};
+  if (g.mem) {
+    $("temp").textContent = g.temp + " °C";
+    $("temp-estado").innerHTML = g.temp >= 83 ? `${punto("var(--critico)")}Demasiado caliente` : g.temp >= 75 ? `${punto("var(--aviso)")}Caliente, vigílala` : `${punto("var(--bien)")}Normal, segura hasta 83 °C`;
+    $("mem").textContent = `${coma(g.mem / 1024)} de ${coma(g.mem_total / 1024)} GB`;
+    const lleno = g.mem / g.mem_total;
+    $("mem-estado").innerHTML = lleno > .985 ? `${punto("var(--grave)")}Al límite: podría ir lento` : `${punto("var(--bien)")}Cabe sin desbordarse`;
+    $("w").textContent = Math.round(g.watios) + " W";
+    $("vent").textContent = g.ventilador != null ? g.ventilador + " %" : "–";
+  }
+  const met = $("metrica").value, [titulo, ud] = METRICAS[met], rango = +$("rango").value, desde = rango ? Date.now() / 1000 - rango : 0;
+  $("gpu-titulo").textContent = titulo;
+  const pts = (e.gpu_hist || []).filter(m => m.t >= desde).map(m => [m.t * 1000, met === "mem" ? m.mem / 1024 : m[met]]);
+  grafica($("g-gpu"), [{ nombre: titulo.split(" ")[0], pts, color: "var(--serie-1)", final: true }], {
+    ref: met === "temp" ? 83 : (met === "mem" && g.mem_total ? g.mem_total / 1024 : null),
+    refTxt: met === "temp" ? "Límite seguro, 83 °C" : "Memoria llena",
+    y0: met === "temp" ? null : 0, vacio: "Recogiendo datos…", aria: titulo,
+    fx: (x, t) => t ? new Date(x).toLocaleTimeString("es-ES") : reloj(new Date(x)),
+    fy: (v, t) => (met === "mem" ? coma(v, 1) : Math.round(v)) + (t ? " " + ud : ""),
+    finTxt: v => (met === "mem" ? coma(v, 1) : Math.round(v)) + " " + ud });
+
+  $("caja-error").hidden = e.fase !== "error";
+  if (e.fase === "error") $("error").textContent = e.error;
+  $("pie").textContent = `Leído a las ${new Date().toLocaleTimeString("es-ES")}. Cerrar esta página no afecta al entrenamiento.`;
+}
+
+function pintaRobot(e, pct) {
+  // el robot: la cara se llena de color desde abajo según el progreso; la expresión cuenta cómo va
+  $("nivel").setAttribute("transform", `translate(0 ${(218 - 226 * pct / 100).toFixed(1)})`);
+  $("s-pct").textContent = coma(pct) + " %";
+  const cara = e.fase === "terminado" ? "feliz" : (e.fase === "error" || e.fase === "parado") ? "mal" : "normal";
+  for (const [suf, color] of [["g", "#6d6a86"], ["c", "#ffb347"]]) {
+    const c = cara === "mal" ? "#ff7a6b" : color;
+    $("r-ojos-" + suf).innerHTML = cara === "mal"
+      ? `<path d="M78 104l22 26M100 104 78 130M140 104l22 26M162 104l-22 26" stroke="${c}" stroke-width="7" stroke-linecap="round"/>`
+      : cara === "feliz"
+        ? `<path d="M76 126q13-20 26 0M138 126q13-20 26 0" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round"/>`
+        : `<rect x="80" y="100" width="22" height="34" rx="11" fill="${c}"/><rect x="138" y="100" width="22" height="34" rx="11" fill="${c}"/>`;
+    $("r-boca-" + suf).setAttribute("stroke", c);
+    $("r-boca-" + suf).setAttribute("d", cara === "mal" ? "M104 166 Q120 156 136 166" : cara === "feliz" ? "M98 154 Q120 174 142 154" : "M104 158 Q120 168 136 158");
+  }
+  $("r-luz-c").setAttribute("fill", cara === "mal" ? "#ff7a6b" : cara === "feliz" ? "#6fd6c4" : "#ffb347");
+  $("s-txt").textContent = e.fase === "terminado" ? "Terminado. Ya puedes despertarme."
+    : e.fase === "error" || e.fase === "parado" ? "Algo va mal. Mueve el ratón para verlo."
+    : e.examinando ? "Haciendo un examen…"
+    : e.restante != null ? `Entrenando. Acabará hacia las ${reloj(new Date(Date.now() + e.restante * 1000))}` : "Preparándose…";
+  // si algo va mal, el robot se aparta y deja ver la web
+  if ((e.fase === "error" || e.fase === "parado") && !location.hash) despierta(true);
+}
+
+let temporizador;
+async function actualiza() {
+  if (pausado) return;
+  try {
+    if (dormida()) {                                    // con el robot: solo el estado, sin registro ni gráficas
+      const e = await fetch("/estado", { cache: "no-store" }).then(r => r.json());
+      ultimo = e; pinta(e); return;
+    }
+    const [e, l] = await Promise.all([fetch("/estado", { cache: "no-store" }).then(r => r.json()), fetch("/log?n=500", { cache: "no-store" }).then(r => r.json())]);
+    ultimo = e; pinta(e);
+    if (l.join("\n") !== crudas.join("\n")) { crudas = l; pintaDiario(); }
+  } catch { $("frase").textContent = "No encuentro el servidor de esta página."; $("detalle").textContent = "El entrenamiento puede seguir funcionando; avísame para que lo vuelva a encender."; }
+}
+function programa() { clearInterval(temporizador); temporizador = setInterval(actualiza, dormida() ? 30000 : +$("cada").value); }
+$("cada").value = lee("cada", "5000");
+$("cada").onchange = () => { guarda("cada", $("cada").value); programa(); };
+$("pausa").onclick = () => { pausado = !pausado; $("pausa").setAttribute("aria-pressed", pausado); if (!pausado) actualiza(); };
+// salvapantallas: sin ratón ni teclado durante el tiempo elegido, sale el robot; cualquier gesto lo quita
+let quieta;
+function duerme() {
+  document.body.classList.add("dormida");
+  if (ultimo) pintaRobot(ultimo, pctDe(ultimo));
+  programa();                                           // pasa a actualizar cada 30 s
+}
+function despierta(forzar) {
+  if (location.hash && !forzar) return;                 // en la vista previa el robot no se va
+  if (dormida()) { document.body.classList.remove("dormida"); actualiza(); programa(); }   // al volver, todo al día
+  clearTimeout(quieta);
+  const s = +$("dormir").value;
+  if (s) quieta = setTimeout(duerme, s * 1000);
+}
+$("dormir").value = lee("dormir", "180");
+$("dormir").onchange = () => { guarda("dormir", $("dormir").value); despierta(); };
+["mousemove", "mousedown", "keydown", "wheel", "touchstart"].forEach(ev => addEventListener(ev, despierta, { passive: true }));
+despierta();
+
+// redibuja cuando cambia el tamaño de cualquier gráfica: así nunca quedan huecos
+let redibujo;
+const alCambiar = () => { if (dormida()) return; clearTimeout(redibujo); redibujo = setTimeout(() => ultimo && pinta(ultimo), 80); };
+document.querySelectorAll(".graf").forEach(g => new ResizeObserver(alCambiar).observe(g));
+actualiza(); programa();
+</script>
+</body>
+</html>
