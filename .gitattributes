@@ -3,3 +3,4 @@
 *.yml text eol=lf
 *.md text eol=lf
 *Dockerfile text eol=lf
+modelos/**/*.safetensors filter=lfs diff=lfs merge=lfs -text

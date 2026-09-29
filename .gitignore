@@ -38,3 +38,6 @@ training/merged/
 training/gguf/
 training/Modelfile.*
 training/convert_hf_to_gguf.py
+
+# la IA entrenada sí se publica (por Git LFS)
+!modelos/**/*.safetensors
