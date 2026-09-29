@@ -183,6 +183,27 @@ Ollama (q8_0) a **~47 tokens/s**; el profesor en la misma fecha y capital (5.000
 - Debilidad: para "dormir hasta la apertura" repite un número memorizado (3.095 min) en vez de
   calcularlo; a veces pierde una revisión.
 
+## 11. Búsqueda agresiva sin sesgo (`agresivo/`, 29/09/2026) — sobreajuste medido
+
+Panel diario 2004-2026 con quien estaba en el S&P 500 CADA día (916 empresas, 258-498 comprables
+por año; prices.parquet de `fetch_pit.py`), 19 indicadores (retornos 1d/5d/21d, momentum 6 y 12-1,
+volatilidad, distancias a medias, máximos, RSI, volumen, beta, cuentas publicadas de ~90 empresas,
+noticias 2009-20), fondo inverso para ir en contra, opción de quedarse en efectivo. Sin comisión
+(petición del dueño) y 5 pb de medio diferencial. Motor comprobado: todas a partes iguales 2005-16
+= 9,0 %/año (el equiponderado real).
+
+- Momentum 12-1 sin sesgo: top 3 **+2,0 %/año** (2005-16), top 50 +5,7 %: el "+24 %" de la
+  sección 7 era sobre todo sesgo.
+- Búsqueda (10.000 combinaciones de pesos, k 1-20, h 1-21 días): la elegida por 2017-21 daba
+  **+44,6 %/año (2005-16) y +33,6 % (2017-21)**, 1 empresa, rota cada semana.
+- Listón de la suerte: estrategias AL AZAR del mismo tipo sacan en 2017-21 hasta +47-60 %/año
+  (percentil 95 ≈ +33 %): indistinguible de suerte. Peores caídas 2005-21 de −48 % a −88 %.
+- **Examen 2022-2026 (tocado una vez): −25,1 %/año, 5.000 € → 1.286 €**; peor que el 97 % de
+  las estrategias al azar de su tipo. SPY +12,2 %/año; todas a partes iguales +8,5 %.
+
+Lectura: concentrar en 1 empresa y rotar no da ventaja, convierte el resultado en lotería; el
+optimizador encontró la suerte de 2005-21. **2022-2026 ya está gastado como examen.**
+
 ## Conclusiones
 
 1. Ninguna IA bate al índice de forma fiable fuera de muestra; lo que parecía ventaja era beta o suerte.
