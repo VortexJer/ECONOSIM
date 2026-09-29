@@ -204,6 +204,30 @@ noticias 2009-20), fondo inverso para ir en contra, opción de quedarse en efect
 Lectura: concentrar en 1 empresa y rotar no da ventaja, convierte el resultado en lotería; el
 optimizador encontró la suerte de 2005-21. **2022-2026 ya está gastado como examen.**
 
+## 12. Lo que se puede clonar de los grandes (`agresivo/clones.py`) — reglas publicadas, sin optimizar
+
+A = tendencia multimercado (Moskowitz-Ooi-Pedersen) en 15 fondos (acciones EE. UU./mundo/emergentes,
+bonos, crédito, oro, plata, materias primas, petróleo, inmobiliario, dólar), tamaño inverso a la
+volatilidad; A2 = lo mismo con la tendencia negativa en su fondo inverso; B = 50 empresas
+momentum + baja volatilidad + valor; C = A+B. Control de volatilidad mensual (10/20/30 %, hasta
+3x pagando letra + 1 %). Todas las variantes:
+
+| Estrategia | 2005-21 %/año | Sharpe | Peor caída | 2022-26 %/año | Peor caída |
+|---|---|---|---|---|---|
+| SPY | 10,5 | 0,56 | −55 % | 12,3 | −24 % |
+| 60/40 | 8,7 | 0,72 | −31 % | 6,8 | −21 % |
+| A · vol 20 % | 10,6 | 0,56 | −33 % | 2,6 | −37 % |
+| A2 · vol 20 % | 5,8 | 0,33 | −39 % | 6,5 | −30 % |
+| B · vol 20 % | 11,3 | 0,52 | −46 % | 10,7 | −24 % |
+| B · vol 30 % | 13,5 | 0,51 | −63 % | 12,0 | −37 % |
+| C · vol 20 % | 11,5 | 0,54 | −46 % | 7,8 | −30 % |
+| C · vol 30 % | 14,0 | 0,55 | −59 % | 8,9 | −45 % |
+
+(Lista completa y Sharpe deflactado en `training/data/agresivo/clones.json`.) Ninguna mejora el
+Sharpe del índice: lo que gana de más es riesgo (apalancamiento), no acierto. Los cortos con
+fondos inversos empeoran 2005-21 (latigazos en los cambios de tendencia) y solo ayudan algo en
+2022. Lo que mejor aguanta en ambos periodos es B (diversificado en 50 empresas).
+
 ## Conclusiones
 
 1. Ninguna IA bate al índice de forma fiable fuera de muestra; lo que parecía ventaja era beta o suerte.
@@ -214,3 +238,6 @@ optimizador encontró la suerte de 2005-21. **2022-2026 ya está gastado como ex
 5. Pendiente: datos que faltan (precios de empresas muertas antes de 2013; más fuentes de datos).
 6. (29/09) La IA imitadora (demos-v1) opera sin errores y calca al profesor en fechas que no vio;
    su valor está en manejar las herramientas, no en elegir mejor que la receta.
+7. (29/09) Optimizar pesos para máxima rentabilidad encuentra suerte (examen 2022-26: −25 %/año).
+   Las reglas publicadas de los grandes, en fondos y sin futuros, igualan al índice por unidad de
+   riesgo; más rentabilidad solo con más riesgo.
