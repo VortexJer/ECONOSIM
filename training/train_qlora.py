@@ -180,7 +180,7 @@ def main() -> None:
         output_dir=a.out, num_train_epochs=a.epochs, per_device_train_batch_size=1, per_device_eval_batch_size=1,
         gradient_accumulation_steps=a.accum, max_steps=a.max_steps, gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False}, learning_rate=a.lr, lr_scheduler_type="cosine",
-        warmup_steps=10, logging_steps=1 if a.max_steps > 0 else 5, save_strategy="steps", save_steps=100, save_total_limit=2,
+        warmup_steps=10, logging_steps=1 if a.max_steps > 0 else 5, save_strategy="steps", save_steps=50, save_total_limit=2,
         eval_strategy="steps" if val else "no", eval_steps=100, bf16=True, optim="paged_adamw_8bit",
         report_to=[], remove_unused_columns=False, dataloader_num_workers=0)
     trainer = Imitacion(model=model, args=args, train_dataset=tren, eval_dataset=val or None, data_collator=collate)
