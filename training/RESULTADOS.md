@@ -166,6 +166,23 @@ Tropiezos (arreglados en el código):
   la base cuantizada y vuelta a bf16 → calca al profesor. Ollama 0.33 no importa Qwen2 desde
   safetensors: GGUF q8_0 con el conversor de llama.cpp **b8639** (el último en un solo fichero).
 
+## 10. La IA en el simulador (`evalua_ia.py`, examen 2022 que no vio)
+
+Mismo mundo en proceso que las demostraciones, fecha disfrazada y nombres inventados; la IA por
+Ollama (q8_0) a **~47 tokens/s**; el profesor en la misma fecha y capital (5.000 €).
+
+| Prueba | IA | Profesor | Índice |
+|---|---|---|---|
+| 1 sesión, 03/01/2022 | SPY 3.647 €, NVDA 624 €, GOOGL 622 € | **idéntico al céntimo** | – |
+| Vida 03/01 → 06/07/2022, revisando ~10 veces/mes (sueño ×0,1) | −22,0 %, 76 sesiones, **0 errores** | −21,3 % (mensual) · −21,8 % (misma frecuencia) | −19,2 % |
+
+- Sin azar (temperatura 0): con 0,3 un solo token desviado en el script de ranking (1.900
+  caracteres) torcía el programa entero y la IA alucinaba una cartera que no tenía.
+- Revisar 10 veces al mes no cambia nada con esta receta: solo opera si una empresa sale del top 6
+  o el núcleo se aleja >10 puntos del 75 %.
+- Debilidad: para "dormir hasta la apertura" repite un número memorizado (3.095 min) en vez de
+  calcularlo; a veces pierde una revisión.
+
 ## Conclusiones
 
 1. Ninguna IA bate al índice de forma fiable fuera de muestra; lo que parecía ventaja era beta o suerte.
@@ -174,3 +191,5 @@ Tropiezos (arreglados en el código):
 4. Sesgo medido (28/09): con la composición histórica el momentum pierde ~10 pts/año; en 2013-2026,
    con datos fiables, le queda ventaja sobre el SPY pero irregular. Capital realista (5.000 €) aplicado.
 5. Pendiente: datos que faltan (precios de empresas muertas antes de 2013; más fuentes de datos).
+6. (29/09) La IA imitadora (demos-v1) opera sin errores y calca al profesor en fechas que no vio;
+   su valor está en manejar las herramientas, no en elegir mejor que la receta.
