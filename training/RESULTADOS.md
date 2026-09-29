@@ -134,6 +134,38 @@ precio ya lo ha descontado. El robot de las demostraciones las CONSULTA pero no 
 (`--noticias no`). La IA tiene la herramienta en el mundo (`/api/v3/stock_news`: tipo y tono,
 sin titular, que delataría empresa y época).
 
+## 9. Imitación demos-v1 (sobremesa, 28-29/09/2026)
+
+QLoRA de Qwen2.5-3B-Instruct imitando al profesor de `demos.py` (núcleo 75 % + momentum 2), en el
+sobremesa: **RTX 3050 de 8 GB**, Ryzen 7 5700X, Python 3.13, torch 2.6.0+cu124, transformers 5.17.
+
+| | |
+|---|---|
+| Demostraciones | 1.000 vidas (arranques 2005-03 → 2021-06), 7.551 sesiones, 0 errores |
+| Trozo 1 | `--max-rows 2200`: 2.141 sesiones de entreno + 59 de validación (8 vidas apartadas) |
+| Tokens | mediana 4.426 por sesión (máx 7.615); 1.152 del asistente |
+| Velocidad | ~100-113 s por paso de 8 sesiones (**12,5-14 s por sesión**); 268 pasos en **8,0 h** |
+| Pérdida de entrenamiento | 0,72 → **~0,010** por sesión al final (el log muestra ×8, ver abajo) |
+| **Pérdida de validación** (vidas apartadas) | paso 100: 0,0139 · paso 200: 0,0112 · **final: 0,0109** |
+
+Lectura: ~99 % de los tokens del profesor acertados, y la validación baja hasta el final: no
+memoriza, generaliza la plantilla. Se aplana pronto porque el profesor escribe con muy pocas
+frases: los trozos 2-4 (`--desde-vida 294 --init-adapter …`) apenas mejorarían la imitación.
+
+Tropiezos (arreglados en el código):
+- **El log de pérdida sale ×8**: `compute_loss` devuelve la media por sesión, pero el Trainer
+  (transformers 5.x) la SUMA en los 8 pasos de acumulación. La validación sí va por sesión.
+- **Reventaba en el primer eval** (paso 100, 3 h perdidas): `compute_loss` devolvía `(loss, None)`
+  y el Trainer hace `outputs[1:]`. Ahora `(loss, {})`; guardado cada 50 pasos (antes de este cambio
+  el Trainer evaluaba ANTES de guardar y no quedaba checkpoint).
+- **La GPU se comparte con la pantalla**: con 8 GB justos, un navegador con la página animada
+  (VRAM de Chrome ~280 MB) o dibujando por CPU (Edge sin GPU con animaciones) frenaba los pasos de
+  ~100 s a 150-200 s. Panel sin GPU y sin animaciones → vuelve a ~105 s.
+- **Fusionar el LoRA sobre la base original la estropea**: se entrenó sobre la base en 4 bits (nf4);
+  fusionado sobre bf16 la primera sesión ya se desviaba del profesor. `deploy.py` ahora fusiona sobre
+  la base cuantizada y vuelta a bf16 → calca al profesor. Ollama 0.33 no importa Qwen2 desde
+  safetensors: GGUF q8_0 con el conversor de llama.cpp **b8639** (el último en un solo fichero).
+
 ## Conclusiones
 
 1. Ninguna IA bate al índice de forma fiable fuera de muestra; lo que parecía ventaja era beta o suerte.
