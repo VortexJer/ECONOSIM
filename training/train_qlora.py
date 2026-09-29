@@ -172,7 +172,9 @@ def main() -> None:
                     lambda hh, yy: F.cross_entropy(causal.lm_head(hh).float(), yy, reduction="sum"),
                     hs[i:i + 256], ys[i:i + 256], use_reentrant=False)
             loss = total / len(ys)
-            return (loss, None) if return_outputs else loss
+            # en el examen el Trainer pide (loss, outputs) y hace outputs[1:] si no es un dict: con None
+            # reventaba al llegar al primer eval (paso 100). Un dict vacío = "no hay logits", solo la pérdida.
+            return (loss, {}) if return_outputs else loss
 
     args = TrainingArguments(
         output_dir=a.out, num_train_epochs=a.epochs, per_device_train_batch_size=1, per_device_eval_batch_size=1,
