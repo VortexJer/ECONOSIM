@@ -37,9 +37,15 @@ def main() -> None:
         print("fusionando el adaptador en la base…")
         import torch
         from peft import PeftModel
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
         tok = AutoTokenizer.from_pretrained(a.base)
-        model = AutoModelForCausalLM.from_pretrained(a.base, torch_dtype=torch.bfloat16, device_map="cpu")
+        # El LoRA se entrenó sobre la base en 4 bits (nf4, train_qlora.py): hay que fusionarlo sobre ESOS pesos
+        # (cuantizados y vueltos a bf16), no sobre la base original. Medido el 29/09: fusionado sobre la base
+        # original, la primera sesión ya se desviaba del profesor; con la entrenada tal cual, la calcaba.
+        bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_use_double_quant=True,
+                                 bnb_4bit_compute_dtype=torch.bfloat16)
+        model = AutoModelForCausalLM.from_pretrained(a.base, quantization_config=bnb, device_map={"": 0})
+        model = model.dequantize().to(torch.bfloat16)
         model = PeftModel.from_pretrained(model, a.adapter)
         model = model.merge_and_unload()
         merged.mkdir(parents=True, exist_ok=True)
