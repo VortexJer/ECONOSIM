@@ -33,6 +33,23 @@ FUNDS = {
     "PSQ": "Short Tech-Heavy 100 ETF (-1x daily)",
     "DOG": "Short Blue Chip 30 ETF (-1x daily)",
     "RWM": "Short Small Cap 2000 ETF (-1x daily)",
+    # otros mercados (lo que usan los fondos de tendencia multimercado) y sus inversos
+    "EFA": "Developed Markets ex-US Index ETF",
+    "EEM": "Emerging Markets Index ETF",
+    "TLT": "Long-Term Treasury Bond ETF (20+ yr)",
+    "IEF": "Intermediate Treasury Bond ETF (7-10 yr)",
+    "SHY": "Short-Term Treasury Bond ETF (1-3 yr)",
+    "LQD": "Investment Grade Corporate Bond ETF",
+    "TIP": "Inflation-Protected Treasury Bond ETF",
+    "GLD": "Gold Bullion ETF",
+    "SLV": "Silver Bullion ETF",
+    "DBC": "Broad Commodities Index ETF",
+    "USO": "Crude Oil Futures ETF",
+    "VNQ": "Real Estate (REIT) Index ETF",
+    "UUP": "US Dollar Bullish Index ETF",
+    "EFZ": "Short Developed Markets ex-US ETF (-1x daily)",
+    "EUM": "Short Emerging Markets ETF (-1x daily)",
+    "TBF": "Short Long-Term Treasury Bond ETF (-1x daily)",
 }
 # Nombres de fantasía: consonante+vocal, dos sílabas + sufijo numérico. No se
 # parecen a tickers reales pero se leen como uno.
