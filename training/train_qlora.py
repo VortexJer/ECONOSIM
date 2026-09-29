@@ -13,6 +13,11 @@ checkpointing, lote 1 con acumulación. Tres cosas que importan:
     sesiones de 8k tokens en 6 GB.
 
     python train_qlora.py --data data/demos.jsonl --out adapters/demos-v1
+
+A trozos (cada uno sigue lo aprendido en el anterior; al acabar, cada trozo imprime cómo lanzar el siguiente):
+
+    python train_qlora.py --max-rows 2200 --out adapters/demos-v1
+    python train_qlora.py --desde-vida 294 --init-adapter adapters/demos-v1 --max-rows 2200 --out adapters/demos-v1b
 """
 from __future__ import annotations
 
@@ -72,6 +77,9 @@ def main() -> None:
     ap.add_argument("--max-steps", type=int, default=-1, help="para pruebas de velocidad")
     ap.add_argument("--val", type=float, default=0.05, help="fracción de VIDAS apartadas para medir")
     ap.add_argument("--max-rows", type=int, default=0, help="0 = todas")
+    ap.add_argument("--desde-vida", type=int, default=0,
+                    help="empieza en esta vida (entrenar a trozos: el trozo anterior dice por cuál seguir)")
+    ap.add_argument("--init-adapter", default="", help="adaptador de un trozo anterior del que seguir aprendiendo")
     a = ap.parse_args()
 
     import torch
@@ -93,8 +101,12 @@ def main() -> None:
     rows = [json.loads(l) for l in Path(a.data).read_text(encoding="utf-8").splitlines() if l.strip()]
     if not rows:
         raise SystemExit(f"{a.data} está vacío: genera demostraciones o juega vidas primero")
+    if a.desde_vida:
+        rows = [r for r in rows if r.get("vida", -1) >= a.desde_vida]
     if a.max_rows:
         rows = rows[: a.max_rows]
+    # el siguiente trozo empieza en una vida nueva: una vida partida podría entrenar en un trozo y medir en otro
+    siguiente = max((r["vida"] for r in rows if "vida" in r), default=-1) + 1
     vidas = sorted({r.get("vida", r.get("episode", i)) for i, r in enumerate(rows)}, key=str)
     random.Random(0).shuffle(vidas)
     val_vidas = set(vidas[: max(1, int(len(vidas) * a.val))]) if a.val > 0 else set()
@@ -128,9 +140,13 @@ def main() -> None:
     model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
     model.enable_input_require_grads()
     model.config.use_cache = False
-    lora = LoraConfig(r=a.rank, lora_alpha=a.rank * 2, lora_dropout=0.05, bias="none", task_type="CAUSAL_LM",
-                      target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])
-    model = get_peft_model(model, lora)
+    if a.init_adapter:                                 # sigue desde el trozo anterior (su rango manda, no --rank)
+        from peft import PeftModel
+        model = PeftModel.from_pretrained(model, a.init_adapter, is_trainable=True)
+    else:
+        lora = LoraConfig(r=a.rank, lora_alpha=a.rank * 2, lora_dropout=0.05, bias="none", task_type="CAUSAL_LM",
+                          target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])
+        model = get_peft_model(model, lora)
     model.print_trainable_parameters()
     causal = model.base_model.model                    # Qwen2ForCausalLM con los LoRA dentro
 
@@ -172,6 +188,7 @@ def main() -> None:
     model.save_pretrained(a.out)
     tok.save_pretrained(a.out)
     print(f"adaptador guardado en {a.out}")
+    print(f"siguiente trozo: --desde-vida {siguiente} --init-adapter {a.out}")
 
 
 if __name__ == "__main__":
